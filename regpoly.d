@@ -1,0 +1,397 @@
+
+//          Copyright Steve Teale 2011.
+// Distributed under the Boost Software License, Version 1.0.
+//    (See accompanying file LICENSE_1_0.txt or copy at
+//          http://www.boost.org/LICENSE_1_0.txt)
+
+// Written in the D programming language
+module regpoly;
+
+import main;
+import config;
+import constants;
+import acomp;
+import common;
+import types;
+import controlset;
+import lineset;
+
+import std.stdio;
+import std.math;
+import std.conv;
+
+import gtk.DrawingArea;
+import gtk.Widget;
+import gtk.Button;
+import gtk.Layout;
+import gtk.Frame;
+import gdk.RGBA;
+import gtk.ComboBoxText;
+import gtk.SpinButton;
+import gtk.RadioButton;
+import gtk.CheckButton;
+import gtk.Label;
+import cairo.Context;
+import gtkc.cairotypes;
+import cairo.Matrix;
+
+class RegularPolygon : LineSet
+{
+   static int nextOid = 0;
+   RGBA saveAltColor;
+   int sides;
+   bool isStar, fill, solid;
+   double radius, starIndent;
+   Label numSides;
+
+   void syncControls()
+   {
+      cSet.setLineParams(lineWidth);
+      cSet.toggling(false);
+      if (les)
+         cSet.setToggle(Purpose.LESSHARP, true);
+      else
+         cSet.setToggle(Purpose.LESROUND, true);
+      if (solid)
+      {
+         cSet.setToggle(Purpose.SOLID, true);
+         cSet.disable(Purpose.FILL);
+         cSet.disable(Purpose.FILLCOLOR);
+      }
+      else if (fill)
+         cSet.setToggle(Purpose.FILL, true);
+      cSet.setComboIndex(Purpose.XFORMCB, xform);
+      if (isStar)
+         cSet.setToggle(Purpose.ASSTAR, true);
+      cSet.setLabel(Purpose.LINEWIDTH, formatLT(lineWidth));
+      cSet.toggling(true);
+      cSet.setHostName(name);
+   }
+
+   this(RegularPolygon other)
+   {
+      this(other.aw, other.parent);
+      baseColor = other.baseColor.copy();
+      altColor = other.altColor.copy();
+      lineWidth = other.lineWidth;
+      sides = other.sides;
+      radius = other.radius;
+      les = other.les;
+      isStar = other.isStar;
+      starIndent = other.starIndent;
+      fill = other.fill;
+      solid = other.solid;
+      center = other.center;
+      oPath = other.oPath.dup;
+      xform = other.xform;
+      syncControls();
+   }
+
+   this(AppWindow w, ACBase parent)
+   {
+      string s = "Regular Polygon "~to!string(++nextOid);
+      super(w, parent, s, AC_REGPOLYGON);
+      altColor = new RGBA();
+      les  = true;
+      radius = cast(double) height/2-20;
+      starIndent = 0.3;
+      center.x = width/2;
+      center.y = height/2;
+      sides = w.config.polySides;;
+      constructBase();
+      tm = new Matrix(&tmData);
+
+      setupControls(3);
+      positionControls(true);
+   }
+
+   void extendControls()
+   {
+      int vp = cSet.cy;
+
+      Label l = new Label("Sides:");
+      cSet.add(l, ICoord(165, vp-38), Purpose.LABEL);
+      new MoreLess(cSet, 0, ICoord(265, vp-38), true);
+      numSides = new Label("6");
+      cSet.add(numSides, ICoord(300, vp-38), Purpose.LABEL);
+
+      new InchTool(cSet, 0, ICoord(0, vp+5), true);
+
+      ComboBoxText cbb = new ComboBoxText(false);
+      cbb.setTooltipText("Select transformation to apply");
+      cbb.setSizeRequest(100, -1);
+      cbb.appendText("Scale");
+      cbb.appendText("Stretch-H");
+      cbb.appendText("Stretch-V");
+      cbb.appendText("Skew-H");
+      cbb.appendText("Skew-V");
+      cbb.appendText("Rotate");
+      cbb.appendText("Flip-H");
+      cbb.appendText("Flip-V");
+      cbb.setActive(0);
+      cSet.add(cbb, ICoord(165, vp+3), Purpose.XFORMCB);
+      new MoreLess(cSet, 1, ICoord(265, vp+5), true);
+
+      vp += 40;
+
+      CheckButton check = new CheckButton("Render as star");
+      cSet.add(check, ICoord(0, vp), Purpose.ASSTAR);
+
+      l = new Label("Star Indent");
+      cSet.add(l, ICoord(166, vp), Purpose.LABEL);
+      new MoreLess(cSet, 2, ICoord(265, vp), true);
+      vp += 25;
+
+      check = new CheckButton("Fill with color");
+      cSet.add(check, ICoord(0, vp), Purpose.FILL);
+
+      check = new CheckButton("Solid");
+      cSet.add(check, ICoord(125, vp), Purpose.SOLID);
+
+      Button b = new Button("Fill Color");
+      cSet.add(b, ICoord(240, vp-5), Purpose.FILLCOLOR);
+
+      cSet.cy = vp+30;
+   }
+
+   void onCSNotify(Widget w, Purpose wid)
+   {
+      switch (wid)
+      {
+      case Purpose.COLOR:
+         lastOp = push!RGBA(this, baseColor, OP_COLOR);
+         setColor(false);
+         break;
+      case Purpose.FILLCOLOR:
+         lastOp = push!RGBA(this, altColor, OP_ALTCOLOR);
+         setColor(true);
+         break;
+      case Purpose.LESROUND:
+         if ((cast(RadioButton) w).getActive())
+            les = false;
+         break;
+      case Purpose.LESSHARP:
+         if ((cast(RadioButton) w).getActive())
+            les = true;
+         break;
+      case Purpose.XFORMCB:
+         xform = (cast(ComboBoxText) w).getActive();
+         break;
+      case Purpose.ASSTAR:
+         isStar = !isStar;
+         constructBase();
+         reDraw();
+         return;
+      case Purpose.FILL:
+         fill = !fill;
+         break;
+      case Purpose.SOLID:
+         solid = !solid;
+         if (solid)
+         {
+            cSet.disable(Purpose.FILL);
+            cSet.disable(Purpose.FILLCOLOR);
+         }
+         else
+         {
+            cSet.enable(Purpose.FILL);
+            cSet.enable(Purpose.FILLCOLOR);
+         }
+         break;
+      default:
+         break;
+      }
+      aw.dirty = true;
+      dummy.grabFocus();
+      reDraw();
+   }
+
+   void onCSMoreLess(int instance, bool more, bool much)
+   {
+      dummy.grabFocus();
+      int direction = more? 1: -1;
+
+      void doSides()
+      {
+         lastOp = pushC!int(this, sides, OP_IV1);
+         if (more)
+            sides++;
+         else
+         {
+            if (sides > 3)
+               sides--;
+         }
+         numSides.setText(to!string(sides));
+         if (sides & 1)
+         {
+            cSet.disable(Purpose.ASSTAR);
+            cSet.disable(Purpose.MOL, 2);
+         }
+         else
+         {
+            cSet.enable(Purpose.ASSTAR);
+            cSet.enable(Purpose.MOL, 2);
+         }
+         constructBase();
+      }
+
+      void doIndent()
+      {
+         lastOp = pushC!double(this, starIndent, OP_DV1);
+         if (more)
+         {
+            if (starIndent < 1.0)
+               starIndent += 0.05;
+         }
+         else
+         {
+            if (starIndent > 0.05)
+               starIndent -= 0.05;
+         }
+         constructBase();
+      }
+
+      switch (instance)
+      {
+         case 0:
+            doSides();
+            break;
+         case 1:
+            modifyTransform(xform, more, much);
+            dirty = true;
+            break;
+         case 2:
+            doIndent();
+            break;
+         default:
+            return;
+      }
+
+      aw.dirty = true;
+      reDraw();
+   }
+/*
+   boolndo()
+   {
+      CheckPoint cp;
+      cp = popOp();
+      if (cp.type == 0)
+         return;
+      switch (cp.type)
+      {
+      case OP_COLOR:
+         baseColor = cp.color.copy();
+         lastOp = OP_UNDEF;
+         break;
+      case OP_ALTCOLOR:
+         altColor = cp.color.copy();
+         lastOp = OP_UNDEF;
+         break;
+      case OP_THICK:
+         lineWidth = cp.dVal;
+         cSet.setLabel(Purpose.LINEWIDTH, formatLT(lineWidth));
+         lastOp = OP_UNDEF;
+         break;
+      case OP_IV1:
+         sides = cp.iVal;
+         cSet.setSpinButton(Purpose.SIDES, sides);
+         lastOp = OP_UNDEF;
+         break;
+      case OP_DV1:
+         starIndent = cp.dVal;
+         lastOp = OP_UNDEF;
+         break;
+      case OP_SCALE:
+      case OP_HSC:
+      case OP_VSC:
+      case OP_HSK:
+      case OP_VSK:
+      case OP_ROT:
+      case OP_HFLIP:
+      case OP_VFLIP:
+         tf = cp.transform;
+         lastOp = OP_UNDEF;
+         break;
+      case OP_MOVE:
+         Coord t = cp.coord;
+         hOff = t.x;
+         vOff = t.y;
+         lastOp = OP_UNDEF;
+      default:
+         break;
+      }
+      aw.dirty = true;
+      reDraw();
+   }
+*/
+   void preResize(int oldW, int oldH)
+   {
+      center.x = width/2;
+      center.y = height/2;
+      double hr = cast(double) width/oldW;
+      double vr = cast(double) height/oldH;
+      tm.initScale(hr, vr);
+      for (int i = 0; i < oPath.length; i++)
+      {
+         tm.transformPoint(oPath[i].x, oPath[i].y);
+      }
+      hOff *= hr;
+      vOff *= vr;
+   }
+
+   void constructBase()
+   {
+      double theta = (PI*2)/sides;
+      oPath.length = sides;
+      oPath[0].x = radius;
+      oPath[0].y = 0;
+      double a = 0;
+      for (int i = 1; i < sides; i++)
+      {
+         a += theta;
+         double r = radius;
+         if (isStar && !(sides & 1) && (i & 1))
+            r = radius*starIndent;
+         oPath[i].x = r*cos(a);
+         oPath[i].y = r*sin(a);
+      }
+      dirty = true;
+   }
+
+   void render(Context c)
+   {
+      c.setAntialias(cairo_antialias_t.SUBPIXEL);
+      double r = baseColor.red;
+      double g = baseColor.green;
+      double b = baseColor.blue;
+      c.setLineWidth(lineWidth);
+      c.setLineJoin(les? CairoLineJoin.MITER: CairoLineJoin.ROUND);
+      if (dirty)
+      {
+         transformPath(compoundTransform());
+         dirty = false;
+      }
+      c.moveTo(hOff+rPath[0].x, vOff+rPath[0].y);
+      for (int i = 1; i < rPath.length; i++)
+         c.lineTo(hOff+rPath[i].x, vOff+rPath[i].y);
+      c.closePath();
+      if (solid)
+      {
+         c.setSourceRgba(r, g, b, 1.0);
+         c.fill();
+      }
+      else if (fill)
+      {
+         c.setSourceRgba(altColor.red, altColor.green, altColor.blue, 1.0);
+         c.fillPreserve();
+      }
+      if (!solid)
+      {
+         c.setSourceRgb(r, g, b);
+         c.stroke();
+      }
+      if (!isMoved) cSet.setDisplay(0, reportPosition());
+   }
+}
+
+

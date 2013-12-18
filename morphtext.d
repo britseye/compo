@@ -1,0 +1,821 @@
+
+//          Copyright Steve Teale 2011.
+// Distributed under the Boost Software License, Version 1.0.
+//    (See accompanying file LICENSE_1_0.txt or copy at
+//          http://www.boost.org/LICENSE_1_0.txt)
+
+// Written in the D programming language
+module morphtext;
+
+import main;
+import acomp;
+import tvitem;
+import types;
+import constants;
+import common;
+import controlset;
+import morphs;
+import morphdlgs;
+
+import std.stdio;
+import std.string;
+import std.conv;
+import std.array;
+import std.format;
+
+import cairo.Context;
+import gtk.Widget;
+import gtk.Label;
+import gtk.TextBuffer;
+import gtk.Button;
+import gtk.SpinButton;
+import gtk.CheckButton;
+import gtk.ToggleButton;
+import gtk.RadioButton;
+import gtk.ComboBoxText;
+import gtk.Dialog;
+import pango.PgFontDescription;
+import gtkc.gdktypes;
+import gtkc.cairotypes;
+import cairo.Matrix;
+import gdk.RGBA;
+import cairo.Surface;
+import pango.PgCairo;
+import pango.PgLayout;
+import gtkc.pangotypes;
+
+class MorphText : TextViewItem
+{
+   static int nextOid = 0;
+   int cm;
+   Morpher morpher;
+   CairoPath* morphed;
+   RGBA saveAltColor;
+   bool fill, solid, doXform;
+   int xform;
+   double olt;
+   Transform tf;
+   cairo_matrix_t tmData;
+   Matrix tm;
+   MorphDlg md;
+   bool mdShowing;
+   ParamBlock mp, given;
+   string paramString;;
+
+   string formatLT(double lt)
+   {
+      scope auto w = appender!string();
+      formattedWrite(w, "%1.1f", lt);
+      return w.data;
+   }
+
+   void syncControls()
+   {
+      cSet.setLineWidth(olt);
+      cSet.toggling(false);
+      if (solid)
+      {
+         cSet.setToggle(Purpose.SOLID, true);
+         cSet.disable(Purpose.FILL);
+         cSet.disable(Purpose.FILLCOLOR);
+      }
+      else if (fill)
+         cSet.setToggle(Purpose.FILL, true);
+      cSet.setComboIndex(Purpose.XFORMCB, xform);
+      cSet.setComboIndex(Purpose.MORPHCB, cm);
+      if (editMode)
+         cSet.setToggle(Purpose.EDITMODE, true);
+      toggleView();
+      cSet.setLabel(Purpose.LINEWIDTH, formatLT(olt));
+      cSet.toggling(true);
+      cSet.setHostName(name);
+   }
+
+   this(MorphText other)
+   {
+      this(other.aw, other.parent);
+      editMode = other.editMode;
+      hOff = other.hOff;
+      vOff = other.vOff;
+      baseColor = other.baseColor.copy();
+      altColor = other.altColor.copy();
+      olt = other.olt;
+      xform = other.xform;
+      tf = other.tf;
+      cm = other.cm;
+      fill = other.fill;
+      solid = other.solid;
+      syncControls();
+
+      string text = other.tb.getText();
+      tb.setText(text);
+   }
+
+   this(AppWindow w, ACBase parent, bool delayCM = false)
+   {
+      string s = "Morphed Text "~to!string(++nextOid);
+      super(w, parent, s, AC_MORPHTEXT);
+      altColor = new RGBA();
+      olt = 0.5;
+      editMode = true;
+      xform = 0;
+      tm = new Matrix(&tmData);
+      int vp = rpTm+height+90;
+      mdShowing = false;
+      cm = aw.config.defMorph;
+      setupControls();
+      positionControls(true);
+      toggleView();
+      pfd = PgFontDescription.fromString("Sans 100");
+      if (!delayCM)
+      {
+         changeMorph();
+         createMorphDlg();
+      }
+   }
+
+   void preResize(int oldW, int oldH)
+   {
+      morphed = null;
+      double hr = cast(double) width/oldW;
+      double vr = cast(double) height/oldH;
+      tf.hScale *= hr;
+      tf.vScale *= vr;
+      hOff *= hr;
+      vOff *= vr;
+   }
+
+   void extendControls()
+   {
+      int vp = cSet.cy;
+
+      new InchTool(cSet, 0, ICoord(0, vp), false);
+
+      Label l = new Label("Outline thickness");
+      cSet.add(l, ICoord(162, vp-18), Purpose.LABEL);
+      MOLLineThick mlt = new MOLLineThick(cSet, 0, ICoord(286, vp-18), false);
+
+      ComboBoxText cbb = new ComboBoxText(false);
+      cbb.setTooltipText("Select transformation to apply");
+      cbb.setSizeRequest(120, -1);
+      cbb.appendText("Scale");
+      cbb.appendText("Rotate");
+      cbb.appendText("Stretch-H");
+      cbb.appendText("Stretch -V");
+      cbb.appendText("Skew-H");
+      cbb.appendText("Skew-V");
+      cbb.appendText("Flip-H");
+      cbb.appendText("Flip-V");
+      cbb.setSizeRequest(100, -1);
+      cbb.setActive(0);
+      cSet.add(cbb, ICoord(175, vp), Purpose.XFORMCB);
+      new MoreLess(cSet, 0, ICoord(286, vp+5), false);
+
+      vp += 40;
+      l = new Label("Morph Type");
+      cSet.add(l, ICoord(0, vp), Purpose.LABEL);
+      cbb = new ComboBoxText(false);
+      cbb.appendText("Fit the area");
+      cbb.appendText("Taper");
+      cbb.appendText("Arch Up");
+      cbb.appendText("Sine Wave");
+      cbb.appendText("Twisted");
+      cbb.appendText("Flare");
+      cbb.appendText("Reverse Flare");
+      cbb.appendText("Circular");
+      cbb.appendText("Catenary");
+      cbb.appendText("Convex");
+      cbb.appendText("Concave");
+      cbb.appendText("Bezier Curves");
+      cbb.setSizeRequest(100, -1);
+      cbb.setActive(aw.config.defMorph);
+      cSet.add(cbb, ICoord(151, vp-5), Purpose.MORPHCB);
+
+      vp +=20;
+      Button b = new Button("More");
+      b.setTooltipText("Additional controls for particular morphs");
+      b.setSizeRequest(80, -1);
+      cSet.add(b, ICoord(0, vp), Purpose.MORE);
+
+      vp += 30;
+
+      CheckButton check = new CheckButton("Solid");
+      cSet.add(check, ICoord(0, vp), Purpose.SOLID);
+
+      check = new CheckButton("Fill with color");
+      cSet.add(check, ICoord(78, vp), Purpose.FILL);
+
+      b = new Button("Fill Color");
+      cSet.add(b, ICoord(202, vp-5), Purpose.FILLCOLOR);
+
+      cSet.cy = vp+30;
+   }
+
+   void updateParams()
+   {
+      morpher.updateParams();
+   }
+
+   void pushParams()
+   {
+      updateParams();
+      lastOp = push!ParamBlock(this, mp, OP_PARAMS);
+   }
+
+   void onCSNotify(Widget w, Purpose wid)
+   {
+      switch (wid)
+      {
+      case Purpose.COLOR:
+         lastOp = push!RGBA(this, baseColor, OP_COLOR);
+         setColor(false);
+         dummy.grabFocus();
+         break;
+      case Purpose.FILLCOLOR:
+         setColor(true);
+         break;
+      case Purpose.EDITMODE:
+         editMode = !editMode;
+         toggleView();
+         break;
+      case Purpose.FILL:
+         fill = !fill;
+         break;
+      case Purpose.SOLID:
+         solid = !solid;
+         if (solid)
+         {
+            cSet.disable(Purpose.FILL);
+            cSet.disable(Purpose.FILLCOLOR);
+         }
+         else
+         {
+            cSet.enable(Purpose.FILL);
+            cSet.enable(Purpose.FILLCOLOR);
+         }
+         break;
+      case Purpose.MORE:
+         if (mdShowing)
+         {
+            md.hide();
+            mdShowing = false;
+            cSet.setLabel(Purpose.MORE, "More");
+         }
+         else
+         {
+            md.showAll();
+            mdShowing = true;
+            cSet.setLabel(Purpose.MORE, "Less");
+         }
+         break;
+      case Purpose.MORPHCB:
+         cm = (cast(ComboBoxText) w).getActive();
+         changeMorph();
+         break;
+      case Purpose.XFORMCB:
+         xform = (cast(ComboBoxText) w).getActive();
+         break;
+      default:
+         break;
+      }
+      aw.dirty = true;
+      reDraw();
+   }
+
+   void undo()
+   {
+      CheckPoint cp;
+      cp = popOp();
+      if (cp.type == 0)
+         return;
+      switch (cp.type)
+      {
+      case OP_FONT:
+         pfd = PgFontDescription.fromString(cp.s);
+         lastOp = OP_UNDEF;
+         te.modifyFont(pfd);
+         break;
+      case OP_COLOR:
+         applyColor(cp.color, false);
+         lastOp = OP_UNDEF;
+         break;
+      case OP_TEXT:
+         disableHandlers = true;
+         if (cp.s is null)
+            tb.setText("");
+         else
+            tb.setText(cp.s);
+         disableHandlers = false;
+         lastOp = OP_UNDEF;
+         te.queueDraw();
+         break;
+      case OP_SCALE:
+      case OP_HSC:
+      case OP_VSC:
+      case OP_HSK:
+      case OP_VSK:
+      case OP_ROT:
+      case OP_HFLIP:
+      case OP_VFLIP:
+         //dirty = true;  // Must recalculate the render path
+         tf = cp.transform;
+         lastOp = OP_UNDEF;
+         break;
+      case OP_PARAMS:
+         mp = cp.paramBlock;
+         lastOp = OP_UNDEF;
+      case OP_MOVE:
+         Coord t = cp.coord;
+         hOff = t.x;
+         vOff = t.y;
+         lastOp = OP_UNDEF;
+         break;
+      default:
+         break;
+      }
+      te.grabFocus();
+      aw.dirty = true;
+      reDraw();
+   }
+
+   void onCSLineWidth(double lt)
+   {
+      olt = lt;
+      aw.dirty = true;
+      reDraw();
+   }
+
+   void toggleView()
+   {
+      if (editMode)
+      {
+         da.hide();
+         dframe.hide();
+         te.show();
+         cSet.disable(Purpose.FILL);
+         cSet.disable(Purpose.SOLID);
+         cSet.disable(Purpose.FILLCOLOR);
+         cSet.disable(Purpose.MOLLT, 0);
+         cSet.disable(Purpose.XFORMCB);
+         cSet.disable(Purpose.MORPHCB);
+         cSet.disable(Purpose.MOL, 0);
+         cSet.disable(Purpose.INCH, 0);
+         eframe.show();
+         te.grabFocus();
+         te.show();
+      }
+      else
+      {
+         te.hide();
+         eframe.hide();
+         cSet.enable(Purpose.FILL);
+         cSet.enable(Purpose.SOLID);
+         cSet.enable(Purpose.FILLCOLOR);
+         cSet.enable(Purpose.MOLLT, 0);
+         cSet.enable(Purpose.XFORMCB);
+         cSet.enable(Purpose.MORPHCB);
+         cSet.enable(Purpose.MOL, 0);
+         cSet.enable(Purpose.INCH, 0);
+         dframe.show();
+         da.show();
+      }
+      aw.dirty = true;
+   }
+
+   void bufferChanged(TextBuffer b)
+   {
+      aw.dirty = true;
+      dirty = true;
+      morphed = null;
+   }
+
+   void refreshMorph()
+   {
+      morphed = null;
+      aw.dirty = true;
+      reDraw();
+   }
+   void createMorphDlg()
+   {
+      switch (cm)
+      {
+      case 0:
+         md = new FitAreaDlg(this, morpher);
+         break;
+      case 1:
+         md = new TaperDlg(this, morpher);
+         break;
+      case 2:
+         md = new ArchUpDlg(this, morpher);
+         break;
+      case 3:
+         md = new SineWaveDlg(this, morpher);
+         break;
+      case 5:
+         md = new FlareDlg(this, morpher);
+         break;
+      case 6:
+         md = new RFlareDlg(this, morpher);
+         break;
+      case 7:
+         md = new CircularDlg(this, morpher);
+         break;
+      case 8:
+         md = new CatenaryDlg(this, morpher);
+         break;
+      case 9:
+         md = new ConvexDlg(this, morpher);
+         break;
+      case 10:
+         md = new ConcaveDlg(this, morpher);
+         break;
+      case 11:
+         md = new BezierDlg(this, morpher);
+         break;
+      default:
+         md = new MorphDlg("Morph Dialog", this, null);
+         break;
+      }
+      md.setSizeRequest(300, 200);
+      md.setPosition(GtkWindowPosition.POS_NONE);
+      int px, py;
+      aw.getPosition(px, py);
+      md.move(px+4, py+300);
+      md.addOnResponse(&onPdResponse);
+      mdShowing = false;
+   }
+
+
+   void onMoreLess(Button b)
+   {
+      if (mdShowing)
+      {
+         md.hide();
+         mdShowing = false;
+         b.setLabel("More");
+      }
+      else
+      {
+         md.showAll();
+         mdShowing = true;
+         b.setLabel("Less");
+      }
+   }
+
+   void changeMorph()
+   {
+      if (md !is null)
+         md.destroy();
+      switch (cm)
+      {
+      case 0:
+         morpher = new FitBox(width, height, &mp);
+         break;
+      case 1:
+         morpher = new Taper(width, height, &mp);
+         break;
+      case 2:
+         morpher = new ArchUp(width, height, &mp);
+         break;
+      case 3:
+         morpher = new SineWave(width, height, &mp);
+         break;
+      case 4:
+         morpher = new Twisted(width, height,&mp);
+         break;
+      case 5:
+         morpher = new Flare(width, height, &mp);
+         break;
+      case 6:
+         morpher = new RFlare(width, height, &mp);
+         break;
+      case 7:
+         morpher = new Circular(width, height, &mp);
+         break;
+      case 8:
+         morpher = new Catenary(width, height, &mp);
+         break;
+      case 9:
+         morpher = new Convex(width, height, &mp);
+         break;
+      case 10:
+         morpher = new Concave(width, height, &mp);
+         break;
+      case 11:
+         morpher = new BezierMorph(width, height, &mp);
+         break;
+      default:
+         morpher = null;
+         break;
+      }
+      morphed = null;
+      createMorphDlg();
+      aw.dirty = true;
+      if (!editMode)
+         reDraw();
+   }
+
+   void onPdResponse(int n, Dialog d)
+   {
+      d.hide();
+      cSet.setLabel(Purpose.MORE, "More");
+      mdShowing = false;
+   }
+
+   void onCSMoreLess(int instance, bool more, bool coarse)
+   {
+      doXform = true;
+      if (xform == 0)        // Scale
+      {
+         lastOp = pushC!Transform(this, tf, OP_SCALE);
+         if (!more)
+         {
+            if (coarse)
+            {
+               tf.hScale *= 0.9;
+               tf.vScale *= 0.9;
+            }
+            else
+            {
+               tf.hScale *= 0.97;
+               tf.vScale *= 0.97;
+            }
+         }
+         else
+         {
+            if (coarse)
+            {
+               tf.hScale *= 1.1;
+               tf.vScale *= 1.1;
+            }
+            else
+            {
+               tf.hScale *= 1.03;
+               tf.vScale *= 1.03;
+            }
+         }
+      }
+      else if (xform == 1) // Rotate
+      {
+         lastOp = pushC!Transform(this, tf, OP_ROT);
+         double ra = coarse? rads*5: rads/3;
+         if (!more)
+            tf.ra -= ra;
+         else
+            tf.ra += ra;
+      }
+      else if (xform == 2)        // Stretch -
+      {
+         lastOp = pushC!Transform(this, tf, OP_HSC);
+         if (!more)
+         {
+            if (coarse)
+            {
+               tf.hScale *= 0.9;
+            }
+            else
+            {
+               tf.hScale *= 0.97;
+            }
+         }
+         else
+         {
+            if (coarse)
+            {
+               tf.hScale *= 1.1;
+            }
+            else
+            {
+               tf.hScale *= 1.03;
+            }
+         }
+      }
+      else if (xform == 3)        // Stretch |
+      {
+         lastOp = pushC!Transform(this, tf, OP_VSC);
+         if (!more)
+         {
+            if (coarse)
+            {
+               tf.vScale *= 0.9;
+            }
+            else
+            {
+               tf.vScale *= 0.97;
+            }
+         }
+         else
+         {
+            if (coarse)
+            {
+               tf.vScale *= 1.1;
+            }
+            else
+            {
+               tf.vScale *= 1.03;
+            }
+         }
+      }
+      else  if (xform == 4) // horizontal shear
+      {
+         lastOp = pushC!Transform(this, tf, OP_HSK);
+         tf.hSkew += more? -0.05: 0.05;
+      }
+      else  if (xform == 5) // vertical shear
+      {
+         lastOp = pushC!Transform(this, tf, OP_VSK);
+         tf.vSkew += more? -0.05: 0.05;
+      }
+      else if (xform == 6)
+      {
+         lastOp = pushC!Transform(this, tf, OP_HFLIP);
+         tf.hFlip = more;
+      }
+      else
+      {
+         lastOp = pushC!Transform(this, tf, OP_VFLIP);
+         tf.vFlip = more;
+      }
+      aw.dirty = true;
+      reDraw();
+   }
+
+   Rect getTextRect(PgLayout pl)
+   {
+      Rect r;
+      PangoRectangle ink, logic;
+      pl.getExtents (&ink, &logic);
+      r.topX = logic.x/1024.0;
+      r.topY = logic.y/1024;
+      r.bottomX = (logic.x+logic.width)/1024.0;
+      r.bottomY = (logic.y+logic.height)/1024.0;
+      return r;
+   }
+
+   int foreachPath(Morpher m, Rect extent)
+   {
+      CairoPathData* data;
+      int n = 0;
+
+      for (int i = 0; i < morphed.numData; i += morphed.data[i].header.length)
+      {
+         data = &morphed.data[i];
+         switch (data.header.type)
+         {
+         case cairo_path_data_type_t.MOVE_TO:
+            m.transform(data, 0, extent);
+            n += 1;
+            break;
+         case cairo_path_data_type_t.LINE_TO:
+            m.transform(data, 1, extent);
+            n += 1;
+            break;
+         case cairo_path_data_type_t.CURVE_TO:
+            m.transform(data, 2, extent);
+            n += 3;
+            break;
+         case cairo_path_data_type_t.CLOSE_PATH:
+            break;
+         default:
+            break;
+         }
+      }
+      return n;
+   }
+
+/*
+  Harry Potter
+\\\10,0; 40,40; 80,40; 90,10;
+0,90; 40,60; 80,60; 100,30
+*/
+   string parseParams(string s)
+   {
+      Coord[] ca;
+      ca.length = 0;
+      string[] a = s.split("\n\\\\\\");
+      if (a.length != 2)
+         return s;
+      if (mp.valid)
+         return a[0];
+      if (paramString == a[1])
+         return a[0];
+      string[] va = a[1].split(";");
+      foreach (string ss; va)
+      {
+         ss = ss.strip();
+         string[] pa = ss.split(",");
+         if (pa.length != 2)
+            return s;
+         string t = pa[0].strip();
+         Coord tc;
+         try
+         {
+            tc.x = 0.01*width*to!double(t);
+         }
+         catch { return s; }
+         t = pa[1].strip();
+         try
+         {
+            tc.y = 0.01*height*to!double(t);
+         }
+         catch { return s; }
+         ca ~= tc;
+      }
+      if (ca.length == 8)
+      {
+         given.cpa[] = ca;
+         given.ipa[0] = 1;
+         paramString = a[1];
+      }
+      return a[0];
+   }
+
+   void onFontChange()
+   {
+      morphed = null;
+   }
+
+   void render(Context c)
+   {
+      string text = tb.getText();
+      text = parseParams(text);
+      if (!text.length)
+         return;
+      if (cm == 11 && given.ipa[0])
+      {
+         mp.cpa[] = given.cpa[];
+         morpher.refreshParams();
+         given.ipa[0] = 0;
+      }
+      double r = baseColor.red();
+      double g = baseColor.green();
+      double b = baseColor.blue();
+      if (morphed is null)
+      {
+         Surface hiddenSurface;
+         Context hidden;
+         hiddenSurface = c.getTarget().createSimilar(cairo_content_t.COLOR_ALPHA, width, height);
+         hidden = c.create(hiddenSurface);
+         hidden.save();
+         PgLayout pgl = PgCairo.createLayout(hidden);
+         pgl.setSpacing(0);
+         pgl.setFontDescription(pfd);
+         pgl.setText(text);
+         getTextRect(pgl);
+         PgCairo.layoutPath(hidden, pgl);
+         hidden.strokePreserve();
+         Rect xt = getTextRect(pgl);
+         //hidden.pathExtents(xt.topX, xt.topY, xt.bottomX, xt.bottomY);
+         morphed = cast(CairoPath*) hidden.copyPath();
+         foreachPath(morpher, xt);
+         hidden.newPath();
+         hidden.restore();
+      }
+      c.newPath();
+      //Coord bp = cm.basePoint();
+      c.translate(hOff+width/2, vOff+height/2);
+      if (tf.hFlip)
+      {
+         tm.init(-1.0, 0.0, 0.0, 1.0, 0.0, 0.0);
+         c.transform(tm);
+      }
+      if (tf.vFlip)
+      {
+         tm.init(1.0, 0.0, 0.0, -1.0, 0.0, 0.0);
+         c.transform(tm);
+      }
+      if (tf.hSkew != 0.0)
+      {
+         tm.init(1.0, 0.0, tf.hSkew, 1.0, 0.0, 0.0);
+         c.transform(tm);
+      }
+      if (tf.vSkew != 0.0)
+      {
+         tm.init(1.0, tf.vSkew, 0.0, 1.0, 0.0, 0.0);
+         c.transform(tm);
+      }
+      if (tf.hScale != 1.0 || tf.vScale != 1.0)
+         c.scale(tf.hScale, tf.vScale);
+      if (tf.ra != 0.0)
+         c.rotate(tf.ra);
+      c.translate(-width/2, -height/2);
+      c.appendPath(cast(cairo_path_t*) morphed);
+      c.setLineWidth(olt);
+      if (solid)
+      {
+         c.setSourceRgba(r, g, b, 1.0);
+         c.fill();
+      }
+      else if (fill)
+      {
+         c.setSourceRgba(altColor.red, altColor.green, altColor.blue, 1.0);
+         c.fillPreserve();
+      }
+      if (!solid)
+      {
+         c.setSourceRgb(r, g, b);
+         c.stroke();
+      }
+      if (!isMoved) cSet.setDisplay(0, reportPosition());
+   }
+}
