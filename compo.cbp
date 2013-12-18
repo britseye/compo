@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="compo" />
+		<Option pch_mode="2" />
+		<Option compiler="dmd" />
+		<Build>
+			<Target title="Debug">
+				<Option platforms="Unix;" />
+				<Option output="bin/Debug/compo" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Debug/" />
+				<Option type="0" />
+				<Option compiler="dmd" />
+				<Compiler>
+					<Add directory="/usr/local/include/d/gtkd-2" />
+				</Compiler>
+				<Linker>
+					<Add library="/usr/local/lib/libgtkd-2.a" />
+					<Add library="dl" />
+					<Add library="libusps4cb.a" />
+					<Add library="/usr/lib/i386-linux-gnu/librsvg-2.so.2.36.1" />
+					<Add directory="/usr/lib/i386-linux-gnu" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-g" />
+			<Add option="-debug" />
+			<Add option="-d" />
+			<Add directory="/home/steve/COMPO/" />
+			<Add directory="/usr/local/include/d/gtkd-2" />
+		</Compiler>
+		<Linker>
+			<Add library="/usr/local/lib/libgtkd-2.a" />
+			<Add library="/home/steve/COMPO/libusps4cb.a" />
+		</Linker>
+		<Unit filename="about.d" />
+		<Unit filename="acomp.d" />
+		<Unit filename="arrow.d" />
+		<Unit filename="avery.d" />
+		<Unit filename="bevel.d" />
+		<Unit filename="box.d" />
+		<Unit filename="circle.d" />
+		<Unit filename="common.d" />
+		<Unit filename="config.d" />
+		<Unit filename="connector.d" />
+		<Unit filename="constants.d" />
+		<Unit filename="container.d" />
+		<Unit filename="controlsdlg.d" />
+		<Unit filename="controlset.d" />
+		<Unit filename="corner.d" />
+		<Unit filename="crescent.d" />
+		<Unit filename="cross.d" />
+		<Unit filename="csv.d" />
+		<Unit filename="deserialize.d" />
+		<Unit filename="fader.d" />
+		<Unit filename="fancytext.d" />
+		<Unit filename="generic.d" />
+		<Unit filename="graphics.d" />
+		<Unit filename="heart.d" />
+		<Unit filename="interfaces.d" />
+		<Unit filename="lgradient.d" />
+		<Unit filename="line.d" />
+		<Unit filename="lineset.d" />
+		<Unit filename="main.d" />
+		<Unit filename="menus.d" />
+		<Unit filename="merger.d" />
+		<Unit filename="morphdlgs.d" />
+		<Unit filename="morphs.d" />
+		<Unit filename="morphtext.d" />
+		<Unit filename="partition.d" />
+		<Unit filename="pattern.d" />
+		<Unit filename="pglayout.d" />
+		<Unit filename="pixelimage.d" />
+		<Unit filename="polycurve.d" />
+		<Unit filename="polygon.d" />
+		<Unit filename="printing.d" />
+		<Unit filename="random.d" />
+		<Unit filename="rect.d" />
+		<Unit filename="reference.d" />
+		<Unit filename="regpoly.d" />
+		<Unit filename="rgradient.d" />
+		<Unit filename="richtext.d" />
+		<Unit filename="rsvgwrap.d" />
+		<Unit filename="separator.d" />
+		<Unit filename="serial.d" />
+		<Unit filename="serialize.d" />
+		<Unit filename="settings.d" />
+		<Unit filename="sheets.d" />
+		<Unit filename="strokeset.d" />
+		<Unit filename="svgimage.d" />
+		<Unit filename="tb2pm.d" />
+		<Unit filename="text.d" />
+		<Unit filename="textsrc.d" />
+		<Unit filename="tree.d" />
+		<Unit filename="treeops.d" />
+		<Unit filename="tvitem.d" />
+		<Unit filename="types.d" />
+		<Unit filename="uspsib.d" />
+		<Extensions>
+			<code_completion />
+			<debugger />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>
