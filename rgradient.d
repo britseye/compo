@@ -32,7 +32,7 @@ import gtkc.cairotypes;
 class RGradient: ACBase
 {
    static int nextOid = 0;
-   double outrad;
+   double outrad, inrad;
    double[50] opStops;
    Coord center;
    int nStops;
@@ -43,7 +43,7 @@ class RGradient: ACBase
    Label ov;
    CheckButton outlineCB;
 
-   void syncControls()
+   override void syncControls()
    {
       cSet.toggling(false);
       cSet.setToggle(Purpose.SOLID, mark);
@@ -58,6 +58,7 @@ class RGradient: ACBase
       vOff = other.vOff;
       baseColor = other.baseColor.copy();
       outrad = other.outrad;
+      inrad = other.inrad;
       gType = other.gType;
       nStops = other.nStops;
       center = other.center;
@@ -80,9 +81,15 @@ class RGradient: ACBase
       center.x = width/2;
       center.y = height/2;
       if (width > height)
+      {
          outrad = 0.5*height;
+         inrad = 0.3*height;
+      }
       else
+      {
          outrad = 0.5*width;
+         inrad = 0.3*width;
+      }
       setupControls();
       positionControls(true);
       mark = true;
@@ -95,7 +102,7 @@ class RGradient: ACBase
       return ++nextOid;
    }
 
-   void extendControls()
+   override void extendControls()
    {
       int vp = cSet.cy;
 
@@ -103,20 +110,25 @@ class RGradient: ACBase
       cSet.add(b, ICoord(0, vp), Purpose.COLOR);
 
       Label l = new Label("Max Opacity");
-      cSet.add(l, ICoord(153, vp), Purpose.LABEL);
-      new MoreLess(cSet, 0, ICoord(260, vp), true);
+      cSet.add(l, ICoord(163, vp), Purpose.LABEL);
+      new MoreLess(cSet, 0, ICoord(270, vp), true);
       ov = new Label("1.0");
-      cSet.add(ov, ICoord(300, vp), Purpose.LABEL);
+      cSet.add(ov, ICoord(310, vp), Purpose.LABEL);
 
       vp += 30;
       CheckButton cb = new CheckButton("Mark the center");
       cb.setActive(1);
       cSet.add(cb, ICoord(0, vp), Purpose.SOLID);
 
-      l = new Label("Radius");
-      l.setTooltipText("Adjust the spread of the fade - hold down <Ctrl> for faster action");
-      cSet.add(l, ICoord(195, vp+3), Purpose.LABEL);
-      new MoreLess(cSet, 1, ICoord(260, vp+3), true);
+      l = new Label("Inner Radius");
+      l.setTooltipText("Adjust the radius at which the gradient starts");
+      cSet.add(l, ICoord(177, vp+3), Purpose.LABEL);
+      new MoreLess(cSet, 1, ICoord(270, vp+3), true);
+
+      l = new Label("Outer Radius");
+      l.setTooltipText("Adjust the radius at which the gradient ends");
+      cSet.add(l, ICoord(177, vp+23), Purpose.LABEL);
+      new MoreLess(cSet, 2, ICoord(270, vp+23), true);
 
       vp += 25;
       new InchTool(cSet, 0, ICoord(0, vp), true);
@@ -134,6 +146,7 @@ class RGradient: ACBase
       cbb.appendText("Cosine 180");
       cbb.appendText("Exponential");
       cbb.appendText("Linear");
+      cbb.appendText("Bezier");
       cbb.setActive(0);
       cSet.add(cbb, ICoord(195, vp), Purpose.XFORMCB);
 
@@ -151,38 +164,26 @@ class RGradient: ACBase
          outrad = width;
    }
 
-   void onCSNotify(Widget w, Purpose wid)
+   override bool specificNotify(Widget w, Purpose wid)
    {
       switch (wid)
       {
-      case Purpose.COLOR:
-         lastOp = push!RGBA(this, baseColor, OP_COLOR);
-         setColor(false);
-         dummy.grabFocus();
-         dirty = true;
-         break;
       case Purpose.SOLID:
          mark = !mark;
-         break;
-      case Purpose.XFORMCB:
-         gType = (cast(ComboBoxText) w).getActive();
-         setupStops();
-         dirty = true;
          break;
       case Purpose.FADELEFT:
          revfade = !revfade;
          dirty = true;
          break;
       default:
-         return;
+         return false;
       }
-      aw.dirty = true;
-      reDraw();
+      return true;
    }
 
-   void onCSMoreLess(int instance, bool more, bool coarse)
+   override void onCSMoreLess(int instance, bool more, bool coarse)
    {
-      dummy.grabFocus();
+      focusLayout();
       double n = more? 1: -1;
       if (coarse)
          n *= 10;
@@ -216,8 +217,19 @@ class RGradient: ACBase
       }
       else if (instance == 1)
       {
+         lastOp = pushC!double(this, inrad, OP_VSIZE);
+         if (n > 0 && inrad+n > outrad)
+            return;
+         if (n < 0 && inrad+n < 5)
+            return;
+
+         inrad += n;
+         dirty = true;
+      }
+      else if (instance == 2)
+      {
          lastOp = pushC!double(this, outrad, OP_HSIZE);
-         if (n < 0 && outrad+n < 5)
+         if (n < 0 && outrad+n < inrad)
             return;
          outrad += n;
          dirty = true;
@@ -361,6 +373,9 @@ class RGradient: ACBase
          case 5:
             exponential(0.02);
             break;
+         case 6:
+            quadbezier(0.8, 0);
+            break;
          default:
             gtkDefault();
             break;
@@ -402,39 +417,38 @@ class RGradient: ACBase
 
    void createPattern()
    {
-      pat = Pattern.createRadial(center.x, center.y, 5, center.x, center.y, outrad);
+      pat = Pattern.createRadial(hOff+center.x, vOff+center.y, inrad, hOff+center.x, vOff+center.y, outrad);
    }
 
-   void render(Context c)
+   override void render(Context c)
    {
-      if (dirty || pat is null)
-      {
-         createPattern();
-         double r = baseColor.red();
-         double g = baseColor.green();
-         double b = baseColor.blue();
-         addStops(r, g, b);
-         dirty = false;
-      }
+      createPattern();
+      double r = baseColor.red();
+      double g = baseColor.green();
+      double b = baseColor.blue();
+      addStops(r, g, b);
       // for testing
       //c.setSourceRgb(0,0,0);
       //c.paint();
-      c.translate(hOff, vOff);
+      c.moveTo(hOff, vOff);
+      c.lineTo(hOff+width, vOff);
+      c.lineTo(hOff+width, vOff+height);
+      c.lineTo(hOff, vOff+height);
       c.setSource(pat);
-      c.paint();
-      if (mark)
+      c.fill();
+      if (!printFlag && mark)
       {
-         c.moveTo(center.x-10, center.y);
-         c.lineTo(center.x+10, center.y);
-         c.moveTo(center.x, center.y-10);
-         c.lineTo(center.x, center.y+10);
+         c.moveTo(hOff+center.x-10, vOff+center.y);
+         c.lineTo(hOff+center.x+10, vOff+center.y);
+         c.moveTo(hOff+center.x, vOff+center.y-10);
+         c.lineTo(hOff+center.x, vOff+center.y+10);
          c.setLineWidth(1);
          c.setSourceRgb(0,0,0);
          c.stroke();
-         c.moveTo(center.x-8, center.y-8);
-         c.lineTo(center.x+8, center.y+8);
-         c.moveTo(center.x-8, center.y+8);
-         c.lineTo(center.x+8, center.y-8);
+         c.moveTo(hOff+center.x-8, vOff+center.y-8);
+         c.lineTo(hOff+center.x+8, vOff+center.y+8);
+         c.moveTo(hOff+center.x-8, vOff+center.y+8);
+         c.lineTo(hOff+center.x+8, vOff+center.y-8);
          c.setLineWidth(2);
          c.setSourceRgb(1,1,1);
          c.stroke();

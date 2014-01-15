@@ -42,11 +42,9 @@ class Random: LineSet
    int element;
    ShapeInfo[] si;
    bool reBuild, printRandom;
-   Matrix tm;
-   cairo_matrix_t tmd;
    Label countLabel, minSize, maxSize;
 
-   void syncControls()
+   override void syncControls()
    {
       cSet.setLineParams(lineWidth);
       cSet.toggling(false);
@@ -87,13 +85,13 @@ class Random: LineSet
       lineWidth = 0.5;
       count = 20;
       reBuild = true;
-      tm = new Matrix(&tmd);
+      tm = new Matrix(&tmData);
 
       setupControls();
       positionControls(true);
    }
 
-   void extendControls()
+   override void extendControls()
    {
       int vp = cSet.cy;
 
@@ -138,18 +136,11 @@ class Random: LineSet
       cSet.cy = vp+25;
    }
 
-   void preResize(int oldW, int oldH)
+   override bool specificNotify(Widget w, Purpose wid)
    {
-   }
-
-   void onCSNotify(Widget w, Purpose wid)
-   {
+      focusLayout();
       switch (wid)
       {
-      case Purpose.COLOR:
-         lastOp = push!RGBA(this, baseColor, OP_COLOR);
-         setColor(false);
-         break;
       case Purpose.PATTERN:
          element = (cast(ComboBoxText) w).getActive();
          break;
@@ -159,15 +150,13 @@ class Random: LineSet
       case Purpose.MORE:
          break;
       default:
-         return;
+         return false;
       }
       reBuild = true;
-      aw.dirty = true;
-      dummy.grabFocus();
-      reDraw();
+      return true;
    }
 
-   void onCSMoreLess(int instance, bool more, bool coarse)
+   override void onCSMoreLess(int instance, bool more, bool coarse)
    {
       if (instance == 0)
       {
@@ -216,7 +205,7 @@ class Random: LineSet
       reDraw();
    }
 
-   bool specificUndo(CheckPoint cp)
+   override bool specificUndo(CheckPoint cp)
    {
       switch (cp.type)
       {
@@ -284,7 +273,7 @@ class Random: LineSet
       reBuild = false;
    }
 
-   void render(Context c)
+   override void render(Context c)
    {
       build();
       c.setLineWidth(lineWidth);

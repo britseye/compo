@@ -348,6 +348,7 @@ class ACTreeModel : TreeModel
    void appendRoot(ACBase nc)
    {
       root.children ~= nc;
+      nc.parent = root;
       TreePath tp = new TreePath();
       tp.appendIndex(root.children.length-1);
 

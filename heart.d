@@ -34,12 +34,8 @@ class Heart: LineSet
    static Coord[7] crd = [ Coord(0, 0.666), Coord(-1.2, -0.1), Coord(-0.5, -1.1), Coord(0, -0.333),
                            Coord(0.5, -1.1), Coord(1.2, -0.1), Coord(0, 0.666) ];
    double unit;
-   bool fill, solid;
-   int xform;
-   Matrix tm;
-   cairo_matrix_t tmd;
 
-   void syncControls()
+   override void syncControls()
    {
       cSet.setLineParams(lineWidth);
       cSet.toggling(false);
@@ -79,13 +75,13 @@ class Heart: LineSet
       lineWidth = 0.5;
       unit = width > height? height*0.75: width*0.75;
       xform = 0;
-      tm = new Matrix(&tmd);
+      tm = new Matrix(&tmData);
 
       setupControls();
       positionControls(true);
    }
 
-   void extendControls()
+   override void extendControls()
    {
       int vp = cSet.cy;
 
@@ -116,45 +112,7 @@ class Heart: LineSet
       cSet.cy = vp+30;
    }
 
-   void onCSNotify(Widget w, Purpose wid)
-   {
-      switch (wid)
-      {
-      case Purpose.COLOR:
-         lastOp = push!RGBA(this, baseColor, OP_COLOR);
-         setColor(false);
-         break;
-      case Purpose.FILLCOLOR:
-         lastOp = push!RGBA(this, altColor, OP_ALTCOLOR);
-         setColor(true);
-         break;
-      case Purpose.FILL:
-         fill = !fill;
-         break;
-      case Purpose.SOLID:
-         solid = !solid;
-         if (solid)
-         {
-            cSet.disable(Purpose.FILL);
-            cSet.disable(Purpose.FILLCOLOR);
-         }
-         else
-         {
-            cSet.enable(Purpose.FILL);
-            cSet.enable(Purpose.FILLCOLOR);
-         }
-         break;
-      case Purpose.XFORMCB:
-         xform = (cast(ComboBoxText) w).getActive();
-         break;
-      default:
-         return;
-      }
-      aw.dirty = true;
-      reDraw();
-   }
-
-   void preResize(int oldW, int oldH)
+   override void preResize(int oldW, int oldH)
    {
       double hr = cast(double) width/oldW;
       double vr = cast(double) height/oldH;
@@ -165,7 +123,7 @@ class Heart: LineSet
 
    override void onCSMoreLess(int instance, bool more, bool coarse)
    {
-      dummy.grabFocus();
+      focusLayout();
       int[] xft = [0,5,6,7];
       int tt = xft[xform];
       modifyTransform(tt, more, coarse);
@@ -174,7 +132,7 @@ class Heart: LineSet
       reDraw();
    }
 
-   void render(Context c)
+   override void render(Context c)
    {
       c.save();
       c.setLineWidth(lineWidth);

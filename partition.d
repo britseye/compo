@@ -50,7 +50,7 @@ class Partition: ACBase
    int choice;
    bool outline, vertical;
 
-   void syncControls()
+   override void syncControls()
    {
       cSet.toggling(false);
       cSet.toggling(true);
@@ -84,7 +84,7 @@ class Partition: ACBase
       positionControls(true);
    }
 
-   void extendControls()
+   override void extendControls()
    {
       int vp = cSet.cy;
 
@@ -115,23 +115,10 @@ class Partition: ACBase
       cSet.cy= vp+40;
    }
 
-   void preResize(int oldW, int oldH)
-   {
-   }
-
-   void onCSNotify(Widget w, Purpose wid)
+   override bool specificNotify(Widget w, Purpose wid)
    {
       switch (wid)
       {
-      case Purpose.COLOR:
-         dummy.grabFocus();
-         lastOp = push!RGBA(this, baseColor, OP_COLOR);
-         setColor(false);
-         break;
-      case Purpose.FILLCOLOR:
-         lastOp = push!RGBA(this, altColor, OP_ALTCOLOR);
-         setColor(true);
-         break;
       case Purpose.FILLOUTLINE:
          outline = !outline;
          break;
@@ -165,19 +152,18 @@ class Partition: ACBase
             vOff = 0;
             break;
          default:
-            return;
+            return false;
          }
          break;
       default:
-         return;
+         return false;
       }
-      aw.dirty = true;
-      reDraw();
+      return true;
    }
 
-   void onCSMoreLess(int instance, bool more, bool coarse)
+   override void onCSMoreLess(int instance, bool more, bool coarse)
    {
-      dummy.grabFocus();
+      focusLayout();
       int direction = more? 1: -1;
       if (coarse)
          direction *= 2;
@@ -232,9 +218,9 @@ class Partition: ACBase
    }
 
    // For keyboard arrow keys
-   void move(int direction, bool far)
+   override void move(int direction, bool far)
    {
-      dummy.grabFocus();
+      focusLayout();
       lastOp = pushC!Coord(this, Coord(hOff, vOff), OP_MOVE);
       double d = far? 10.0: 1.0;
       if (direction == 0 || direction == 2)
@@ -354,7 +340,7 @@ class Partition: ACBase
       c.closePath();
    }
 
-   void render(Context c)
+   override void render(Context c)
    {
       c.setLineWidth(0.5);
       c.setSourceRgb(baseColor.red, baseColor.green, baseColor.blue);

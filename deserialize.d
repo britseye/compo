@@ -19,9 +19,7 @@ import serial;
 import richtext;
 import arrow;
 import bevel;
-import box;
 import circle;
-import connector;
 import corner;
 import cross;
 import fancytext;
@@ -42,6 +40,12 @@ import rgradient;
 import svgimage;
 import rsvgwrap;
 import polycurve;
+import strokeset;
+import drawing;
+import pointset;
+import regpc;
+import controlset;
+import crescent;
 
 import std.stdio;
 import std.conv;
@@ -252,6 +256,8 @@ class Deserializer
    {
       try
       {
+         getNV(__LINE__, "dWidth");   // These are not used directly by COMPO, but needed by other tools
+         getNV(__LINE__, "dHeight");
          getNV(__LINE__, "rootItems");
          int rootItems = to!int(val);
          int count = 0;
@@ -457,21 +463,17 @@ class Deserializer
          child = new Bevel(aw, parent);
          setupBevel(cast(Bevel) child);
          break;
-      case AC_BOX:
-         child = new Box(aw, parent);
-         setupBox(cast(Box) child);
-         break;
       case AC_CIRCLE:
          child = new Circle(aw, parent);
          setupCircle(cast(Circle) child);
          break;
-      case AC_CONNECTOR:
-         child = new Connector(aw, parent);
-         setupConnector(cast(Connector) child);
-         break;
       case AC_CORNER:
          child = new Corner(aw, parent);
          setupCorner(cast(Corner) child);
+         break;
+      case AC_CRESCENT:
+         child = new Crescent(aw, parent);
+         setupCrescent(cast(Crescent) child);
          break;
       case AC_CROSS:
          child = new Cross(aw, parent);
@@ -512,7 +514,11 @@ class Deserializer
          // so must reconstitute the scaled one
          if ((cast(PixelImage) child).useFile)
             (cast(PixelImage) child).getPxb();
-         (cast(PixelImage) child).doScaling();
+         (cast(PixelImage) child).setScaling();
+         break;
+      case AC_POINTSET:
+         child = new PointSet(aw, parent);
+         setupPointSet(cast(PointSet) child);
          break;
       case AC_POLYGON:
          child = new Polygon(aw, parent);
@@ -521,6 +527,10 @@ class Deserializer
       case AC_POLYCURVE:
          child = new Polycurve(aw, parent);
          setupPolycurve(cast(Polycurve) child);
+         break;
+      case AC_STROKESET:
+         child = new StrokeSet(aw, parent);
+         setupStrokeSet(cast(StrokeSet) child);
          break;
       case AC_RANDOM:
          child = new Random(aw, parent);
@@ -534,6 +544,10 @@ class Deserializer
          child = new RegularPolygon(aw, parent);
          setupRegularPolygon(cast(RegularPolygon) child);
          break;
+      case AC_REGPOLYCURVE:
+         child = new RegularPolycurve(aw, parent);
+         setupRegularPolycurve(cast(RegularPolycurve) child);
+         break;
       case AC_RGRADIENT:
          child = new RGradient(aw, parent);
          setupRGradient(cast(RGradient) child);
@@ -541,6 +555,10 @@ class Deserializer
       case AC_SEPARATOR:
          child = new Separator(aw, parent);
          setupSeparator(cast(Separator) child);
+         break;
+      case AC_DRAWING:
+         child = new Drawing(aw, parent, "");
+         setupDrawing(cast(Drawing) child);
          break;
       case AC_REFERENCE:
          child = new Reference(aw, parent);
@@ -610,7 +628,7 @@ class Deserializer
       x.tb.setText(text);
       x.te.modifyFont(x.pfd);
       x.te.overrideColor(x.te.getStateFlags(), x.baseColor);
-      x.dirty = true;
+      x.afterDeserialize();
 }
 
    void setupUSPS(USPS x)
@@ -630,7 +648,7 @@ class Deserializer
       int n = to!int(val);
       string text = cast(string) readBytes(n);
       x.tb.setText(text);
-      x.dirty = true;
+      x.afterDeserialize();
    }
 
    void setupSerial(Serial x)
@@ -656,7 +674,7 @@ class Deserializer
       x.tb.setText(text);
       x.te.modifyFont(x.pfd);
       x.te.overrideColor(x.te.getStateFlags(), x.baseColor);
-      x.dirty = true;
+      x.afterDeserialize();
    }
 
    void setupRichText(RichText x)
@@ -681,7 +699,7 @@ class Deserializer
       x.textBlock.setAlignment(cast(PangoAlignment) x.alignment);
       x.te.modifyFont(x.pfd);
       x.te.overrideColor(x.te.getStateFlags(), x.baseColor);
-      x.dirty = true;
+      x.afterDeserialize();
    }
 
    void setupFancyText(FancyText x)
@@ -719,6 +737,7 @@ class Deserializer
       x.te.modifyFont(x.pfd);
       x.te.overrideColor(x.te.getStateFlags(), x.baseColor);
       x.dirty = true;
+      x.afterDeserialize();
    }
 
    void setupMorphText(MorphText x)
@@ -750,8 +769,7 @@ class Deserializer
       int n = to!int(val);
       string text = cast(string) readBytes(n);
       x.tb.setText(text);
-      x.changeMorph();
-      x.createMorphDlg();
+      x.afterDeserialize();
    }
 
    void setupArrow(Arrow x)
@@ -778,6 +796,7 @@ class Deserializer
       x.oPath = s2Path(val, __LINE__);
       getNV(__LINE__, "tf");
       x.tf = makeTransform(val);
+      x.afterDeserialize();
    }
 
    void setupBevel(Bevel x)
@@ -788,22 +807,7 @@ class Deserializer
       x.baseColor = makeColor(val);
       getNV(__LINE__, "bt");
       x.bt = to!double(val);
-   }
-
-   void setupBox(Box x)
-   {
-      basics(x);
-
-      getNV(__LINE__, "baseColor");
-      x.baseColor = makeColor(val);
-      getNV(__LINE__, "lineWidth");
-      x.lineWidth = to!double(val);
-      getNV(__LINE__, "topLeft");
-      x.topLeft = s2Coord(val, __LINE__);
-      getNV(__LINE__, "bottomRight");
-      x.bottomRight = s2Coord(val, __LINE__);
-      getNV(__LINE__, "les");
-      x.les = to!bool(val);
+      x.afterDeserialize();
    }
 
    void setupCircle(Circle x)
@@ -816,28 +820,15 @@ class Deserializer
       x.altColor = makeColor(val);
       getNV(__LINE__, "lineWidth");
       x.lineWidth = to!double(val);
+      getNV(__LINE__, "radius");
+      // We don't use this for normal deserialization
       getNV(__LINE__, "tf");
       x.tf = makeTransform(val);
       getNV(__LINE__, "fill");
       x.fill = to!bool(val);
       getNV(__LINE__, "solid");
       x.solid = to!bool(val);
-   }
-
-   void setupConnector(Connector x)
-   {
-      basics(x);
-
-      getNV(__LINE__, "baseColor");
-      x.baseColor = makeColor(val);
-      getNV(__LINE__, "lineWidth");
-      x.lineWidth = to!double(val);
-      getNV(__LINE__, "start");
-      x.start = s2Coord(val, __LINE__);
-      getNV(__LINE__, "end");
-      x.end = s2Coord(val, __LINE__);
-      getNV(__LINE__, "les");
-      x.les = to!bool(val);
+      x.afterDeserialize();
    }
 
    void setupCorner(Corner x)
@@ -860,6 +851,37 @@ class Deserializer
       x.relto = to!int(val);
       getNV(__LINE__, "which");
       x.which = to!int(val);
+   }
+
+   void setupCrescent(Crescent x)
+   {
+      basics(x);
+
+      getNV(__LINE__, "baseColor");
+      x.baseColor = makeColor(val);
+      getNV(__LINE__, "altColor");
+      x.altColor = makeColor(val);
+      getNV(__LINE__, "lineWidth");
+      x.lineWidth = to!double(val);
+      getNV(__LINE__, "les");
+      x.les = to!bool(val);
+      getNV(__LINE__, "fill");
+      x.fill = to!bool(val);
+      getNV(__LINE__, "solid");
+      x.solid = to!bool(val);
+      getNV(__LINE__, "center");
+      x.center = s2Coord(val, __LINE__);
+      getNV(__LINE__, "r0");
+      x.r0 = to!double(val);
+      getNV(__LINE__, "r1");
+      x.r1 =to!double(val);
+      getNV(__LINE__, "d");
+      x.d =to!double(val);
+      getNV(__LINE__, "guidelines");
+      x.guidelines =to!bool(val);
+      getNV(__LINE__, "tf");
+      x.tf = makeTransform(val);
+      x.afterDeserialize();
    }
 
    void setupCross(Cross x)
@@ -892,6 +914,7 @@ class Deserializer
       x.urW = to!double(val);
       getNV(__LINE__, "cbW");
       x.cbW = to!double(val);
+      x.afterDeserialize();
    }
 
    void setupFader(Fader x)
@@ -910,6 +933,7 @@ class Deserializer
       x.pin = to!bool(val);
       getNV(__LINE__, "outline");
       x.outline = to!bool(val);
+      x.afterDeserialize();
    }
 
    void setupHeart(Heart x)
@@ -932,6 +956,7 @@ class Deserializer
       x.fill = to!bool(val);
       getNV(__LINE__, "solid");
       x.solid = to!bool(val);
+      x.afterDeserialize();
    }
 
    void setupLine(Line x)
@@ -948,6 +973,7 @@ class Deserializer
       x.oPath = s2Path(val, __LINE__);
       getNV(__LINE__, "tf");
       x.tf = makeTransform(val);
+      x.afterDeserialize();
    }
 
    void setupLGradient(LGradient x)
@@ -955,24 +981,21 @@ class Deserializer
       basics(x);
       getNV(__LINE__, "baseColor");
       x.baseColor = makeColor(val);
-      getNV(__LINE__, "rw");
-      x.rw = to!double(val);
-      getNV(__LINE__, "rh");
-      x.rh = to!double(val);
+      getNV(__LINE__, "fw");
+      x.fw = to!double(val);
+      getNV(__LINE__, "fp");
+      x.fp = to!double(val);
       getNV(__LINE__, "maxOpacity");
       x.maxOpacity = to!double(val);
       getNV(__LINE__, "gType");
       x.gType = to!int(val);
       getNV(__LINE__, "nStops");
       x.nStops = to!int(val);
-      getNV(__LINE__, "outline");
-      x.outline = to!bool(val);
-      getNV(__LINE__, "pin");
-      x.pin = to!bool(val);
       getNV(__LINE__, "revfade");
       x.revfade = to!bool(val);
       getNV(__LINE__, "orient");
       x.orient = to!bool(val);
+      x.afterDeserialize();
    }
 
    void setupPattern(Pattern x)
@@ -989,6 +1012,7 @@ class Deserializer
       x.unit = to!double(val);
       getNV(__LINE__, "choice");
       x.choice = to!int(val);;
+      x.afterDeserialize();
    }
 
    void setupPixelImage(PixelImage x)
@@ -1001,10 +1025,8 @@ class Deserializer
       x.scaleType = to!int(val);
       getNV(__LINE__, "sadj");
       x.sadj = to!double(val);
-      getNV(__LINE__, "cw");
-      x.cw = to!int(val);
-      getNV(__LINE__, "ch");
-      x.ch = to!int(val);
+      getNV(__LINE__, "scale4Printer");
+      x.scale4Printer = to!bool(val);
       getNV(__LINE__, "useFile");
       x.useFile = to!bool(val);
       getNV(__LINE__, "data_length");
@@ -1021,6 +1043,7 @@ class Deserializer
       {
          x.getPxb();
       }
+      x.afterDeserialize();
    }
 
    void setupSVGImage(SVGImage x)
@@ -1049,6 +1072,7 @@ class Deserializer
       }
       else
          x.svgr = new SVGRenderer(x.fileName);
+      x.afterDeserialize();
    }
 
    void setupPolycurve(Polycurve x)
@@ -1081,9 +1105,57 @@ class Deserializer
       ca.length = n;
       si.readExact(&ca[0], n);
       x.pcPath = s2PCPath(cast(string) ca, __LINE__);
+      x.afterDeserialize();
+   }
 
-      x.constructing = false;
-      x.dirty = true;
+   void setupStrokeSet(StrokeSet x)
+   {
+      basics(x);
+
+      getNV(__LINE__, "baseColor");
+      x.baseColor = makeColor(val);
+      getNV(__LINE__, "altColor");
+      x.altColor = makeColor(val);
+      getNV(__LINE__, "lineWidth");
+      x.lineWidth = to!double(val);
+      getNV(__LINE__, "les");
+      x.les = to!bool(val);
+      getNV(__LINE__, "fill");
+      x.fill = to!bool(val);
+      getNV(__LINE__, "solid");
+      x.solid = to!bool(val);
+      getNV(__LINE__, "center");
+      x.center = s2Coord(val, __LINE__);
+      getNV(__LINE__, "activeCoords");
+      x.activeCoords = to!int(val);
+      getNV(__LINE__, "current");
+      x.current = to!int(val);
+      getNV(__LINE__, "tf");
+      x.tf = makeTransform(val);
+      getNV(__LINE__, "data_length");
+      int n = to!int(val);
+      char[] ca;
+      ca.length = n;
+      si.readExact(&ca[0], n);
+      x.pcPath = s2PCPath(cast(string) ca, __LINE__);
+      x.afterDeserialize();
+   }
+
+   void setupPointSet(PointSet x)
+   {
+      basics(x);
+
+      getNV(__LINE__, "baseColor");
+      x.baseColor = makeColor(val);
+      getNV(__LINE__, "lineWidth");
+      x.lineWidth = to!double(val);
+      getNV(__LINE__, "center");
+      x.center = s2Coord(val, __LINE__);
+      getNV(__LINE__, "oPath");
+      x.oPath = s2Path(val, __LINE__);
+      getNV(__LINE__, "tf");
+      x.tf = makeTransform(val);
+      x.afterDeserialize();
    }
 
    void setupPolygon(Polygon x)
@@ -1108,7 +1180,7 @@ class Deserializer
       x.oPath = s2Path(val, __LINE__);
       getNV(__LINE__, "tf");
       x.tf = makeTransform(val);
-      x.constructing = false;
+      x.afterDeserialize();
    }
 
    void setupRandom(Random x)
@@ -1146,6 +1218,7 @@ class Deserializer
          t.c6 = to!double(sa[5]);
          x.si[i] = t;
       }
+      x.afterDeserialize();
    }
 
    void setupRect(rect.Rect x)
@@ -1160,20 +1233,21 @@ class Deserializer
       x.lineWidth = to!double(val);
       getNV(__LINE__, "les");
       x.les = to!bool(val);
+      getNV(__LINE__, "square");
+      x.square = to!bool(val);
       getNV(__LINE__, "rounded");
       x.rounded = to!bool(val);
       getNV(__LINE__, "fill");
       x.fill = to!bool(val);
       getNV(__LINE__, "solid");
       x.solid = to!bool(val);
-      getNV(__LINE__, "topLeft");
-      x.topLeft = s2Coord(val, __LINE__);
-      getNV(__LINE__, "bottomRight");
-      x.bottomRight =  s2Coord(val, __LINE__);
+      getNV(__LINE__, "ar");
+      x.ar = to!double(val);
       getNV(__LINE__, "rr");
       x.rr =  to!double(val);
       getNV(__LINE__, "tf");
       x.tf = makeTransform(val);
+      x.afterDeserialize();
    }
 
    void setupRegularPolygon(RegularPolygon x)
@@ -1206,7 +1280,48 @@ class Deserializer
       x.oPath = s2Path(val, __LINE__);
       getNV(__LINE__, "tf");
       x.tf = makeTransform(val);
+      x.afterDeserialize();
+   }
 
+   void setupRegularPolycurve(RegularPolycurve x)
+   {
+      basics(x);
+
+      getNV(__LINE__, "baseColor");
+      x.baseColor = makeColor(val);
+      getNV(__LINE__, "altColor");
+      x.altColor = makeColor(val);
+      getNV(__LINE__, "lineWidth");
+      x.lineWidth = to!double(val);
+      getNV(__LINE__, "les");
+      x.les = to!bool(val);
+      getNV(__LINE__, "sides");
+      x.sides = to!int(val);
+      getNV(__LINE__, "fill");
+      x.fill = to!bool(val);
+      getNV(__LINE__, "solid");
+      x.solid = to!bool(val);
+      getNV(__LINE__, "target");
+      x.target = to!double(val);
+      getNV(__LINE__, "inner");
+      x.inner = to!double(val);
+      getNV(__LINE__, "outer");
+      x.outer = to!double(val);
+      getNV(__LINE__, "cangle");
+      x.cangle = to!double(val);
+      getNV(__LINE__, "laglead");
+      x.laglead = to!double(val);
+      getNV(__LINE__, "cpos");
+      x.cpos = cast(Purpose) to!int(val);
+      getNV(__LINE__, "alternating");
+      x.alternating = to!bool(val);
+      getNV(__LINE__, "prop");
+      x.prop = to!double(val);
+      getNV(__LINE__, "center");
+      x.center = s2Coord(val, __LINE__);
+      getNV(__LINE__, "tf");
+      x.tf = makeTransform(val);
+      x.afterDeserialize();
    }
 
    void setupRGradient(RGradient x)
@@ -1228,7 +1343,9 @@ class Deserializer
       x.mark = to!bool(val);
       getNV(__LINE__, "revfade");
       x.revfade = to!bool(val);
+      x.afterDeserialize();
    }
+
 
    void setupSeparator(Separator x)
    {
@@ -1250,6 +1367,25 @@ class Deserializer
       x.les = to!bool(val);
       getNV(__LINE__, "horizontal");
       x.horizontal = to!bool(val);
+      x.afterDeserialize();
+   }
+
+   void setupDrawing(Drawing x)
+   {
+      basics(x);
+
+      getNV(__LINE__, "baseColor");
+      x.baseColor = makeColor(val);
+      getNV(__LINE__, "lineWidth");
+      x.lineWidth = to!double(val);
+      getNV(__LINE__, "les");
+      x.les = to!bool(val);
+      getNV(__LINE__, "dName");
+      x.dName = val;
+      getNV(__LINE__, "tf");
+      x.tf = makeTransform(val);
+      x.spec = aw.shapeLib.getEntry(x.dName);
+      x.afterDeserialize();
    }
 
    void setupReference(Reference x)
@@ -1264,6 +1400,7 @@ class Deserializer
          x.that = readContainer(x);
       else
          x.that = null;
+      x.afterDeserialize();
    }
 }
 

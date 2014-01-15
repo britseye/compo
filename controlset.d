@@ -77,14 +77,20 @@ enum Purpose
    SCALENON,
    HORIZONTAL,
    VERTICAL,
+   C00,
+   C01,
+   C10,
+   C11,
 
    R_CHECKBUTTONS = 2000,
+   HIDE,
    EDITMODE,
    CENTERTEXT,
    SHRINK2FIT,
    HRDATA,
    FILL,
    FILLOUTLINE,
+   PIN,
    SOLID,
    ROUNDED,
    GLWHICH,
@@ -92,7 +98,11 @@ enum Purpose
    PRINTRANDOM,
    FADELEFT,
    FADETOP,
+   SHOWMARKERS,
    USEFILE,
+   ZOOMED,
+   PROTECT,
+   ANTI,
 
    R_SPINBUTTONS = 3000,
 
@@ -100,6 +110,8 @@ enum Purpose
    XFORMCB,
    MORPHCB,
    PATTERN,
+   LOCALCTR,
+   DCOLORS,
 
    R_GP = 5000,
    ALIGNMENT,
@@ -119,6 +131,9 @@ enum Purpose
    LINEPARAMS,
    TEXTPARAMS,
    TORIENT,
+   INFO1,
+   INFO2,
+   INFO3,
    COMPASS,
    MLABEL0,
    MLABEL1,
@@ -152,6 +167,7 @@ class ControlSet
    int thisId;
    int cx, cy;
    bool noToggle, shift, control;
+   Label infoLabel;
 
    this(CSTarget t)
    {
@@ -188,6 +204,22 @@ class ControlSet
       WidgetInfo ci = WidgetInfo(w, p, si, id);
       wia ~= ci;
       windex[id] = wia.length-1;
+   }
+
+   void addInfo(string info)
+   {
+      info = "<span foreground=\"#aa6666\">"~info~"</span>";
+      infoLabel = new Label("");
+      infoLabel.setMarkup(info);
+      add(infoLabel, ICoord(0, cy+35), Purpose.INFO1);
+   }
+
+   void setInfo(string info)
+   {
+      if (infoLabel is null)
+         return;
+      info = "<span foreground=\"#aa6666\">"~info~"</span>";
+      infoLabel.setMarkup(info);
    }
 
    void addPseudo(PseudoWidget pw, Purpose p, int instance)
@@ -460,12 +492,12 @@ class LineParams: MOLLineThick
 
       Button b = new Button("_Color");
       // add with no handler
-      cs.add(b, ICoord(cx, cy), Purpose.COLOR, initState);
+      cs.add(b, ICoord(cx, cy-5), Purpose.COLOR, initState);
 
       Label l = new Label("Line Thickness:");
-      cs.add(l, ICoord(cx+60, cy+5), Purpose.LABEL, initState);
+      cs.add(l, ICoord(cx+60, cy), Purpose.LABEL, initState);
 
-      cy += 35;
+      cy += 24;
       if (withLineCap)
       {
          RadioButton rb1 = new RadioButton("Line ends round", true);
@@ -1142,7 +1174,7 @@ class MOLLineThick: PseudoWidget
    DrawingArea da;
    Label txt;
    Timeout t;
-   int current = 5;
+   double current = 0.5;
    double lt;
    int tstate;
    int direction;
@@ -1173,21 +1205,12 @@ class MOLLineThick: PseudoWidget
       if (name == "linewidth")
       {
          lt = dval;
-         current = to!int(lt*10);
          scope auto w = appender!string();
          formattedWrite(w, "%1.1f", lt);
          txt.setText(w.data);
       }
    }
-/*
-   void setUp(double lt)
-   {
-      current = to!int(lt*10);
-      scope auto w = appender!string();
-      formattedWrite(w, "%1.1f", lt);
-      txt.setText(w.data);
-   }
-*/
+
    bool drawIt(Context c, Widget w)
    {
       if (sensitive)
@@ -1271,26 +1294,27 @@ class MOLLineThick: PseudoWidget
       }
       if (direction > 0)
       {
-         if (current < 20 && current >= 5)
-            current += 5;
-         else if (current >= 20)
-            current += 10;
+         if (lt < 2)
+            lt += 0.1;
          else
-            current += 1;
+            lt += 0.5;
       }
       else
       {
-         if (current < 20 && current > 5)
-            current -= 5;
-         else if (current > 20)
-            current -= 10;
+         if (lt > 2)
+         {
+            if (lt-0.5 < 2)
+               lt = 2;
+            else lt -= 0.5;
+         }
          else
          {
-            if (current > 1)
-               current -= 1;
+            if (lt-0.1 < 0)
+               lt = 0;
+            else
+               lt -= 0.1;
          }
       }
-      lt = (cast(double) current)*0.1;
       scope auto w = appender!string();
       formattedWrite(w, "%1.1f", lt);
       txt.setText(w.data);
@@ -1404,15 +1428,15 @@ class RenameGadget: PseudoWidget
       cs.addPseudo(this, Purpose.RENAME, 0);
       initState = initialState? 1: 0;
 
-      Label nnl = new Label("Item Name");
+      Label nnl = new Label("Name");
       cs.add(nnl, ICoord(cx, cy+3), Purpose.LABEL, initState);
       entry = new Entry();
       entry.setSizeRequest(150, -1);
       entry.setText(origName);
-      cs.add(entry, ICoord(cx+80, cy), Purpose.NAMEENTRY, initState);
-      Button ok = new Button("Set");
-      ok.addOnClicked(&onSetName);
-      cs.add(ok, ICoord(cx+240, cy-1), Purpose.SETNAME, initState, true);
+      entry.setTooltipText("Choose a name for this item/layer.\nPress enter to set it.");
+      entry.addOnActivate(&onSetName);
+      cs.host.setNameEntry(entry);
+      cs.add(entry, ICoord(cx+45, cy), Purpose.NAMEENTRY, initState);
    }
 
    void enable()
@@ -1441,9 +1465,9 @@ class RenameGadget: PseudoWidget
       entry.grabFocus();
    }
 
-   void onSetName(Button b)
+   void onSetName(Entry e)
    {
-      string s = entry.getText();
+      string s = e.getText();
       target.onCSNameChange(s);
    }
 }

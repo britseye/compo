@@ -47,7 +47,7 @@ class Corner : LineSet
    int relto;
    int which;
 
-   void syncControls()
+   override void syncControls()
    {
       cSet.setLineParams(lineWidth);
       cSet.toggling(false);
@@ -110,7 +110,7 @@ class Corner : LineSet
       return ++nextOid;
    }
 
-   void extendControls()
+   override void extendControls()
    {
       int vp = cSet.cy;;
 
@@ -145,64 +145,43 @@ class Corner : LineSet
       cSet.cy = vp+30;
    }
 
-   void preResize(int oldW, int oldH)
-   {
-   }
-
-   void onCSNotify(Widget w, Purpose wid)
+   override bool specificNotify(Widget w, Purpose wid)
    {
       switch (wid)
       {
-      case Purpose.COLOR:
-         lastOp = push!RGBA(this, baseColor, OP_COLOR);
-         setColor(false);
-         break;
-      case Purpose.LINEWIDTH:
-         lastOp = pushC!double(this, lineWidth, OP_THICK);
-         lineWidth = (cast(SpinButton) w).getValue();
-         break;
-      case Purpose.LESROUND:
-         if ((cast(RadioButton) w).getActive())
-            les = false;
-         break;
-      case Purpose.LESSHARP:
-         if ((cast(RadioButton) w).getActive())
-            les = true;
-         break;
       case Purpose.TOPLEFT:
          if (which == TL)
-            return;
+            return true;
          lastOp = push!int(this, which, OP_IV0);
          which = TL;
          break;
       case Purpose.TOPRIGHT:
          if (which == TR)
-            return;
+            return true;
          lastOp = push!int(this, which, OP_IV1);
          which = TR;
          break;
       case Purpose.BOTTOMLEFT:
          if (which == BL)
-            return;
+            return true;
          lastOp = push!int(this, which, OP_IV2);
          which = BL;
          break;
       case Purpose.BOTTOMRIGHT:
          if (which == BR)
-            return;
+            return true;
          lastOp = push!int(this, which, OP_IV3);
          which = BR;
          break;
       default:
-         break;
+         return false;
       }
-      aw.dirty = true;
-      reDraw();
+      return true;
    }
 
-   void onCSMoreLess(int instance, bool more, bool coarse)
+   override void onCSMoreLess(int instance, bool more, bool coarse)
    {
-      dummy.grabFocus();
+      focusLayout();
       int n = more? 1: -1;
       if (coarse)
          n *= 10;
@@ -226,7 +205,7 @@ class Corner : LineSet
       reDraw();
    }
 
-   bool specificUndo(CheckPoint cp)
+   override bool specificUndo(CheckPoint cp)
    {
       switch (cp.type)
       {
@@ -254,7 +233,7 @@ class Corner : LineSet
       return true;
    }
 
-   void render(Context c)
+   override void render(Context c)
    {
       c.setLineWidth(lineWidth);
       c.setLineJoin(les? CairoLineJoin.MITER: CairoLineJoin.ROUND);

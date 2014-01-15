@@ -31,7 +31,7 @@ import gtk.Entry;
 import gtk.TextView;
 import gtk.TextBuffer;
 import gtk.ToggleButton;
-import gtk.RadioButton;
+import gtk.CheckButton;
 import gtk.Button;
 import gtk.EventBox;
 import gtk.Label;
@@ -52,6 +52,7 @@ import pango.PgFontDescription;
 import cairo.Surface;
 import cairo.ImageSurface;
 import cairo.Context;
+import cairo.Matrix;
 import gtkc.cairotypes;
 import cairo.Matrix;
 import gtk.ColorSelection;
@@ -105,6 +106,20 @@ enum
    OP_ALIGN,
    OP_PATH,
    OP_PARAMS,
+   OP_INNER,
+   OP_TARGET,
+   OP_OUTER,
+   OP_CANGLE,
+   OP_LAGLEAD,
+   OP_PROP,
+   OP_C00,
+   OP_C01,
+   OP_C10,
+   OP_C11,
+   OP_MC0,
+   OP_MC1,
+   OP_MC2,
+   OP_MC3,
 
    OP_UNDEF
 }
@@ -127,11 +142,13 @@ struct CheckPoint
       Coord coord;
       double dVal;
       int iVal;
+      bool boolVal;
       Coord[] path;
       ubyte[] ubbuf;
       PathItem[] pcPath;
       Transform transform;
       ParamBlock paramBlock;
+      PartColor partColor;
    }
 }
 alias Coord[] Path_t;
@@ -182,6 +199,16 @@ int push(T)(ACBase that, T t, int op)
    else static if (is(T == int))
    {
       that.lcp.iVal = t;
+      that.lcp.type = op;
+   }
+   else static if (is(T == bool))
+   {
+      that.lcp.boolVal = t;
+      that.lcp.type = op;
+   }
+   else static if (is(T == PartColor))
+   {
+      that.lcp.partColor = t;
       that.lcp.type = op;
    }
    that.pushOp(that.lcp);
@@ -238,6 +265,16 @@ int pushC(T)(ACBase that, T t, int op)
       that.lcp.iVal = t;
       that.lcp.type = op;
    }
+   else static if (is(T == bool))
+   {
+      that.lcp.boolVal = t;
+      that.lcp.type = op;
+   }
+   else static if (is(T == PartColor))
+   {
+      that.lcp.partColor = t;
+      that.lcp.type = op;
+   }
    that.pushOp(that.lcp);
    return op;
 }
@@ -255,15 +292,16 @@ enum
    AC_LINE,
    AC_RECT,
    AC_CIRCLE,
+   AC_CURVE,
    AC_REGPOLYGON,
+   AC_REGPOLYCURVE,
+   AC_POINTSET,
    AC_POLYGON,
    AC_POLYCURVE,
    AC_ARROW,
    AC_HEART,
    AC_BARCODE,
    AC_SEPARATOR,
-   AC_BOX,
-   AC_CONNECTOR,
    AC_CORNER,
    AC_CRESCENT,
    AC_CROSS,
@@ -276,15 +314,20 @@ enum
    AC_REFERENCE,
    AC_SVGIMAGE,
    AC_STROKESET,
+   AC_DRAWING,
+   AC_MESH,
+   AC_MOON,
+   AC_TRIANGLE,
+
    AC_CONTAINER = 1000,
    AC_DUMMY,
    AC_ROOT
 }
 
 string[] _ACTypeNames = [ "Text", "USPS Address", "Fancy Text", "Morphed Text", "Serial Number", "Rich Text", "Pattern",
-                          "PixelImage", "Line", "Rectangle", "Circle", "Regular Polygon", "Polygon", "Polycurve", "Arrow", "Heart", "Barcode",
-                          "Separator", "Box", "Connector", "Corner", "Crescent", "Cross", "Bevel", "Fader", "LGradient", "RGradient",
-                          "Random", "Partition", "Reference", "SVGImage", "StrokeSet" ];
+                          "PixelImage", "Line", "Rectangle", "Circle", "Curve", "Regular Polygon", "Regular Polycurve", "PointSet", "Polygon", "Polycurve", "Arrow", "Heart", "Barcode",
+                          "Separator", "Corner", "Crescent", "Cross", "Bevel", "Fader", "LGradient", "RGradient",
+                          "Random", "Partition", "Reference", "SVGImage", "StrokeSet", "Drawing", "Mesh", "Moon", "Triangle" ];
 string ACTypeNames(int t)
 {
    if (t < AC_CONTAINER)
@@ -314,20 +357,12 @@ enum ACGroups
    CONTAINER
 }
 
-class DummyEntry: Entry
-{
-   bool onKeyPressEvent(Event event)
-   {
-      return true;
-   }
-}
-
 class ACBase : CSTarget     // Area Composition base class
 {                           // Implements the control set notification methods
    static ACBase lastRemoved;
    static CheckPoint emptyCP;
    AppWindow aw;
-   bool dirty;
+   bool dirty, hidden;
    int lastOp;
    CheckPoint[] cpStack;
    int cpStackLen;
@@ -344,21 +379,25 @@ class ACBase : CSTarget     // Area Composition base class
    ICoord[] wpos;
    Frame dframe;
    Layout layout;
-   //DummyEntry dummy;
    DrawingArea da;
-   Entry dummy;
    int renderCalled;
    Surface background;
    ACBase skip;
    RGBA baseColor, altColor;
    Coord mPos;
-   bool isMoved, usingCD, cSetRealized, noGC, printFlag;
+   bool isMoved, usingCD, cSetRealized, noGC, printFlag, nameWasSet;
 
    int width, height;
-   double hOff, vOff;
+   double hOff, vOff, lpX, lpY;
    ACBase parent;
    ACBase[] children;
+   Entry nameEntry;
    ControlsDlg controlsDlg;
+
+   cairo_matrix_t tmData;
+   Matrix tm;
+   Transform tf;
+   int xform;
 
    this(AppWindow w, ACBase _parent, string _name, uint _type)
    {
@@ -372,7 +411,7 @@ class ACBase : CSTarget     // Area Composition base class
          cpStack.length = cpStackLen;
       }
       csTop = -1;
-      hOff = vOff = 0.0;
+      hOff = vOff = lpX = lpY = 0.0;
       parent = _parent;
       isActiveChild = 0;
       typeName = ACTypeNames(type);
@@ -382,7 +421,7 @@ class ACBase : CSTarget     // Area Composition base class
          height = parent.height;
       }
       baseColor = new RGBA(0,0,0,1);
-      altColor = new RGBA(0,0,0,1);
+      altColor = new RGBA(1,1,1,1);
 
       if (aw !is null)  // The tree root does not need a layout etc
       {
@@ -391,13 +430,6 @@ class ACBase : CSTarget     // Area Composition base class
          layout.setEvents(GdkEventMask.KEY_PRESS_MASK | GdkEventMask.BUTTON_PRESS_MASK);
          layout.addOnKeyPress(&onKeyPress);
          layout.addOnButtonPress(&setFocusLayout);
-
-         dummy = new Entry();
-         dummy.setSizeRequest(3,-1);
-         //dummy = new Button("");
-         //dummy.setSizeRequest(4, 4);
-         layout.put(dummy, 20, 20);
-         dummy.show();
 
          da = new DrawingArea(width, height);
          da.setEvents(GdkEventMask.BUTTON_PRESS_MASK | GdkEventMask.BUTTON_RELEASE_MASK |
@@ -428,6 +460,7 @@ class ACBase : CSTarget     // Area Composition base class
       return w.data;
    }
 
+   void setNameEntry(Entry e) { nameEntry = e; }
    void onCSCompass(int instance, double angle, bool coarse) {}
    void onCSSaveSelection() {}
 
@@ -458,12 +491,45 @@ class ACBase : CSTarget     // Area Composition base class
       return cp;
    }
 
-   void undo() { writeln("ACBase undo - cto incorrectly set"); }
+   bool specificUndo(CheckPoint cp) { return false; }
+
+   void undo()
+   {
+      CheckPoint cp;
+      cp = popOp();
+      if (cp.type == 0)
+         return;
+      switch (cp.type)
+      {
+      case OP_MOVE:
+         Coord t = cp.coord;
+         hOff = t.x;
+         vOff = t.y;
+         lastOp = OP_UNDEF;
+         break;
+      default:
+         if (!specificUndo(cp))
+            return;
+         break;
+      }
+      aw.dirty = true;
+      reDraw();
+   }
 
    bool setFocusLayout(Event e, Widget w)
    {
-      dummy.grabFocus();
-      return false;
+      focusLayout();
+      return true;
+   }
+
+   void focusLayout()
+   {
+      if (nameEntry !is null)
+      {
+         nameEntry.grabFocus();
+         if (nameWasSet)
+            nameEntry.selectRegion(0,0);
+      }
    }
 
    bool onKeyPress(Event e, Widget w)
@@ -578,12 +644,6 @@ class ACBase : CSTarget     // Area Composition base class
       //da.queueDraw();
       cSet.reposition(ICoord(rpLm, rpTm+height+10), layout);
       layout.queueDraw();
-      /*
-      foreach (int i, Widget w; widgets)
-      {
-         layout.move(w, wpos[i].x, wpos[i].y+d);
-      }
-      */
 
       postResize(oldW, oldH);
       aw.dirty = true;
@@ -631,6 +691,7 @@ class ACBase : CSTarget     // Area Composition base class
    {
       aw.dirty = true;
       name = s;
+      nameWasSet = true;
       if (aw.tv !is null)
          aw.tv.queueDraw();
    }
@@ -639,6 +700,7 @@ class ACBase : CSTarget     // Area Composition base class
    {
       aw.dirty = true;
       name = newName;
+      nameWasSet = true;
       cSet.setHostName(name);
       if (aw.tv !is null)
          aw.tv.queueDraw();
@@ -818,7 +880,7 @@ class ACBase : CSTarget     // Area Composition base class
    // For keyboard arrow keys
    void move(int direction, bool far)
    {
-      dummy.grabFocus();
+      focusLayout();
       lastOp = pushC!Coord(this, Coord(hOff, vOff), OP_MOVE);
       double d = far? 10.0: 1.0;
       switch (direction)
@@ -842,14 +904,41 @@ class ACBase : CSTarget     // Area Composition base class
       reDraw();
    }
 
-   void onCSNotify(Widget w, Purpose) {}
+   bool specificNotify(Widget w, Purpose p) { return false; }
+
+   void onCSNotify(Widget w, Purpose wid)
+   {
+      switch (wid)
+      {
+      case Purpose.COLOR:
+         focusLayout();
+         lastOp = push!RGBA(this, baseColor, OP_COLOR);
+         setColor(false);
+         break;
+      case Purpose.FILLCOLOR:
+         focusLayout();
+         lastOp = push!RGBA(this, altColor, OP_ALTCOLOR);
+         setColor(true);
+         break;
+      case Purpose.HIDE:
+         hidden = !hidden;
+         break;
+      default:
+         if (!specificNotify(w, wid))
+            return;  // Ingore whatever
+         break;
+      }
+      aw.dirty = true;
+      reDraw();
+   }
+
    void onCSTextParam(Purpose p, string sv, int iv) {}
    void onCSLineWidth(double lw) {}
    void onCSMoreLess(int instance, bool more, bool coarse) {}
    void hideDialogs() {};
    string onCSInch(int id, int direction, bool coarse)
    {
-      dummy.grabFocus();
+      focusLayout();
       lastOp = pushC!Coord(this, Coord(hOff, vOff), OP_MOVE);
       bool skip = false;
       double d = coarse? 5.0: 0.5;
@@ -890,19 +979,24 @@ class ACBase : CSTarget     // Area Composition base class
       return writer.data;
    }
 
-   bool installColor() { return true; }
+   bool installColor(RGBA c) { return true; }
 
    bool applyColor(RGBA c, bool alt)
    {
-      if (alt)
-         altColor = c;
-      else
-         baseColor = c;
-      bool rv = installColor();
+      bool rv = installColor(c);
+      if (rv)
+      {
+         if (alt)
+            altColor = c;
+         else
+            baseColor = c;
+      }
       reDraw();
       return rv;
    }
 
+   // returns true if the color was applied to base or alt,
+   // false if it was used for something else.
    bool setColor(bool alt = false)
    {
       dirty = true;
@@ -919,6 +1013,24 @@ class ACBase : CSTarget     // Area Composition base class
       cs.getCurrentRgba(color);
       csd.destroy();
       return applyColor(color, alt);
+   }
+
+   RGBA getDColor(RGBA current)
+   {
+      dirty = true;
+      RGBA color = new RGBA();
+      ColorSelectionDialog csd = new ColorSelectionDialog("Choose a Color");
+      ColorSelection cs = csd.getColorSelection();
+      cs.setCurrentRgba(current);
+      int response = csd.run();
+      if (response != ResponseType.OK)
+      {
+         csd.destroy();
+         return null;
+      }
+      cs.getCurrentRgba(color);
+      csd.destroy();
+      return color;
    }
 
    string reportPosition(int id = 0)
@@ -945,7 +1057,7 @@ class ACBase : CSTarget     // Area Composition base class
       e.getState(state);
       if ((!state & GdkModifierType.BUTTON1_MASK))
          return true;
-      dummy.grabFocus();
+      focusLayout();
       lastOp = pushC!Coord(this, Coord(hOff, vOff), OP_MOVE);
       mPos.x = e.button.x;
       mPos.y = e.button.y;
@@ -959,7 +1071,7 @@ class ACBase : CSTarget     // Area Composition base class
       return true;
    }
 
-   void mouseMoveOp(double dx, double dy)
+   void mouseMoveOp(double dx, double dy, GdkModifierType state)
    {
       hOff += dx;
       vOff += dy;
@@ -975,9 +1087,9 @@ class ACBase : CSTarget     // Area Composition base class
       double dx = x-mPos.x, dy = y-mPos.y;
       if (abs(dx) < 5.0 && abs(dy) < 5.0)
          return true;
-      mouseMoveOp(dx, dy);
       mPos.x = x;
       mPos.y = y;
+      mouseMoveOp(dx, dy, state);
       isMoved = true;
       da.queueDraw();
       aw.dirty = true;
@@ -1046,6 +1158,20 @@ class ACBase : CSTarget     // Area Composition base class
       }
    }
 
+   void doZoom(Context c) {}
+
+   void doFill(Context c, bool solid, bool fill)
+   {
+      c.strokePreserve();
+      if (solid)
+         c.fill();
+      else if (fill)
+      {
+         c.setSourceRgba(altColor.red, altColor.green, altColor.blue, 1.0);
+         c.fill();
+      }
+   }
+
    bool drawCallback(Context c, Widget widget)
    {
 
@@ -1062,17 +1188,23 @@ class ACBase : CSTarget     // Area Composition base class
             Container ctr  = cast(Container) parent;
             background = c.getTarget().createSimilar(cairo_content_t.COLOR_ALPHA, width, height);
             Context t = c.create(background);
+            t.setSourceRgba(1,1,1,1);
+            t.paint();
             ctr.skip = this;
+            c.save();
             ctr.renderOther(this, t);
-            //t.destroy();
+            c.restore();
          }
       }
 
       if (inCtr)
       {
+         c.save();
+         doZoom(c);
          // paint the image of the other layers
          c.setSourceSurface(background, 0, 0);
          c.paint();
+         c.restore();
       }
       else
       {
@@ -1097,10 +1229,16 @@ class ACBase : CSTarget     // Area Composition base class
    {
       cSet.cy = 0;
       extendControls();
-      RenameGadget rg = new RenameGadget(cSet, ICoord(2, cSet.cy), name, true);
+      RenameGadget rg = new RenameGadget(cSet, ICoord(0, cSet.cy), name, true);
       rg.setName(name);
+      CheckButton cb = new CheckButton("Hide Item");
+      cb.setActive(0);
+      cSet.add(cb, ICoord(210, cSet.cy), Purpose.HIDE, true);
+
    }
    void extendControls() {}
+
+   void afterDeserialize() {}
 
    // Render to the page layout
    void renderToPL(Context c, double xpos, double ypos)
@@ -1121,12 +1259,125 @@ class ACBase : CSTarget     // Area Composition base class
       renderSVG(this);
    }
 
+   void modifyTransform(int tt, bool more, bool coarse)
+   {
+      // We rather arbitrarily do anisotropic scaling first, then transformations
+      // that change the shape - squash and skew, then rotation, then finally flip
+      // of the finished object
+      if (tt <= 2)        // Scale
+      {
+         double factor;
+         if (more)
+            factor = coarse? 1.1: 1.01;
+         else
+            factor = coarse? 0.9: 0.99;
+         switch (tt)
+         {
+            case 1:
+               lastOp = pushC!Transform(this, tf, OP_HSC);
+               tf.hScale *= factor;
+               break;
+            case 2:
+               lastOp = pushC!Transform(this, tf, OP_VSC);
+               tf.vScale *= factor;
+               break;
+            default:
+               lastOp = pushC!Transform(this, tf, OP_SCALE);
+               tf.hScale *= factor;
+               tf.vScale *= factor;
+               break;
+         }
+      }
+      else if (tt == 3 || tt == 4) // Skew/shear horizontal/vertical
+      {
+         double delta = coarse? 0.1: 0.01;
+         if (!more)
+            delta = -delta;
+         if (tt == 3)
+         {
+            lastOp = pushC!Transform(this, tf, OP_HSK);
+            tf.hSkew += delta;
+         }
+         else
+         {
+            lastOp = pushC!Transform(this, tf, OP_VSK);
+            tf.vSkew += delta;
+         }
+      }
+      else if (tt == 5) // Rotate
+      {
+         double ra = coarse? rads*5: rads/3;
+         if (more)
+            ra = -ra;
+         lastOp = pushC!Transform(this, tf, OP_ROT);
+         tf.ra -= ra;
+      }
+      else if (tt == 6)
+      {
+         lastOp = pushC!Transform(this, tf, OP_HFLIP);
+         tf.hFlip = !tf.hFlip;
+      }
+      else
+      {
+         lastOp = pushC!Transform(this, tf, OP_VFLIP);
+         tf.vFlip = !tf.vFlip;
+      }
+   }
+
+   bool compoundTransform()
+   {
+      Matrix tmp;
+      cairo_matrix_t tmpData;
+      tmp = new Matrix(&tmpData);
+      tm.initIdentity();
+      bool any = false;
+      if (tf.hScale != 1 || tf.vScale != 1)
+      {
+         any = true;
+         tmp.initScale(tf.hScale, tf.vScale);
+         tm.multiply(tm, tmp);
+      }
+      if (tf.hSkew != 0)
+      {
+         any = true;
+         tmp.init(1.0, 0.0, -tf.hSkew, 1.0, 0.0, 0.0);
+         tm.multiply(tm, tmp);
+      }
+      if (tf.vSkew != 0)
+      {
+         any = true;
+         tmp.init(1.0, -tf.vSkew, 0.0, 1.0, 0.0, 0.0);
+         tm.multiply(tm, tmp);
+      }
+      if (tf.ra != 0)
+      {
+         any = true;
+         tmp.initRotate(tf.ra);
+         tm.multiply(tm, tmp);
+      }
+      if (tf.hFlip)
+      {
+         any = true;
+         tmp.init(-1.0, 0.0, 0.0, 1.0, 0.0, 0.0);
+         tm.multiply(tm, tmp);
+      }
+      if (tf.vFlip)
+      {
+         any = true;
+         tmp.init(1.0, 0.0, 0.0, -1.0, 0.0, 0.0);
+         tm.multiply(tm, tmp);
+      }
+      return any;
+   }
+
    // Used to render at some arbitrary position
    void cRender(Context c, double ho, double vo)
    {
       double savedVOff, savedHOff;
       savedHOff = hOff;
       savedVOff = vOff;
+      lpX = ho;
+      lpY = vo;
       hOff = hOff+ho;
       vOff = vOff+vo;
       noGC = true;
@@ -1134,5 +1385,6 @@ class ACBase : CSTarget     // Area Composition base class
       noGC = false;
       hOff = savedHOff;
       vOff = savedVOff;
+      lpX = lpY = 0.0;
    }
 }

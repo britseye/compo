@@ -52,15 +52,11 @@ class MorphText : TextViewItem
    CairoPath* morphed;
    RGBA saveAltColor;
    bool fill, solid, doXform;
-   int xform;
    double olt;
-   Transform tf;
-   cairo_matrix_t tmData;
-   Matrix tm;
    MorphDlg md;
    bool mdShowing;
    ParamBlock mp, given;
-   string paramString;;
+   string paramString;
 
    string formatLT(double lt)
    {
@@ -69,7 +65,7 @@ class MorphText : TextViewItem
       return w.data;
    }
 
-   void syncControls()
+   override void syncControls()
    {
       cSet.setLineWidth(olt);
       cSet.toggling(false);
@@ -94,11 +90,14 @@ class MorphText : TextViewItem
    this(MorphText other)
    {
       this(other.aw, other.parent);
+      other.updateParams();  // just in case not saved ;=)
       editMode = other.editMode;
       hOff = other.hOff;
       vOff = other.vOff;
       baseColor = other.baseColor.copy();
       altColor = other.altColor.copy();
+      pfd = other.pfd.copy();
+      mp = other.mp;
       olt = other.olt;
       xform = other.xform;
       tf = other.tf;
@@ -115,7 +114,7 @@ class MorphText : TextViewItem
    {
       string s = "Morphed Text "~to!string(++nextOid);
       super(w, parent, s, AC_MORPHTEXT);
-      altColor = new RGBA();
+      altColor = new RGBA(0,0,0,1);
       olt = 0.5;
       editMode = true;
       xform = 0;
@@ -126,7 +125,7 @@ class MorphText : TextViewItem
       setupControls();
       positionControls(true);
       toggleView();
-      pfd = PgFontDescription.fromString("Sans 100");
+      pfd = PgFontDescription.fromString("Sans 30");
       if (!delayCM)
       {
          changeMorph();
@@ -134,7 +133,7 @@ class MorphText : TextViewItem
       }
    }
 
-   void preResize(int oldW, int oldH)
+   override void preResize(int oldW, int oldH)
    {
       morphed = null;
       double hr = cast(double) width/oldW;
@@ -145,7 +144,7 @@ class MorphText : TextViewItem
       vOff *= vr;
    }
 
-   void extendControls()
+   override void extendControls()
    {
       int vp = cSet.cy;
 
@@ -222,21 +221,12 @@ class MorphText : TextViewItem
       lastOp = push!ParamBlock(this, mp, OP_PARAMS);
    }
 
-   void onCSNotify(Widget w, Purpose wid)
+   override bool specificNotify(Widget w, Purpose wid)
    {
       switch (wid)
       {
-      case Purpose.COLOR:
-         lastOp = push!RGBA(this, baseColor, OP_COLOR);
-         setColor(false);
-         dummy.grabFocus();
-         break;
       case Purpose.FILLCOLOR:
          setColor(true);
-         break;
-      case Purpose.EDITMODE:
-         editMode = !editMode;
-         toggleView();
          break;
       case Purpose.FILL:
          fill = !fill;
@@ -276,10 +266,9 @@ class MorphText : TextViewItem
          xform = (cast(ComboBoxText) w).getActive();
          break;
       default:
-         break;
+         return false;
       }
-      aw.dirty = true;
-      reDraw();
+      return true;
    }
 
    void undo()
@@ -338,7 +327,7 @@ class MorphText : TextViewItem
       reDraw();
    }
 
-   void onCSLineWidth(double lt)
+   override void onCSLineWidth(double lt)
    {
       olt = lt;
       aw.dirty = true;
@@ -389,12 +378,19 @@ class MorphText : TextViewItem
       morphed = null;
    }
 
+   override void afterDeserialize()
+   {
+      changeMorph();
+      createMorphDlg();
+   }
+
    void refreshMorph()
    {
       morphed = null;
       aw.dirty = true;
       reDraw();
    }
+
    void createMorphDlg()
    {
       switch (cm)
@@ -522,122 +518,15 @@ class MorphText : TextViewItem
       mdShowing = false;
    }
 
-   void onCSMoreLess(int instance, bool more, bool coarse)
+   override void onCSMoreLess(int instance, bool more, bool coarse)
    {
-      doXform = true;
-      if (xform == 0)        // Scale
+      if (instance == 0)
       {
-         lastOp = pushC!Transform(this, tf, OP_SCALE);
-         if (!more)
-         {
-            if (coarse)
-            {
-               tf.hScale *= 0.9;
-               tf.vScale *= 0.9;
-            }
-            else
-            {
-               tf.hScale *= 0.97;
-               tf.vScale *= 0.97;
-            }
-         }
-         else
-         {
-            if (coarse)
-            {
-               tf.hScale *= 1.1;
-               tf.vScale *= 1.1;
-            }
-            else
-            {
-               tf.hScale *= 1.03;
-               tf.vScale *= 1.03;
-            }
-         }
+         modifyTransform(xform, more, coarse);
+         aw.dirty = true;
+         if (!editMode)
+            reDraw();
       }
-      else if (xform == 1) // Rotate
-      {
-         lastOp = pushC!Transform(this, tf, OP_ROT);
-         double ra = coarse? rads*5: rads/3;
-         if (!more)
-            tf.ra -= ra;
-         else
-            tf.ra += ra;
-      }
-      else if (xform == 2)        // Stretch -
-      {
-         lastOp = pushC!Transform(this, tf, OP_HSC);
-         if (!more)
-         {
-            if (coarse)
-            {
-               tf.hScale *= 0.9;
-            }
-            else
-            {
-               tf.hScale *= 0.97;
-            }
-         }
-         else
-         {
-            if (coarse)
-            {
-               tf.hScale *= 1.1;
-            }
-            else
-            {
-               tf.hScale *= 1.03;
-            }
-         }
-      }
-      else if (xform == 3)        // Stretch |
-      {
-         lastOp = pushC!Transform(this, tf, OP_VSC);
-         if (!more)
-         {
-            if (coarse)
-            {
-               tf.vScale *= 0.9;
-            }
-            else
-            {
-               tf.vScale *= 0.97;
-            }
-         }
-         else
-         {
-            if (coarse)
-            {
-               tf.vScale *= 1.1;
-            }
-            else
-            {
-               tf.vScale *= 1.03;
-            }
-         }
-      }
-      else  if (xform == 4) // horizontal shear
-      {
-         lastOp = pushC!Transform(this, tf, OP_HSK);
-         tf.hSkew += more? -0.05: 0.05;
-      }
-      else  if (xform == 5) // vertical shear
-      {
-         lastOp = pushC!Transform(this, tf, OP_VSK);
-         tf.vSkew += more? -0.05: 0.05;
-      }
-      else if (xform == 6)
-      {
-         lastOp = pushC!Transform(this, tf, OP_HFLIP);
-         tf.hFlip = more;
-      }
-      else
-      {
-         lastOp = pushC!Transform(this, tf, OP_VFLIP);
-         tf.vFlip = more;
-      }
-      aw.dirty = true;
-      reDraw();
    }
 
    Rect getTextRect(PgLayout pl)
@@ -656,7 +545,6 @@ class MorphText : TextViewItem
    {
       CairoPathData* data;
       int n = 0;
-
       for (int i = 0; i < morphed.numData; i += morphed.data[i].header.length)
       {
          data = &morphed.data[i];
@@ -683,11 +571,6 @@ class MorphText : TextViewItem
       return n;
    }
 
-/*
-  Harry Potter
-\\\10,0; 40,40; 80,40; 90,10;
-0,90; 40,60; 80,60; 100,30
-*/
    string parseParams(string s)
    {
       Coord[] ca;
@@ -735,70 +618,46 @@ class MorphText : TextViewItem
       morphed = null;
    }
 
-   void render(Context c)
+   override void render(Context c)
    {
       string text = tb.getText();
-      text = parseParams(text);
+      //text = parseParams(text);
       if (!text.length)
          return;
+      /*
       if (cm == 11 && given.ipa[0])
       {
          mp.cpa[] = given.cpa[];
          morpher.refreshParams();
          given.ipa[0] = 0;
       }
+      */
       double r = baseColor.red();
       double g = baseColor.green();
       double b = baseColor.blue();
       if (morphed is null)
       {
-         Surface hiddenSurface;
-         Context hidden;
-         hiddenSurface = c.getTarget().createSimilar(cairo_content_t.COLOR_ALPHA, width, height);
-         hidden = c.create(hiddenSurface);
-         hidden.save();
+         Surface hiddenSurface = c.getTarget().createSimilar(cairo_content_t.COLOR_ALPHA, width*10, height);
+         Context hidden = c.create(hiddenSurface);
          PgLayout pgl = PgCairo.createLayout(hidden);
          pgl.setSpacing(0);
          pgl.setFontDescription(pfd);
          pgl.setText(text);
-         getTextRect(pgl);
          PgCairo.layoutPath(hidden, pgl);
          hidden.strokePreserve();
          Rect xt = getTextRect(pgl);
-         //hidden.pathExtents(xt.topX, xt.topY, xt.bottomX, xt.bottomY);
          morphed = cast(CairoPath*) hidden.copyPath();
          foreachPath(morpher, xt);
-         hidden.newPath();
-         hidden.restore();
       }
+
       c.newPath();
       //Coord bp = cm.basePoint();
+
       c.translate(hOff+width/2, vOff+height/2);
-      if (tf.hFlip)
-      {
-         tm.init(-1.0, 0.0, 0.0, 1.0, 0.0, 0.0);
+      if (compoundTransform())
          c.transform(tm);
-      }
-      if (tf.vFlip)
-      {
-         tm.init(1.0, 0.0, 0.0, -1.0, 0.0, 0.0);
-         c.transform(tm);
-      }
-      if (tf.hSkew != 0.0)
-      {
-         tm.init(1.0, 0.0, tf.hSkew, 1.0, 0.0, 0.0);
-         c.transform(tm);
-      }
-      if (tf.vSkew != 0.0)
-      {
-         tm.init(1.0, tf.vSkew, 0.0, 1.0, 0.0, 0.0);
-         c.transform(tm);
-      }
-      if (tf.hScale != 1.0 || tf.vScale != 1.0)
-         c.scale(tf.hScale, tf.vScale);
-      if (tf.ra != 0.0)
-         c.rotate(tf.ra);
       c.translate(-width/2, -height/2);
+
       c.appendPath(cast(cairo_path_t*) morphed);
       c.setLineWidth(olt);
       if (solid)
@@ -816,6 +675,7 @@ class MorphText : TextViewItem
          c.setSourceRgb(r, g, b);
          c.stroke();
       }
+
       if (!isMoved) cSet.setDisplay(0, reportPosition());
    }
 }

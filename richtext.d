@@ -56,7 +56,7 @@ class RichText : TextViewItem
    static GType colorType;
    Fragment[] fa;
 
-   void syncControls()
+   override void syncControls()
    {
       cSet.setTextParams(alignment, pfd.toString());
       cSet.toggling(false);
@@ -121,7 +121,7 @@ class RichText : TextViewItem
       positionControls(true);
    }
 
-   void preResize(int oldW, int oldH)
+   override void preResize(int oldW, int oldH)
    {
       double hr = cast(double) width/oldW;
       double vr = cast(double) height/oldH;
@@ -129,7 +129,7 @@ class RichText : TextViewItem
       vOff *= vr;
    }
 
-   void extendControls()
+   override void extendControls()
    {
       int vp = cSet.cy;
 
@@ -144,33 +144,20 @@ class RichText : TextViewItem
       lastOp = push!(ubyte[])(this, buf, OP_TEXT);
    }
 
-   void onCSNotify(Widget w, Purpose wid)
-   {
-      switch (wid)
-      {
-      case Purpose.COLOR:
-         onCSSaveSelection();
-         RGBA oldc = baseColor;
-         if (setColor(false))  // if setColor returns true then it set baseColor rather than a selection
-         {
-            lastOp = push!RGBA(this, oldc, OP_COLOR);
-         }
-         te.grabFocus();
-         break;
-      case Purpose.EDITMODE:
-         editMode = !editMode;
-         toggleView();
-         break;
-      default:
-         break;
-      }
-      aw.dirty = true;
-      reDraw();
-   }
-
    void tagApplied(TextTag tt, TextIter  ti1, TextIter ti2, TextBuffer b)
    {
       //pushCheckpoint();
+   }
+
+   override bool installColor(RGBA c)
+   {
+      string sc = RGBA2hex(c);
+      if (setSelectionAttribute("foreground", sc, 1))
+         return false;
+
+      te.overrideColor(GtkStateFlags.NORMAL, c);
+      te.overrideCursor(cursorColor, cursorColor);
+      return true;
    }
 
    void undo()
@@ -280,7 +267,7 @@ class RichText : TextViewItem
       return false;
    }
 
-   void render(Context c)
+   override void render(Context c)
    {
       if (dirty)
       {

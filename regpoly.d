@@ -38,13 +38,12 @@ import cairo.Matrix;
 class RegularPolygon : LineSet
 {
    static int nextOid = 0;
-   RGBA saveAltColor;
    int sides;
-   bool isStar, fill, solid;
+   bool isStar;
    double radius, starIndent;
    Label numSides;
 
-   void syncControls()
+   override void syncControls()
    {
       cSet.setLineParams(lineWidth);
       cSet.toggling(false);
@@ -71,6 +70,8 @@ class RegularPolygon : LineSet
    this(RegularPolygon other)
    {
       this(other.aw, other.parent);
+      hOff = other.hOff;
+      vOff = other.vOff;
       baseColor = other.baseColor.copy();
       altColor = other.altColor.copy();
       lineWidth = other.lineWidth;
@@ -91,7 +92,7 @@ class RegularPolygon : LineSet
    {
       string s = "Regular Polygon "~to!string(++nextOid);
       super(w, parent, s, AC_REGPOLYGON);
-      altColor = new RGBA();
+      altColor = new RGBA(0,0,0,1);
       les  = true;
       radius = cast(double) height/2-20;
       starIndent = 0.3;
@@ -105,7 +106,7 @@ class RegularPolygon : LineSet
       positionControls(true);
    }
 
-   void extendControls()
+   override void extendControls()
    {
       int vp = cSet.cy;
 
@@ -154,61 +155,23 @@ class RegularPolygon : LineSet
       cSet.cy = vp+30;
    }
 
-   void onCSNotify(Widget w, Purpose wid)
+   override bool specificNotify(Widget w, Purpose wid)
    {
+      focusLayout();
       switch (wid)
       {
-      case Purpose.COLOR:
-         lastOp = push!RGBA(this, baseColor, OP_COLOR);
-         setColor(false);
-         break;
-      case Purpose.FILLCOLOR:
-         lastOp = push!RGBA(this, altColor, OP_ALTCOLOR);
-         setColor(true);
-         break;
-      case Purpose.LESROUND:
-         if ((cast(RadioButton) w).getActive())
-            les = false;
-         break;
-      case Purpose.LESSHARP:
-         if ((cast(RadioButton) w).getActive())
-            les = true;
-         break;
-      case Purpose.XFORMCB:
-         xform = (cast(ComboBoxText) w).getActive();
-         break;
       case Purpose.ASSTAR:
          isStar = !isStar;
          constructBase();
-         reDraw();
-         return;
-      case Purpose.FILL:
-         fill = !fill;
-         break;
-      case Purpose.SOLID:
-         solid = !solid;
-         if (solid)
-         {
-            cSet.disable(Purpose.FILL);
-            cSet.disable(Purpose.FILLCOLOR);
-         }
-         else
-         {
-            cSet.enable(Purpose.FILL);
-            cSet.enable(Purpose.FILLCOLOR);
-         }
-         break;
+         return true;
       default:
-         break;
+         return false;
       }
-      aw.dirty = true;
-      dummy.grabFocus();
-      reDraw();
    }
 
-   void onCSMoreLess(int instance, bool more, bool much)
+   override void onCSMoreLess(int instance, bool more, bool much)
    {
-      dummy.grabFocus();
+      focusLayout();
       int direction = more? 1: -1;
 
       void doSides()
@@ -270,61 +233,8 @@ class RegularPolygon : LineSet
       aw.dirty = true;
       reDraw();
    }
-/*
-   boolndo()
-   {
-      CheckPoint cp;
-      cp = popOp();
-      if (cp.type == 0)
-         return;
-      switch (cp.type)
-      {
-      case OP_COLOR:
-         baseColor = cp.color.copy();
-         lastOp = OP_UNDEF;
-         break;
-      case OP_ALTCOLOR:
-         altColor = cp.color.copy();
-         lastOp = OP_UNDEF;
-         break;
-      case OP_THICK:
-         lineWidth = cp.dVal;
-         cSet.setLabel(Purpose.LINEWIDTH, formatLT(lineWidth));
-         lastOp = OP_UNDEF;
-         break;
-      case OP_IV1:
-         sides = cp.iVal;
-         cSet.setSpinButton(Purpose.SIDES, sides);
-         lastOp = OP_UNDEF;
-         break;
-      case OP_DV1:
-         starIndent = cp.dVal;
-         lastOp = OP_UNDEF;
-         break;
-      case OP_SCALE:
-      case OP_HSC:
-      case OP_VSC:
-      case OP_HSK:
-      case OP_VSK:
-      case OP_ROT:
-      case OP_HFLIP:
-      case OP_VFLIP:
-         tf = cp.transform;
-         lastOp = OP_UNDEF;
-         break;
-      case OP_MOVE:
-         Coord t = cp.coord;
-         hOff = t.x;
-         vOff = t.y;
-         lastOp = OP_UNDEF;
-      default:
-         break;
-      }
-      aw.dirty = true;
-      reDraw();
-   }
-*/
-   void preResize(int oldW, int oldH)
+
+   override void preResize(int oldW, int oldH)
    {
       center.x = width/2;
       center.y = height/2;
@@ -358,7 +268,7 @@ class RegularPolygon : LineSet
       dirty = true;
    }
 
-   void render(Context c)
+   override void render(Context c)
    {
       c.setAntialias(cairo_antialias_t.SUBPIXEL);
       double r = baseColor.red;

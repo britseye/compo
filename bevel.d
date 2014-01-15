@@ -47,7 +47,7 @@ class Bevel: ACBase
       return w.data;
    }
 
-   void syncControls()
+   override void syncControls()
    {
       cSet.toggling(false);
       cSet.toggling(true);
@@ -97,29 +97,9 @@ class Bevel: ACBase
       cSet.cy = 35;
    }
 
-   void preResize(int oldW, int oldH)
+   override void onCSMoreLess(int id, bool more, bool coarse)
    {
-   }
-
-   void onCSNotify(Widget w, Purpose wid)
-   {
-      switch (wid)
-      {
-      case Purpose.COLOR:
-      dummy.grabFocus();
-         lastOp = push!RGBA(this, baseColor, OP_COLOR);
-         setColor(false);
-         break;
-      default:
-         return;
-      }
-      aw.dirty = true;
-      reDraw();
-   }
-
-   void onCSMoreLess(int id, bool more, bool coarse)
-   {
-      dummy.grabFocus();
+      focusLayout();
       lastOp = pushC!double(this, bt, OP_THICK);
       if (more && bt > 40)
          return;
@@ -161,7 +141,7 @@ class Bevel: ACBase
       return "";
    }
 
-   void render(Context c)
+   override void render(Context c)
    {
       c.setLineWidth(0);
       c.setLineJoin(CairoLineJoin.MITER);

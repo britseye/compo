@@ -18,11 +18,13 @@ import lineset;
 
 import std.stdio;
 import std.conv;
+import std.math;
 
 import gdk.RGBA;
 import gtk.Widget;
+import gtk.ToggleButton;
 import gtk.RadioButton;
-import gtk.SpinButton;
+import gtk.CheckButton;
 import gtk.ComboBoxText;
 import cairo.Context;
 import gtkc.cairotypes;
@@ -30,10 +32,18 @@ import cairo.Matrix;
 
 class Line : LineSet
 {
-   static int nextOid = 0;
-   ComboBoxText cbb;
+   enum
+   {
+      SP = Purpose.R_CHECKBUTTONS-100,
+      EP,
+      ALL
+   }
 
-   void syncControls()
+   static int nextOid = 0;
+   int active;
+   bool showSe;
+
+   override void syncControls()
    {
       cSet.setLineParams(lineWidth);
       cSet.toggling(false);
@@ -73,62 +83,55 @@ class Line : LineSet
       center.y = height/2;
       les = true;
       oPath.length = 2;
-      oPath[0].x = -width/3;
-      oPath[0].y = 0.0;
-      oPath[1].x = width/3;
-      oPath[1].y = 0.0;
+      oPath[0].x = 0.25*width;
+      oPath[0].y = 0.5*height;
+      oPath[1].x = 0.75*width;
+      oPath[1].y = 0.5*height;
       dirty = true;
-      tm = new Matrix(&tmData);
 
       setupControls(3);
       positionControls(true);
    }
 
-   void extendControls()
+   override void extendControls()
    {
       int vp = cSet.cy;
 
-      new InchTool(cSet, 0, ICoord(0, vp), true);
+      RadioButton rb1 = new RadioButton("Move start point");
+      cSet.add(rb1, ICoord(175, vp-40), cast(Purpose) SP);
+      RadioButton rb = new RadioButton(rb1, "Move end point");
+      cSet.add(rb, ICoord(175, vp-20), cast(Purpose) EP);
+      rb = new RadioButton(rb1, "Move entire");
+      cSet.add(rb, ICoord(175, vp), cast(Purpose) ALL);
+      CheckButton cb = new CheckButton("Show start/end");
+      cSet.add(cb, ICoord(175, vp+20), Purpose.EDITMODE);
 
-      ComboBoxText cbb = new ComboBoxText(false);
-      cbb.setTooltipText("Select transformation to apply");
-      cbb.setSizeRequest(100, -1);
-      cbb.appendText("Scale");
-      cbb.appendText("Rotate");
-      cbb.setActive(0);
-      cSet.add(cbb, ICoord(175, vp), Purpose.XFORMCB);
-      new MoreLess(cSet, 0, ICoord(280, vp+3), true);
+      vp += 25;
+      new Compass(cSet, 0, ICoord(0, vp-18));
 
       cSet.cy = vp+40;
    }
 
-   void onCSNotify(Widget w, Purpose wid)
+   override bool specificNotify(Widget w, Purpose wid)
    {
-      switch (wid)
+      if (wid >= SP && wid <= ALL)
       {
-      case Purpose.COLOR:
-         lastOp = push!RGBA(this, baseColor, OP_COLOR);
-         setColor(false);
-         break;
-      case Purpose.LESROUND:
-         if ((cast(RadioButton) w).getActive())
-            les = false;
-         break;
-      case Purpose.LESSHARP:
-         if ((cast(RadioButton) w).getActive())
-            les = true;
-         break;
-      case Purpose.XFORMCB:
-         xform = (cast(ComboBoxText) w).getActive();
-         break;
-      default:
-         break;
+         if ((cast(ToggleButton) w).getActive())
+         {
+            if (active == wid-SP)
+               return false;
+            active = wid-SP;
+         }
+         return true;
       }
-      aw.dirty = true;
-      reDraw();
+      else if (wid == Purpose.EDITMODE)
+         showSe = !showSe;
+      else
+         return false;
+      return true;
    }
 
-   void preResize(int oldW, int oldH)
+   override void preResize(int oldW, int oldH)
    {
       center.x = width/2;
       center.y = height/2;
@@ -143,7 +146,7 @@ class Line : LineSet
       vOff *= vr;
    }
 
-   void onCSLineWidth(double lt)
+   override void onCSLineWidth(double lt)
    {
       lastOp = pushC!double(this, lineWidth, OP_THICK);
       lineWidth = lt;
@@ -151,49 +154,76 @@ class Line : LineSet
       reDraw();
    }
 
-   override void onCSMoreLess(int instance, bool more, bool coarse)
+   static pure void moveCoord(ref Coord p, double distance, double angle)
    {
-      dummy.grabFocus();
-      if (xform == 0)        // Scale
-      {
-         double factor;
-         if (more)
-            factor = coarse? 1.1: 1.01;
-         else
-            factor = coarse? 0.9: 0.99;
-         lastOp = pushC!Transform(this, tf, OP_SCALE);
-         tf.hScale *= factor;
-         tf.vScale *= factor;
-      }
-      else if (xform == 1) // Rotate
-      {
-         double ra = coarse? rads*5: rads/3;
-         if (!more)
-            ra = -ra;
-         lastOp = pushC!Transform(this, tf, OP_ROT);
-         tf.ra += ra;
-      }
+      p.x += cos(angle)*distance;
+      p.y -= sin(angle)*distance;
+   }
+
+   override void onCSCompass(int instance, double angle, bool coarse)
+   {
+      double d = coarse? 2: 0.5;
+      Coord dummy = Coord(0,0);
+      moveCoord(dummy, d, angle);
+      double dx = dummy.x, dy = dummy.y;
+      adjust(dx, dy);
       dirty = true;
-      aw.dirty = true;
       reDraw();
    }
 
-   void render(Context c)
+   void adjust(double dx, double dy)
+   {
+      switch (active)
+      {
+         case 0:
+            oPath[0].x += dx;
+            oPath[0].y += dy;
+            break;
+         case 1:
+            oPath[1].x += dx;
+            oPath[1].y += dy;
+            break;
+         case 2:
+            oPath[0].x += dx;
+            oPath[0].y += dy;
+            oPath[1].x += dx;
+            oPath[1].y += dy;
+            break;
+         default:
+            break;
+      }
+   }
+
+   override void mouseMoveOp(double dx, double dy, GdkModifierType state)
+   {
+      adjust(dx, dy);
+      dirty = true;
+   }
+
+   override void render(Context c)
    {
       c.setSourceRgb(baseColor.red, baseColor.green, baseColor.blue);
       c.setLineWidth(lineWidth);
       c.setAntialias(CairoAntialias.SUBPIXEL);
       c.setLineCap(les? CairoLineCap.BUTT: CairoLineCap.ROUND);
-      if (dirty)
-      {
-         transformPath(compoundTransform());
-         dirty = false;
-      }
-      c.moveTo(hOff+rPath[0].x, vOff+rPath[0].y);
-      for (int i = 1; i < rPath.length; i++)
-         c.lineTo(hOff+rPath[i].x, vOff+rPath[i].y);
+      c.moveTo(lpX+oPath[0].x, lpY+oPath[0].y);
+      c.lineTo(lpX+oPath[1].x, lpY+oPath[1].y);
       c.stroke();
-      if (!isMoved) cSet.setDisplay(0, reportPosition());
+      if (showSe && !printFlag)
+      {
+         c.setSourceRgb(1,0,0);
+         c.moveTo(oPath[0].x+3, oPath[0].y);
+         c.lineTo(oPath[0].x-3, oPath[0].y+3);
+         c.lineTo(oPath[0].x-3, oPath[0].y-3);
+         c.closePath();
+         c.fill();
+         c.setSourceRgb(0,1,0);
+         c.moveTo(oPath[1].x-3, oPath[1].y);
+         c.lineTo(oPath[1].x+3, oPath[1].y-3);
+         c.lineTo(oPath[1].x+3, oPath[1].y+3);
+         c.closePath();
+         c.fill();
+      }
    }
 }
 

@@ -42,12 +42,10 @@ import cairo.Matrix;
 class Cross : LineSet
 {
    static int nextOid = 0;
-   bool fill, solid;
-   RGBA saveAltColor;
    double cbOff, cbW, urW;
    double h, w, cw, uw, ho, vo, ar, cbPos, drop, rise;
 
-   void syncControls()
+   override void syncControls()
    {
       cSet.setLineParams(lineWidth);
       cSet.toggling(false);
@@ -172,7 +170,7 @@ class Cross : LineSet
       //RenameGadget rg = new RenameGadget(cSet, ICoord(0, vp), name, true);
    }
 
-   void preResize(int oldW, int oldH)
+   override void preResize(int oldW, int oldH)
    {
       center.x = width/2;
       center.y = height/2;
@@ -183,54 +181,6 @@ class Cross : LineSet
       hOff *= hr;
       vOff *= vr;
       dirty = true;
-   }
-
-   void onCSNotify(Widget w, Purpose wid)
-   {
-      switch (wid)
-      {
-      case Purpose.COLOR:
-         lastOp = push!RGBA(this, baseColor, OP_COLOR);
-         setColor(false);
-         dummy.grabFocus();
-         break;
-      case Purpose.FILLCOLOR:
-         lastOp = push!RGBA(this, altColor, OP_ALTCOLOR);
-         setColor(true);
-         break;
-      case Purpose.LESROUND:
-         if ((cast(RadioButton) w).getActive())
-            les = false;
-         break;
-      case Purpose.LESSHARP:
-         if ((cast(RadioButton) w).getActive())
-            les = true;
-         break;
-      case Purpose.FILL:
-         fill = !fill;
-         break;
-      case Purpose.SOLID:
-         if (lastOp != OP_SOLID)
-            solid = !solid;
-         if (solid)
-         {
-            cSet.disable(Purpose.FILL);
-            cSet.disable(Purpose.FILLCOLOR);
-         }
-         else
-         {
-            cSet.enable(Purpose.FILL);
-            cSet.enable(Purpose.FILLCOLOR);
-         }
-         break;
-      case Purpose.XFORMCB:
-         xform = (cast(ComboBoxText) w).getActive();
-         break;
-      default:
-         break;
-      }
-      aw.dirty = true;
-      reDraw();
    }
 
    void constructBase()
@@ -268,7 +218,7 @@ class Cross : LineSet
       dirty = true;
    }
 
-   void onCSMoreLess(int instance, bool more, bool coarse)
+   override void onCSMoreLess(int instance, bool more, bool coarse)
    {
       if (instance == 0)  // Upright width
       {
@@ -341,13 +291,13 @@ class Cross : LineSet
          modifyTransform(xform, more, coarse);
       else
          return;
-      dummy.grabFocus();
+      focusLayout();
       dirty = true;
       aw.dirty = true;
       reDraw();
    }
 
-   void render(Context c)
+   override void render(Context c)
    {
       if (dirty)
       {
@@ -361,23 +311,11 @@ class Cross : LineSet
       for (int i = 1; i < rPath.length; i++)
          c.lineTo(hOff+rPath[i].x, vOff+rPath[i].y);
       c.closePath();
-      if (solid)
-      {
-         c.setSourceRgba(baseColor.red, baseColor.green, baseColor.blue, 1.0);
-         c.fill();
-      }
+      c.setSourceRgba(baseColor.red, baseColor.green, baseColor.blue, 1.0);
+      if (!(solid || fill))
+         c.stroke();
       else
-      {
-         c.setSourceRgb(baseColor.red, baseColor.green, baseColor.blue);
-         if (fill)
-         {
-            c.strokePreserve();
-            c.setSourceRgba(altColor.red, altColor.green, altColor.blue, 1.0);
-            c.fill();
-         }
-         else
-            c.stroke();
-      }
+         doFill(c, solid, fill);
       if (!isMoved) cSet.setDisplay(0, reportPosition());
    }
 }

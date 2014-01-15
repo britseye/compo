@@ -41,7 +41,7 @@ class SVGImage : ACBase
    double scaleX;
    bool useFile, realized;
 
-   void syncControls()
+   override void syncControls()
    {
       cSet.toggling(false);
       if (scaleType == 0)
@@ -76,7 +76,7 @@ class SVGImage : ACBase
       positionControls(true);
    }
 
-   void extendControls()
+   override void extendControls()
    {
       int vp = cSet.cy;
 
@@ -103,46 +103,46 @@ class SVGImage : ACBase
       cSet.cy = vp+50;
    }
 
-   void onCSNotify(Widget w, Purpose wid)
+   override bool specificNotify(Widget w, Purpose wid)
    {
       switch (wid)
       {
       case Purpose.OPENFILE:
          onCFB();
-         dummy.grabFocus();
-         return;
+         focusLayout();
+         return true;
       case Purpose.SCALEPROP:
          if ((cast(RadioButton) w).getActive())
          {
             scaleType = 0;
-            return;
+            return true;
          }
          break;
       case Purpose.SCALEFIT:
          if ((cast(RadioButton) w).getActive())
          {
             scaleType = 1;
-            return;
+            return true;
          }
          break;
       case Purpose.SCALENON:
          if ((cast(RadioButton) w).getActive())
          {
             scaleType = 2;
-            return;
+            return true;
          }
       case Purpose.USEFILE:
          useFile = !useFile;
          break;
       default:
-         break;
+         return false;
       }
-      reDraw();
+      return true;
    }
 
-   void onCSMoreLess(int id, bool more, bool coarse)
+   override void onCSMoreLess(int id, bool more, bool coarse)
    {
-      dummy.grabFocus();
+      focusLayout();
       if (scaleType != 0)
          return;
       lastOp = pushC!double(this, scaleX, OP_SCALE);
@@ -196,7 +196,7 @@ class SVGImage : ACBase
       reDraw();
    }
 
-   void preResize(int oldW, int oldH)
+   override void preResize(int oldW, int oldH)
    {
       double hr = cast(double) width/oldW;
       double vr = cast(double) height/oldH;
@@ -225,7 +225,7 @@ class SVGImage : ACBase
       reDraw();
    }
 
-   void render(Context c)
+   override void render(Context c)
    {
       if (fileName is null)
          return;

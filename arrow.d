@@ -43,10 +43,8 @@ class Arrow : LineSet
 {
    static int nextOid = 0;
    int hw;
-   bool fill, solid;
-   RGBA saveAltColor;
 
-   void syncControls()
+   override void syncControls()
    {
       cSet.setLineParams(lineWidth);
       cSet.toggling(false);
@@ -155,11 +153,9 @@ class Arrow : LineSet
 
       vp += 25;
       cSet.cy = vp;
-
-      //RenameGadget rg = new RenameGadget(cSet, ICoord(0, vp), name, true);
    }
 
-   void preResize(int oldW, int oldH)
+   override void preResize(int oldW, int oldH)
    {
       center.x = width/2;
       center.y = height/2;
@@ -172,33 +168,16 @@ class Arrow : LineSet
       dirty = true;
    }
 
-   void onCSNotify(Widget w, Purpose wid)
+   override bool specificNotify(Widget w, Purpose wid)
    {
       switch (wid)
       {
-      case Purpose.COLOR:
-         lastOp = push!RGBA(this, baseColor, OP_COLOR);
-         setColor(false);
-         dummy.grabFocus();
-         break;
-      case Purpose.FILLCOLOR:
-         lastOp = push!RGBA(this, altColor, OP_ALTCOLOR);
-         setColor(true);
-         break;
-      case Purpose.LESROUND:
-         if ((cast(RadioButton) w).getActive())
-            les = false;
-         break;
-      case Purpose.LESSHARP:
-         if ((cast(RadioButton) w).getActive())
-            les = true;
-         break;
       case Purpose.MEDIUM:
       case Purpose.NARROW:
       case Purpose.WIDE:
          if (hw == wid-Purpose.MEDIUM)
             // Don'y go through the whole preformance for nothing
-            return;
+            return true;
          lastOp = push!(Coord[])(this, oPath, OP_PATH);
          if (wid == Purpose.MEDIUM)
             hw = 0;
@@ -208,31 +187,10 @@ class Arrow : LineSet
             hw = 2;
          constructBase();
          break;
-      case Purpose.FILL:
-         fill = !fill;
-         break;
-      case Purpose.SOLID:
-         if (lastOp != OP_SOLID)
-            solid = !solid;
-         if (solid)
-         {
-            cSet.disable(Purpose.FILL);
-            cSet.disable(Purpose.FILLCOLOR);
-         }
-         else
-         {
-            cSet.enable(Purpose.FILL);
-            cSet.enable(Purpose.FILLCOLOR);
-         }
-         break;
-      case Purpose.XFORMCB:
-         xform = (cast(ComboBoxText) w).getActive();
-         break;
       default:
-         break;
+         return false;
       }
-      aw.dirty = true;
-      reDraw();
+      return true;
    }
 
    void constructBase()
@@ -253,9 +211,9 @@ class Arrow : LineSet
       dirty = true;
    }
 
-   void onCSMoreLess(int instance, bool more, bool coarse)
+   override void onCSMoreLess(int instance, bool more, bool coarse)
    {
-      dummy.grabFocus();
+      focusLayout();
       if (instance == 0)
          modifyTransform(xform, more, coarse);
       else
@@ -265,7 +223,7 @@ class Arrow : LineSet
       reDraw();
    }
 
-   void render(Context c)
+   override void render(Context c)
    {
       if (dirty)
       {
@@ -279,23 +237,11 @@ class Arrow : LineSet
       for (int i = 1; i < rPath.length; i++)
          c.lineTo(hOff+rPath[i].x, vOff+rPath[i].y);
       c.closePath();
-      if (solid)
-      {
-         c.setSourceRgba(baseColor.red, baseColor.green, baseColor.blue, 1.0);
-         c.fill();
-      }
-      else if (fill)
-      {
-         c.setSourceRgba(altColor.red, altColor.green, altColor.blue, 1.0);
-         c.fillPreserve();
-      }
-      if (!solid)
-      {
-         c.setSourceRgb(altColor.red, altColor.green, altColor.blue);
+      c.setSourceRgba(baseColor.red, baseColor.green, baseColor.blue, 1.0);
+      if (!(solid || fill))
          c.stroke();
-      }
+      else
+         doFill(c, solid, fill);
       if (!isMoved) cSet.setDisplay(0, reportPosition());
    }
 }
-
-

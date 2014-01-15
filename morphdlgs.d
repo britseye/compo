@@ -30,6 +30,7 @@ import gtk.RadioButton;
 import gtk.CheckButton;
 import gtk.Dialog;
 import gtk.VBox;
+import gtk.Entry;
 import gdk.Event;
 
 class MorphDlg: Dialog, CSTarget
@@ -65,6 +66,7 @@ class MorphDlg: Dialog, CSTarget
    void onCSSaveSelection() {}
    void onCSTextParam(Purpose p, string sval, int ival) {}
    void onCSNameChange(string s) {}
+   void setNameEntry(Entry e) {}
 
    bool catchClose(Event e, Widget w)
    {
@@ -272,7 +274,20 @@ class CircularDlg: MorphDlg
       cs.add(l, ICoord(5,vp), Purpose.LABEL);
       new MoreLess(cs, 2, ICoord(150, vp));
 
+      vp += 20;
+      CheckButton cb = new CheckButton("Anti-clockwise");
+      cs.add(cb, ICoord(5,vp), Purpose.ANTI);
+
       cs.realize(layout);
+   }
+
+   void onCSNotify(Widget w, Purpose p)
+   {
+      if (p == Purpose.ANTI)
+      {
+         c.anti = !c.anti;
+         po.refreshMorph();
+      }
    }
 
    void onCSMoreLess(int instance, bool more, bool coarse)

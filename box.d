@@ -17,25 +17,21 @@ import lineset;
 
 import std.stdio;
 import std.conv;
-import gtk.DrawingArea;
+
 import gtk.Widget;
 import gtk.Label;
 import gtk.Button;
-import gtk.SpinButton;
+import gtk.ComboBoxText;
+import gtk.CheckButton;
 import gtk.RadioButton;
-import gtk.ToggleButton;
-import gtk.Layout;
-import gtk.Frame;
-import gtk.Range;
 import gdk.RGBA;
 import cairo.Context;
-import gtkc.cairotypes;
 import cairo.Matrix;
 
 class Box : LineSet
 {
    static int nextOid = 0;
-   Coord topLeft, bottomRight;
+   bool solid, fill;
 
    void syncControls()
    {
@@ -56,8 +52,6 @@ class Box : LineSet
       hOff = other.hOff;
       vOff = other.vOff;
       baseColor = other.baseColor.copy();
-      topLeft = other.topLeft;
-      bottomRight = other.bottomRight;
       lineWidth = other.lineWidth;
       les = other.les;
       syncControls();
@@ -68,12 +62,9 @@ class Box : LineSet
       string s = "Box "~to!string(++nextOid);
       super(w, parent, s, AC_BOX);
       hOff = vOff = 0;
-      topLeft.x = 4.0;
-      topLeft.y = 4;
-      bottomRight.x = width-5;
-      bottomRight.y = height-5;
       lineWidth = 0.5;
       les = true;
+      tm = new Matrix(&tmData);
 
       setupControls(3);
       positionControls(true);
@@ -90,27 +81,27 @@ class Box : LineSet
 
       new InchTool(cSet, 0, ICoord(0, vp+5), true);
 
-      Label l = new Label("Width");
-      l.setTooltipText("Adjust width - hold down <Ctrl> for faster action");
-      cSet.add(l, ICoord(220, vp-2), Purpose.LABEL);
-      new MoreLess(cSet, 0, ICoord(265, vp-3), true);
+      ComboBoxText cbb = new ComboBoxText(false);
+      cbb.appendText("Scale");
+      cbb.appendText("Stretch-H");
+      cbb.appendText("Stretch-V");
+      cbb.appendText("Rotate");
+      cbb.setActive(0);
+      cbb.setSizeRequest(100, -1);
+      cSet.add(cbb, ICoord(172, vp-35), Purpose.XFORMCB);
+      new MoreLess(cSet, 0, ICoord(288, vp-30), true);
 
-      vp += 20;
+      vp += 40;
+      CheckButton check = new CheckButton("Fill with color");
+      cSet.add(check, ICoord(0, vp), Purpose.FILL);
 
-      l = new Label("Height");
-      l.setTooltipText("Adjust height - hold down <Ctrl> for faster action");
-      cSet.add(l, ICoord(220, vp-2), Purpose.LABEL);
-      new MoreLess(cSet, 1, ICoord(265, vp-3), true);
+      check = new CheckButton("Solid");
+      cSet.add(check, ICoord(115, vp), Purpose.SOLID);
+
+      Button b = new Button("Fill Color");
+      cSet.add(b, ICoord(247, vp-5), Purpose.FILLCOLOR);
 
       cSet.cy = vp+25;
-   }
-
-   void preResize(int oldW, int oldH)
-   {
-      topLeft.x = 4.0;
-      topLeft.y = 4;
-      bottomRight.x = width-5;
-      bottomRight.y = height-5;
    }
 
    void onCSNotify(Widget w, Purpose wid)
@@ -118,9 +109,13 @@ class Box : LineSet
       switch (wid)
       {
       case Purpose.COLOR:
-         dummy.grabFocus();
          lastOp = push!RGBA(this, baseColor, OP_COLOR);
          setColor(false);
+         dummy.grabFocus();
+         break;
+      case Purpose.FILLCOLOR:
+         lastOp = push!RGBA(this, altColor, OP_ALTCOLOR);
+         setColor(true);
          break;
       case Purpose.LESROUND:
          if ((cast(RadioButton) w).getActive())
@@ -130,6 +125,26 @@ class Box : LineSet
          if ((cast(RadioButton) w).getActive())
             les = true;
          break;
+      case Purpose.FILL:
+         fill = !fill;
+         break;
+      case Purpose.SOLID:
+         if (lastOp != OP_SOLID)
+            solid = !solid;
+         if (solid)
+         {
+            cSet.disable(Purpose.FILL);
+            cSet.disable(Purpose.FILLCOLOR);
+         }
+         else
+         {
+            cSet.enable(Purpose.FILL);
+            cSet.enable(Purpose.FILLCOLOR);
+         }
+         break;
+      case Purpose.XFORMCB:
+         xform = (cast(ComboBoxText) w).getActive();
+         break;
       default:
          break;
       }
@@ -137,58 +152,41 @@ class Box : LineSet
       reDraw();
    }
 
-   void onCSMoreLess(int id, bool more, bool coarse)
+   override void onCSMoreLess(int instance, bool more, bool coarse)
    {
-      int n = more? 1: -1;
       dummy.grabFocus();
-      if (coarse)
-         n *= 10;
-      if (id == 0)
-      {
-         lastOp = pushC!double(this, bottomRight.x, OP_HSIZE);
-         bottomRight.x += n;
-      }
-      else
-      {
-         lastOp = pushC!double(this, bottomRight.y, OP_VSIZE);
-         bottomRight.y += n;
-      }
+      int[] xft = [0,1,2,5];
+      int tt = xft[xform];
+      modifyTransform(tt, more, coarse);
+      dirty = true;
       aw.dirty = true;
       reDraw();
-   }
-
-   bool specificUndo(CheckPoint cp)
-   {
-      switch (cp.type)
-      {
-      case OP_HSIZE:
-         bottomRight.x = cp.dVal;
-         lastOp = OP_UNDEF;
-         break;
-      case OP_VSIZE:
-         bottomRight.y = cp.dVal;
-         lastOp = OP_UNDEF;
-         break;
-      default:
-         return false;
-      }
-      return true;
    }
 
    void render(Context c)
    {
       c.setLineWidth(lineWidth);
+      c.translate(hOff+width/2, vOff+height/2);
+      if (compoundTransform())
+         c.transform(tm);
+      c.translate(-lpX-(width/2), -lpY-(height/2));
       c.setLineJoin(les? CairoLineJoin.MITER: CairoLineJoin.ROUND);
-      double r = baseColor.red();
-      double g = baseColor.green();
-      double b = baseColor.blue();
-      c.setSourceRgb(r, g, b);
-      c.moveTo(hOff+topLeft.x, vOff+topLeft.y);
-      c.lineTo(hOff+bottomRight.x, vOff+topLeft.y);
-      c.lineTo(hOff+bottomRight.x, vOff+bottomRight.y);
-      c.lineTo(hOff+topLeft.x, vOff+bottomRight.y);
+      c.moveTo(lpX+0.2*width, lpY+0.2*height);
+      c.lineTo(lpX+0.8*width, lpY+0.2*height);
+      c.lineTo(lpX+0.8*width, lpY+0.8*height);
+      c.lineTo(lpX+0.2*width, lpY+0.8*height);
       c.closePath();
-      c.stroke();
+      c.setSourceRgb(baseColor.red, baseColor.green, baseColor.blue);
+      c.strokePreserve();
+      if (solid)
+      {
+         c.fill();
+      }
+      else if (fill)
+      {
+         c.setSourceRgb(altColor.red, altColor.green, altColor.blue);
+         c.fill();
+      }
 
       if (!isMoved) cSet.setDisplay(0, reportPosition());
    }

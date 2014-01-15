@@ -1485,7 +1485,7 @@
 	<gtkc/gtktypes.d>
 	<gtkc/gdktypes.d>
 
-1387360817 source:/home/steve/COMPO/acomp.d
+1389701174 source:/home/steve/COMPO/acomp.d
 	<main.d>
 	<constants.d>
 	<types.d>
@@ -1508,7 +1508,7 @@
 	<gtk/TextView.d>
 	<gtk/TextBuffer.d>
 	<gtk/ToggleButton.d>
-	<gtk/RadioButton.d>
+	<gtk/CheckButton.d>
 	<gtk/Button.d>
 	<gtk/EventBox.d>
 	<gtk/Label.d>
@@ -1529,26 +1529,27 @@
 	<cairo/Surface.d>
 	<cairo/ImageSurface.d>
 	<cairo/Context.d>
+	<cairo/Matrix.d>
 	<gtkc/cairotypes.d>
 	<cairo/Matrix.d>
 	<gtk/ColorSelection.d>
 	<gtk/ColorSelectionDialog.d>
 
-1387372972 /home/steve/COMPO//main.d
+1389769494 /home/steve/COMPO//main.d
 
 1316267666 /home/steve/COMPO//constants.d
 
-1387195612 /home/steve/COMPO//types.d
+1388901321 /home/steve/COMPO//types.d
 
 1384269582 /home/steve/COMPO//common.d
 
-1387367113 /home/steve/COMPO//controlset.d
+1389426332 /home/steve/COMPO//controlset.d
 
-1386742127 /home/steve/COMPO//container.d
+1389418102 /home/steve/COMPO//container.d
 
-1383483704 /home/steve/COMPO//controlsdlg.d
+1389343954 /home/steve/COMPO//controlsdlg.d
 
-1384278368 /home/steve/COMPO//sheets.d
+1387808378 /home/steve/COMPO//sheets.d
 
 1381177161 /usr/local/include/d/gtkd-2/gtk/Widget.d
 	<gtkc/gtktypes.d>
@@ -1653,7 +1654,7 @@
 	<gtk/Label.d>
 	<gtk/Dialog.d>
 
-1387360817 /home/steve/COMPO//acomp.d
+1389701174 /home/steve/COMPO//acomp.d
 
 1381177161 /usr/local/include/d/gtkd-2/gtk/VBox.d
 	<gtkc/gtktypes.d>
@@ -1662,7 +1663,7 @@
 	<gtkc/gtktypes.d>
 	<gtkc/gdktypes.d>
 
-1386741893 source:/home/steve/COMPO/arrow.d
+1389428159 source:/home/steve/COMPO/arrow.d
 	<main.d>
 	<constants.d>
 	<acomp.d>
@@ -1707,7 +1708,7 @@
 	<std/stdio.d>
 	<sheets.d>
 
-1386741954 source:/home/steve/COMPO/bevel.d
+1389340968 source:/home/steve/COMPO/bevel.d
 	<main.d>
 	<constants.d>
 	<acomp.d>
@@ -1733,7 +1734,7 @@
 	<gtkc/cairotypes.d>
 	<cairo/Matrix.d>
 
-1386742006 source:/home/steve/COMPO/box.d
+1388312000 source:/home/steve/COMPO/box.d
 	<main.d>
 	<constants.d>
 	<acomp.d>
@@ -1743,19 +1744,14 @@
 	<lineset.d>
 	<std/stdio.d>
 	<std/conv.d>
-	<gtk/DrawingArea.d>
 	<gtk/Widget.d>
 	<gtk/Label.d>
 	<gtk/Button.d>
-	<gtk/SpinButton.d>
+	<gtk/ComboBoxText.d>
+	<gtk/CheckButton.d>
 	<gtk/RadioButton.d>
-	<gtk/ToggleButton.d>
-	<gtk/Layout.d>
-	<gtk/Frame.d>
-	<gtk/Range.d>
 	<gdk/RGBA.d>
 	<cairo/Context.d>
-	<gtkc/cairotypes.d>
 	<cairo/Matrix.d>
 
 1384269582 source:/home/steve/COMPO/common.d
@@ -1796,7 +1792,7 @@
 
 1316267666 source:/home/steve/COMPO/constants.d
 
-1386742127 source:/home/steve/COMPO/container.d
+1389418102 source:/home/steve/COMPO/container.d
 	<constants.d>
 	<types.d>
 	<controlset.d>
@@ -1824,7 +1820,7 @@
 	<cairo/Context.d>
 	<gtkc/cairotypes.d>
 
-1385710929 /home/steve/COMPO//graphics.d
+1389292384 /home/steve/COMPO//graphics.d
 
 1381177161 /usr/local/include/d/gtkd-2/gdk/Pixbuf.d
 	<gtkc/gdktypes.d>
@@ -1833,7 +1829,7 @@
 	<gtkc/gdkpixbuftypes.d>
 	<gtkc/gdktypes.d>
 
-1383483704 source:/home/steve/COMPO/controlsdlg.d
+1389343954 source:/home/steve/COMPO/controlsdlg.d
 	<main.d>
 	<controlset.d>
 	<acomp.d>
@@ -1850,9 +1846,9 @@
 	<glib/Idle.d>
 	<gobject/Value.d>
 
-1387375450 /home/steve/COMPO//menus.d
+1389769300 /home/steve/COMPO//menus.d
 
-1386840673 /home/steve/COMPO//tvitem.d
+1389343530 /home/steve/COMPO//tvitem.d
 
 1381177161 /usr/local/include/d/gtkd-2/gtk/Window.d
 	<gtkc/gtktypes.d>
@@ -1864,7 +1860,7 @@
 1381177161 /usr/local/include/d/gtkd-2/gobject/Value.d
 	<gtkc/gobjecttypes.d>
 
-1387367113 source:/home/steve/COMPO/controlset.d
+1389426332 source:/home/steve/COMPO/controlset.d
 	<types.d>
 	<interfaces.d>
 	<tvitem.d>
@@ -1900,7 +1896,7 @@
 1381177161 /usr/local/include/d/gtkd-2/glib/Timeout.d
 	<gtkc/glibtypes.d>
 
-1386743793 source:/home/steve/COMPO/corner.d
+1389341446 source:/home/steve/COMPO/corner.d
 	<main.d>
 	<constants.d>
 	<acomp.d>
@@ -1937,7 +1933,7 @@
 
 1385921470 /home/steve/COMPO//merger.d
 
-1387287786 source:/home/steve/COMPO/deserialize.d
+1389616507 source:/home/steve/COMPO/deserialize.d
 	<types.d>
 	<common.d>
 	<acomp.d>
@@ -1950,9 +1946,7 @@
 	<richtext.d>
 	<arrow.d>
 	<bevel.d>
-	<box.d>
 	<circle.d>
-	<connector.d>
 	<corner.d>
 	<cross.d>
 	<fancytext.d>
@@ -1973,6 +1967,12 @@
 	<svgimage.d>
 	<rsvgwrap.d>
 	<polycurve.d>
+	<strokeset.d>
+	<drawing.d>
+	<pointset.d>
+	<regpc.d>
+	<controlset.d>
+	<crescent.d>
 	<std/stdio.d>
 	<std/conv.d>
 	<std/array.d>
@@ -1989,51 +1989,51 @@
 
 1387359605 /home/steve/COMPO//treeops.d
 
-1386839852 /home/steve/COMPO//text.d
+1388498615 /home/steve/COMPO//text.d
 
-1386838847 /home/steve/COMPO//uspsib.d
+1388498776 /home/steve/COMPO//uspsib.d
 
-1386838839 /home/steve/COMPO//serial.d
+1388498334 /home/steve/COMPO//serial.d
 
-1386838917 /home/steve/COMPO//richtext.d
+1388498227 /home/steve/COMPO//richtext.d
 
-1386741893 /home/steve/COMPO//arrow.d
+1389428159 /home/steve/COMPO//arrow.d
 
-1386741954 /home/steve/COMPO//bevel.d
+1389340968 /home/steve/COMPO//bevel.d
 
-1386742006 /home/steve/COMPO//box.d
+1388312000 /home/steve/COMPO//box.d
 
-1386742272 /home/steve/COMPO//circle.d
+1389429471 /home/steve/COMPO//circle.d
 
 1386742097 /home/steve/COMPO//connector.d
 
-1386743793 /home/steve/COMPO//corner.d
+1389341446 /home/steve/COMPO//corner.d
 
-1386840269 /home/steve/COMPO//fancytext.d
+1389157436 /home/steve/COMPO//fancytext.d
 
-1386742242 /home/steve/COMPO//fader.d
+1389341577 /home/steve/COMPO//fader.d
 
-1386742325 /home/steve/COMPO//heart.d
+1389341590 /home/steve/COMPO//heart.d
 
-1386742421 /home/steve/COMPO//line.d
+1388563262 /home/steve/COMPO//line.d
 
-1386846022 /home/steve/COMPO//morphtext.d
+1389417796 /home/steve/COMPO//morphtext.d
 
-1386742660 /home/steve/COMPO//pattern.d
+1388558632 /home/steve/COMPO//pattern.d
 
 1386240867 /home/steve/COMPO//picture.d
 
-1387354767 /home/steve/COMPO//polygon.d
+1389344487 /home/steve/COMPO//polygon.d
 
-1386742783 /home/steve/COMPO//random.d
+1389343317 /home/steve/COMPO//random.d
 
-1386742850 /home/steve/COMPO//rect.d
+1389428228 /home/steve/COMPO//rect.d
 
-1386742952 /home/steve/COMPO//regpoly.d
+1389343400 /home/steve/COMPO//regpoly.d
 
-1386767720 /home/steve/COMPO//separator.d
+1389343430 /home/steve/COMPO//separator.d
 
-1386742878 /home/steve/COMPO//reference.d
+1389343364 /home/steve/COMPO//reference.d
 
 1381177161 /usr/local/include/d/gtkd-2/gio/MemoryInputStream.d
 	<gtkc/giotypes.d>
@@ -2044,7 +2044,7 @@
 1381177161 /usr/local/include/d/gtkd-2/gtk/FileFilter.d
 	<gtkc/gtktypes.d>
 
-1386742242 source:/home/steve/COMPO/fader.d
+1389341577 source:/home/steve/COMPO/fader.d
 	<main.d>
 	<constants.d>
 	<acomp.d>
@@ -2065,7 +2065,7 @@
 	<cairo/Pattern.d>
 	<gtkc/cairotypes.d>
 
-1386840269 source:/home/steve/COMPO/fancytext.d
+1389157436 source:/home/steve/COMPO/fancytext.d
 	<types.d>
 	<controlset.d>
 	<main.d>
@@ -2077,6 +2077,7 @@
 	<std/conv.d>
 	<std/array.d>
 	<std/format.d>
+	<std/math.d>
 	<gtk/Layout.d>
 	<gtk/Frame.d>
 	<cairo/Context.d>
@@ -2099,6 +2100,7 @@
 	<gdk/Screen.d>
 	<gtkc/gdktypes.d>
 	<cairo/Surface.d>
+	<cairo/Matrix.d>
 	<pango/PgCairo.d>
 	<pango/PgLayout.d>
 	<gtkc/pangotypes.d>
@@ -2120,7 +2122,7 @@
 	<std/stdio.d>
 	<sheets.d>
 
-1385710929 source:/home/steve/COMPO/graphics.d
+1389292384 source:/home/steve/COMPO/graphics.d
 	<acomp.d>
 	<main.d>
 	<std/stdio.d>
@@ -2132,7 +2134,7 @@
 	<cairo/Context.d>
 	<cairo/SvgSurface.d>
 
-1386742325 source:/home/steve/COMPO/heart.d
+1389341590 source:/home/steve/COMPO/heart.d
 	<main.d>
 	<constants.d>
 	<acomp.d>
@@ -2152,7 +2154,7 @@
 	<cairo/Context.d>
 	<cairo/Matrix.d>
 
-1386742421 source:/home/steve/COMPO/line.d
+1388563262 source:/home/steve/COMPO/line.d
 	<main.d>
 	<constants.d>
 	<acomp.d>
@@ -2163,16 +2165,18 @@
 	<lineset.d>
 	<std/stdio.d>
 	<std/conv.d>
+	<std/math.d>
 	<gdk/RGBA.d>
 	<gtk/Widget.d>
+	<gtk/ToggleButton.d>
 	<gtk/RadioButton.d>
-	<gtk/SpinButton.d>
+	<gtk/CheckButton.d>
 	<gtk/ComboBoxText.d>
 	<cairo/Context.d>
 	<gtkc/cairotypes.d>
 	<cairo/Matrix.d>
 
-1387372972 source:/home/steve/COMPO/main.d
+1389769494 source:/home/steve/COMPO/main.d
 	<constants.d>
 	<config.d>
 	<common.d>
@@ -2188,9 +2192,7 @@
 	<line.d>
 	<separator.d>
 	<bevel.d>
-	<box.d>
 	<circle.d>
-	<connector.d>
 	<corner.d>
 	<fader.d>
 	<lgradient.d>
@@ -2220,6 +2222,14 @@
 	<cross.d>
 	<polycurve.d>
 	<strokeset.d>
+	<curve.d>
+	<drawing.d>
+	<pointset.d>
+	<regpc.d>
+	<shapelib.d>
+	<mesh.d>
+	<moon.d>
+	<triangle.d>
 	<std/stdio.d>
 	<std/conv.d>
 	<std/file.d>
@@ -2269,15 +2279,15 @@
 
 1386852897 /home/steve/COMPO//config.d
 
-1383290894 /home/steve/COMPO//tree.d
+1389766283 /home/steve/COMPO//tree.d
 
-1386742608 /home/steve/COMPO//partition.d
+1389341698 /home/steve/COMPO//partition.d
 
-1383633193 /home/steve/COMPO//pglayout.d
+1388207981 /home/steve/COMPO//pglayout.d
 
-1387283501 /home/steve/COMPO//serialize.d
+1389615828 /home/steve/COMPO//serialize.d
 
-1387287786 /home/steve/COMPO//deserialize.d
+1389616507 /home/steve/COMPO//deserialize.d
 
 1316878654 /home/steve/COMPO//printing.d
 
@@ -2348,7 +2358,7 @@
 1381177161 /usr/local/include/d/gtkd-2/gdk/Rectangle.d
 	<gtkc/gdktypes.d>
 
-1387375450 source:/home/steve/COMPO/menus.d
+1389769300 source:/home/steve/COMPO/menus.d
 	<main.d>
 	<config.d>
 	<treeops.d>
@@ -2458,7 +2468,7 @@
 	<gtkc/gtktypes.d>
 	<gtkc/gdktypes.d>
 
-1386843451 source:/home/steve/COMPO/morphdlgs.d
+1389417791 source:/home/steve/COMPO/morphdlgs.d
 	<main.d>
 	<interfaces.d>
 	<constants.d>
@@ -2480,11 +2490,12 @@
 	<gtk/CheckButton.d>
 	<gtk/Dialog.d>
 	<gtk/VBox.d>
+	<gtk/Entry.d>
 	<gdk/Event.d>
 
-1386765412 /home/steve/COMPO//morphs.d
+1389417550 /home/steve/COMPO//morphs.d
 
-1386765412 source:/home/steve/COMPO/morphs.d
+1389417550 source:/home/steve/COMPO/morphs.d
 	<types.d>
 	<constants.d>
 	<common.d>
@@ -2493,7 +2504,7 @@
 	<std/math.d>
 	<gtkc/cairotypes.d>
 
-1386846022 source:/home/steve/COMPO/morphtext.d
+1389417796 source:/home/steve/COMPO/morphtext.d
 	<main.d>
 	<acomp.d>
 	<tvitem.d>
@@ -2529,9 +2540,9 @@
 	<pango/PgLayout.d>
 	<gtkc/pangotypes.d>
 
-1386843451 /home/steve/COMPO//morphdlgs.d
+1389417791 /home/steve/COMPO//morphdlgs.d
 
-1386742608 source:/home/steve/COMPO/partition.d
+1389341698 source:/home/steve/COMPO/partition.d
 	<main.d>
 	<constants.d>
 	<acomp.d>
@@ -2553,7 +2564,7 @@
 	<gtkc/cairotypes.d>
 	<cairo/Matrix.d>
 
-1386742660 source:/home/steve/COMPO/pattern.d
+1388558632 source:/home/steve/COMPO/pattern.d
 	<main.d>
 	<acomp.d>
 	<common.d>
@@ -2573,7 +2584,7 @@
 	<gtk/ComboBoxText.d>
 	<cairo/Context.d>
 
-1383633193 source:/home/steve/COMPO/pglayout.d
+1388207981 source:/home/steve/COMPO/pglayout.d
 	<main.d>
 	<common.d>
 	<types.d>
@@ -2592,7 +2603,7 @@
 	<cairo/Surface.d>
 	<cairo/Context.d>
 
-1383290894 source:/home/steve/COMPO/tree.d
+1389766283 source:/home/steve/COMPO/tree.d
 	<main.d>
 	<acomp.d>
 	<std/stdio.d>
@@ -2602,7 +2613,7 @@
 	<gtk/TreePath.d>
 	<gtk/TreeModel.d>
 
-1386742272 source:/home/steve/COMPO/circle.d
+1389429471 source:/home/steve/COMPO/circle.d
 	<main.d>
 	<constants.d>
 	<acomp.d>
@@ -2670,8 +2681,9 @@
 	<gtkc/gobjecttypes.d>
 	<gtkc/gdktypes.d>
 
-1387354767 source:/home/steve/COMPO/polygon.d
+1389344487 source:/home/steve/COMPO/polygon.d
 	<main.d>
+	<container.d>
 	<constants.d>
 	<acomp.d>
 	<common.d>
@@ -2700,6 +2712,7 @@
 	<gtk/Label.d>
 	<gtk/Dialog.d>
 	<gtk/VBox.d>
+	<gtk/Entry.d>
 	<cairo/Context.d>
 	<gtkc/cairotypes.d>
 	<cairo/Matrix.d>
@@ -2734,7 +2747,7 @@
 1381177161 /usr/local/include/d/gtkd-2/gtk/PaperSize.d
 	<gtkc/gtktypes.d>
 
-1386742783 source:/home/steve/COMPO/random.d
+1389343317 source:/home/steve/COMPO/random.d
 	<main.d>
 	<constants.d>
 	<acomp.d>
@@ -2757,7 +2770,7 @@
 	<cairo/Matrix.d>
 	<gtkc/cairotypes.d>
 
-1386742850 source:/home/steve/COMPO/rect.d
+1389428228 source:/home/steve/COMPO/rect.d
 	<main.d>
 	<constants.d>
 	<acomp.d>
@@ -2785,7 +2798,7 @@
 	<gtkc/cairotypes.d>
 	<cairo/Matrix.d>
 
-1386742878 source:/home/steve/COMPO/reference.d
+1389343364 source:/home/steve/COMPO/reference.d
 	<main.d>
 	<acomp.d>
 	<common.d>
@@ -2797,7 +2810,7 @@
 	<std/string.d>
 	<std/conv.d>
 	<cairo/Context.d>
-	<cairo/Surface.d>
+	<cairo/Matrix.d>
 	<gtk/Widget.d>
 	<gtk/Label.d>
 	<gtk/Button.d>
@@ -2805,8 +2818,9 @@
 	<gtk/RadioButton.d>
 	<gtk/FileFilter.d>
 	<gtk/FileChooserDialog.d>
+	<gtk/ComboBoxText.d>
 
-1386742952 source:/home/steve/COMPO/regpoly.d
+1389343400 source:/home/steve/COMPO/regpoly.d
 	<main.d>
 	<config.d>
 	<constants.d>
@@ -2833,7 +2847,7 @@
 	<gtkc/cairotypes.d>
 	<cairo/Matrix.d>
 
-1386838917 source:/home/steve/COMPO/richtext.d
+1388498227 source:/home/steve/COMPO/richtext.d
 	<main.d>
 	<acomp.d>
 	<tvitem.d>
@@ -2886,7 +2900,7 @@
 1381177161 /usr/local/include/d/gtkd-2/gobject/Type.d
 	<gtkc/gobjecttypes.d>
 
-1386767720 source:/home/steve/COMPO/separator.d
+1389343430 source:/home/steve/COMPO/separator.d
 	<main.d>
 	<constants.d>
 	<acomp.d>
@@ -2904,7 +2918,7 @@
 	<gdk/RGBA.d>
 	<cairo/Context.d>
 
-1386838839 source:/home/steve/COMPO/serial.d
+1388498334 source:/home/steve/COMPO/serial.d
 	<main.d>
 	<config.d>
 	<acomp.d>
@@ -2934,7 +2948,7 @@
 	<pango/PgFontDescription.d>
 	<gtkc/gdktypes.d>
 
-1387283501 source:/home/steve/COMPO/serialize.d
+1389615828 source:/home/steve/COMPO/serialize.d
 	<std/stdio.d>
 	<std/conv.d>
 	<std/stream.d>
@@ -2952,9 +2966,7 @@
 	<richtext.d>
 	<arrow.d>
 	<bevel.d>
-	<box.d>
 	<circle.d>
-	<connector.d>
 	<corner.d>
 	<cross.d>
 	<fancytext.d>
@@ -2974,6 +2986,11 @@
 	<rgradient.d>
 	<svgimage.d>
 	<polycurve.d>
+	<drawing.d>
+	<pointset.d>
+	<strokeset.d>
+	<regpc.d>
+	<crescent.d>
 	<gtk/FileChooserDialog.d>
 	<gtk/FileFilter.d>
 
@@ -3004,7 +3021,7 @@
 	<gtk/Frame.d>
 	<pango/PgFontDescription.d>
 
-1384278368 source:/home/steve/COMPO/sheets.d
+1387808378 source:/home/steve/COMPO/sheets.d
 	<std/stdio.d>
 	<std/conv.d>
 	<std/regex.d>
@@ -3042,7 +3059,7 @@
 	<gtkc/gtktypes.d>
 	<gtkc/gdktypes.d>
 
-1386839852 source:/home/steve/COMPO/text.d
+1388498615 source:/home/steve/COMPO/text.d
 	<main.d>
 	<acomp.d>
 	<tvitem.d>
@@ -3082,7 +3099,7 @@
 	<main.d>
 	<merger.d>
 
-1386840673 source:/home/steve/COMPO/tvitem.d
+1389343530 source:/home/steve/COMPO/tvitem.d
 	<acomp.d>
 	<main.d>
 	<config.d>
@@ -3118,10 +3135,10 @@
 	<gtkc/cairotypes.d>
 	<cairo/Matrix.d>
 
-1387195612 source:/home/steve/COMPO/types.d
+1388901321 source:/home/steve/COMPO/types.d
 	<gtkc/gdktypes.d>
 
-1386838847 source:/home/steve/COMPO/uspsib.d
+1388498776 source:/home/steve/COMPO/uspsib.d
 	<main.d>
 	<config.d>
 	<acomp.d>
@@ -3232,9 +3249,9 @@
 	<gtkc/gtktypes.d>
 	<gtkc/gdktypes.d>
 
-1386505242 /home/steve/COMPO//lineset.d
+1389428206 /home/steve/COMPO//lineset.d
 
-1386505242 source:/home/steve/COMPO/lineset.d
+1389428206 source:/home/steve/COMPO/lineset.d
 	<std/stdio.d>
 	<std/array.d>
 	<std/format.d>
@@ -3246,12 +3263,17 @@
 	<controlset.d>
 	<gtkc/cairotypes.d>
 	<cairo/Matrix.d>
+	<gdk/RGBA.d>
 	<gtk/ComboBox.d>
+	<gtk/Widget.d>
+	<gtk/RadioButton.d>
+	<gtk/CheckButton.d>
+	<gtk/ComboBoxText.d>
 
 1381177161 /usr/local/include/d/gtkd-2/cairo/Pattern.d
 	<gtkc/cairotypes.d>
 
-1386742383 source:/home/steve/COMPO/lgradient.d
+1389341599 source:/home/steve/COMPO/lgradient.d
 	<main.d>
 	<constants.d>
 	<acomp.d>
@@ -3272,11 +3294,11 @@
 	<cairo/Pattern.d>
 	<gtkc/cairotypes.d>
 
-1386742383 /home/steve/COMPO//lgradient.d
+1389341599 /home/steve/COMPO//lgradient.d
 
-1386742995 /home/steve/COMPO//rgradient.d
+1389343419 /home/steve/COMPO//rgradient.d
 
-1386742995 source:/home/steve/COMPO/rgradient.d
+1389343419 source:/home/steve/COMPO/rgradient.d
 	<main.d>
 	<constants.d>
 	<acomp.d>
@@ -3310,7 +3332,7 @@
 1381177161 /usr/local/include/d/gtkd-2/gtk/PopupBox.d
 	<gtkc/gtktypes.d>
 
-1386743119 source:/home/steve/COMPO/svgimage.d
+1389343505 source:/home/steve/COMPO/svgimage.d
 	<main.d>
 	<acomp.d>
 	<common.d>
@@ -3333,9 +3355,9 @@
 	<gtk/FileFilter.d>
 	<gtk/FileChooserDialog.d>
 
-1386742696 /home/steve/COMPO//pixelimage.d
+1389341726 /home/steve/COMPO//pixelimage.d
 
-1386742696 source:/home/steve/COMPO/pixelimage.d
+1389341726 source:/home/steve/COMPO/pixelimage.d
 	<main.d>
 	<acomp.d>
 	<common.d>
@@ -3368,18 +3390,19 @@
 	<pango/PgFontDescription.d>
 	<gobject/Value.d>
 
-1386743119 /home/steve/COMPO//svgimage.d
+1389343505 /home/steve/COMPO//svgimage.d
 
-1387018195 /home/steve/COMPO//interfaces.d
+1389340455 /home/steve/COMPO//interfaces.d
 
-1387018195 source:/home/steve/COMPO/interfaces.d
+1389340455 source:/home/steve/COMPO/interfaces.d
 	<std/math.d>
 	<types.d>
 	<controlset.d>
 	<gtk/Widget.d>
+	<gtk/Entry.d>
 	<cairo/Context.d>
 
-1387084536 source:/home/steve/COMPO/cross.d
+1389350014 source:/home/steve/COMPO/cross.d
 	<main.d>
 	<constants.d>
 	<acomp.d>
@@ -3410,9 +3433,9 @@
 	<gtkc/cairotypes.d>
 	<cairo/Matrix.d>
 
-1387084536 /home/steve/COMPO//cross.d
+1389350014 /home/steve/COMPO//cross.d
 
-1387098680 source:/home/steve/COMPO/crescent.d
+1389616945 source:/home/steve/COMPO/crescent.d
 	<main.d>
 	<constants.d>
 	<acomp.d>
@@ -3443,12 +3466,51 @@
 	<gtkc/cairotypes.d>
 	<cairo/Matrix.d>
 
-1387098680 /home/steve/COMPO//crescent.d
+1389616945 /home/steve/COMPO//crescent.d
 
-1387370106 /home/steve/COMPO//polycurve.d
+1389344456 /home/steve/COMPO//polycurve.d
 
-1387370106 source:/home/steve/COMPO/polycurve.d
+1389344456 source:/home/steve/COMPO/polycurve.d
 	<main.d>
+	<constants.d>
+	<acomp.d>
+	<common.d>
+	<types.d>
+	<container.d>
+	<controlset.d>
+	<lineset.d>
+	<interfaces.d>
+	<std/stdio.d>
+	<std/math.d>
+	<std/conv.d>
+	<std/string.d>
+	<gtk/DrawingArea.d>
+	<gtk/Widget.d>
+	<gtk/Button.d>
+	<gtk/Layout.d>
+	<gtk/Frame.d>
+	<gtk/Range.d>
+	<gtk/HScale.d>
+	<gtk/VScale.d>
+	<gdk/RGBA.d>
+	<gdk/Event.d>
+	<gtk/ToggleButton.d>
+	<gtk/RadioButton.d>
+	<gtk/ComboBoxText.d>
+	<gtk/CheckButton.d>
+	<gtk/Label.d>
+	<gtk/Dialog.d>
+	<gtk/VBox.d>
+	<gtk/Entry.d>
+	<cairo/Context.d>
+	<gtkc/cairotypes.d>
+	<cairo/Matrix.d>
+
+1389344536 /home/steve/COMPO//strokeset.d
+
+1389344536 source:/home/steve/COMPO/strokeset.d
+	<main.d>
+	<container.d>
 	<constants.d>
 	<acomp.d>
 	<common.d>
@@ -3478,13 +3540,68 @@
 	<gtk/Label.d>
 	<gtk/Dialog.d>
 	<gtk/VBox.d>
+	<gtk/Entry.d>
 	<cairo/Context.d>
 	<gtkc/cairotypes.d>
 	<cairo/Matrix.d>
 
-1387369962 /home/steve/COMPO//strokeset.d
+1389266999 source:/home/steve/COMPO/curve.d
+	<main.d>
+	<constants.d>
+	<acomp.d>
+	<lineset.d>
+	<common.d>
+	<types.d>
+	<controlset.d>
+	<lineset.d>
+	<std/stdio.d>
+	<std/conv.d>
+	<std/math.d>
+	<gdk/RGBA.d>
+	<gtk/Widget.d>
+	<gtk/ToggleButton.d>
+	<gtk/RadioButton.d>
+	<gtk/CheckButton.d>
+	<gtk/ComboBoxText.d>
+	<cairo/Context.d>
+	<gtkc/cairotypes.d>
+	<cairo/Matrix.d>
 
-1387369962 source:/home/steve/COMPO/strokeset.d
+1389266999 /home/steve/COMPO//curve.d
+
+1388570749 source:/home/steve/COMPO/shape.d
+	<main.d>
+	<constants.d>
+	<acomp.d>
+	<common.d>
+	<types.d>
+	<controlset.d>
+	<lineset.d>
+	<std/stdio.d>
+	<std/math.d>
+	<std/conv.d>
+	<gtk/DrawingArea.d>
+	<gtk/Widget.d>
+	<gtk/Button.d>
+	<gtk/Layout.d>
+	<gtk/Frame.d>
+	<gdk/RGBA.d>
+	<gtk/ComboBoxText.d>
+	<gtk/Button.d>
+	<gtk/SpinButton.d>
+	<gtk/ToggleButton.d>
+	<gtk/RadioButton.d>
+	<gtk/CheckButton.d>
+	<gtk/Label.d>
+	<cairo/Context.d>
+	<gtkc/cairotypes.d>
+	<cairo/Matrix.d>
+
+1388570749 /home/steve/COMPO//shape.d
+
+1387963738 /home/steve/COMPO//point.d
+
+1387963609 source:/home/steve/COMPO/point.d
 	<main.d>
 	<constants.d>
 	<acomp.d>
@@ -3510,11 +3627,213 @@
 	<gtk/ToggleButton.d>
 	<gtk/RadioButton.d>
 	<gtk/ComboBoxText.d>
-	<gtk/SpinButton.d>
 	<gtk/CheckButton.d>
 	<gtk/Label.d>
 	<gtk/Dialog.d>
 	<gtk/VBox.d>
+	<cairo/Context.d>
+	<gtkc/cairotypes.d>
+	<cairo/Matrix.d>
+
+1389344415 /home/steve/COMPO//pointset.d
+
+1389344415 source:/home/steve/COMPO/pointset.d
+	<main.d>
+	<container.d>
+	<constants.d>
+	<acomp.d>
+	<common.d>
+	<types.d>
+	<controlset.d>
+	<lineset.d>
+	<interfaces.d>
+	<std/stdio.d>
+	<std/math.d>
+	<std/conv.d>
+	<std/string.d>
+	<gtk/DrawingArea.d>
+	<gtk/Widget.d>
+	<gtk/Button.d>
+	<gtk/Layout.d>
+	<gtk/Frame.d>
+	<gtk/Range.d>
+	<gtk/HScale.d>
+	<gtk/VScale.d>
+	<gdk/RGBA.d>
+	<gdk/Event.d>
+	<gtk/ToggleButton.d>
+	<gtk/RadioButton.d>
+	<gtk/ComboBoxText.d>
+	<gtk/CheckButton.d>
+	<gtk/Label.d>
+	<gtk/Dialog.d>
+	<gtk/VBox.d>
+	<gtk/Entry.d>
+	<cairo/Context.d>
+	<gtkc/cairotypes.d>
+	<cairo/Matrix.d>
+
+1389350152 /home/steve/COMPO//regpc.d
+
+1389350152 source:/home/steve/COMPO/regpc.d
+	<main.d>
+	<config.d>
+	<constants.d>
+	<acomp.d>
+	<common.d>
+	<types.d>
+	<controlset.d>
+	<lineset.d>
+	<std/stdio.d>
+	<std/math.d>
+	<std/conv.d>
+	<gtk/DrawingArea.d>
+	<gtk/Widget.d>
+	<gtk/Button.d>
+	<gtk/Layout.d>
+	<gtk/Frame.d>
+	<gdk/RGBA.d>
+	<gtk/ComboBoxText.d>
+	<gtk/SpinButton.d>
+	<gtk/RadioButton.d>
+	<gtk/CheckButton.d>
+	<gtk/Label.d>
+	<cairo/Context.d>
+	<gtkc/cairotypes.d>
+	<cairo/Matrix.d>
+
+1388911894 /home/steve/COMPO//shapelib.d
+
+1388911894 source:/home/steve/COMPO/shapelib.d
+	<types.d>
+
+1389341529 /home/steve/COMPO//drawing.d
+
+1389341529 source:/home/steve/COMPO/drawing.d
+	<main.d>
+	<constants.d>
+	<acomp.d>
+	<common.d>
+	<types.d>
+	<controlset.d>
+	<lineset.d>
+	<std/stdio.d>
+	<std/math.d>
+	<std/conv.d>
+	<gtk/DrawingArea.d>
+	<gtk/Widget.d>
+	<gtk/Button.d>
+	<gtk/Layout.d>
+	<gtk/Frame.d>
+	<gdk/RGBA.d>
+	<gtk/ComboBoxText.d>
+	<gtk/Button.d>
+	<gtk/SpinButton.d>
+	<gtk/ToggleButton.d>
+	<gtk/RadioButton.d>
+	<gtk/CheckButton.d>
+	<gtk/Label.d>
+	<cairo/Context.d>
+	<gtkc/cairotypes.d>
+	<cairo/Matrix.d>
+
+1389341674 /home/steve/COMPO//mesh.d
+
+1389341674 source:/home/steve/COMPO/mesh.d
+	<main.d>
+	<constants.d>
+	<acomp.d>
+	<common.d>
+	<types.d>
+	<controlset.d>
+	<lineset.d>
+	<std/math.d>
+	<std/stdio.d>
+	<std/conv.d>
+	<gtk/DrawingArea.d>
+	<gtk/Widget.d>
+	<gtk/Label.d>
+	<gtk/Button.d>
+	<gtk/SpinButton.d>
+	<gtk/CheckButton.d>
+	<gtk/RadioButton.d>
+	<gtk/ToggleButton.d>
+	<gtk/Layout.d>
+	<gtk/Frame.d>
+	<gtk/Range.d>
+	<gtk/ComboBoxText.d>
+	<gdk/RGBA.d>
+	<cairo/Context.d>
+	<gtkc/cairotypes.d>
+	<cairo/Matrix.d>
+	<cairo/MeshPattern.d>
+	<cairo/Version.d>
+
+1381177161 /usr/local/include/d/gtkd-2/cairo/MeshPattern.d
+	<gtkc/cairotypes.d>
+
+1381177161 /usr/local/include/d/gtkd-2/cairo/Version.d
+	<gtkc/cairotypes.d>
+
+1389698264 /home/steve/COMPO//moon.d
+
+1389698264 source:/home/steve/COMPO/moon.d
+	<main.d>
+	<constants.d>
+	<acomp.d>
+	<common.d>
+	<types.d>
+	<controlset.d>
+	<lineset.d>
+	<std/stdio.d>
+	<std/math.d>
+	<std/conv.d>
+	<gtk/DrawingArea.d>
+	<gtk/Widget.d>
+	<gtk/Button.d>
+	<gtk/Layout.d>
+	<gtk/Frame.d>
+	<gtk/Range.d>
+	<gtk/HScale.d>
+	<gtk/VScale.d>
+	<gdk/RGBA.d>
+	<gtk/ComboBoxText.d>
+	<gtk/Button.d>
+	<gtk/SpinButton.d>
+	<gtk/ToggleButton.d>
+	<gtk/RadioButton.d>
+	<gtk/CheckButton.d>
+	<gtk/Label.d>
+	<cairo/Context.d>
+	<gtkc/cairotypes.d>
+	<cairo/Matrix.d>
+
+1389703082 /home/steve/COMPO//triangle.d
+
+1389703082 source:/home/steve/COMPO/triangle.d
+	<main.d>
+	<constants.d>
+	<acomp.d>
+	<common.d>
+	<types.d>
+	<controlset.d>
+	<lineset.d>
+	<std/math.d>
+	<std/stdio.d>
+	<std/conv.d>
+	<gtk/DrawingArea.d>
+	<gtk/Widget.d>
+	<gtk/Label.d>
+	<gtk/Button.d>
+	<gtk/SpinButton.d>
+	<gtk/CheckButton.d>
+	<gtk/RadioButton.d>
+	<gtk/ToggleButton.d>
+	<gtk/Layout.d>
+	<gtk/Frame.d>
+	<gtk/Range.d>
+	<gtk/ComboBoxText.d>
+	<gdk/RGBA.d>
 	<cairo/Context.d>
 	<gtkc/cairotypes.d>
 	<cairo/Matrix.d>

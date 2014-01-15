@@ -12,6 +12,7 @@ import constants;
 import acomp;
 import common;
 import types;
+import container;
 import controlset;
 import lineset;
 import interfaces;
@@ -34,11 +35,11 @@ import gdk.Event;
 import gtk.ToggleButton;
 import gtk.RadioButton;
 import gtk.ComboBoxText;
-import gtk.SpinButton;
 import gtk.CheckButton;
 import gtk.Label;
 import gtk.Dialog;
 import gtk.VBox;
+import gtk.Entry;
 import cairo.Context;
 import gtkc.cairotypes;
 import cairo.Matrix;
@@ -60,6 +61,8 @@ class PolyCurveDlg: Dialog, CSTarget
    ControlSet cs;
    Layout layout;
    Button lcb;
+   CheckButton cbZoom, cbProtect;
+   bool ignoreZoom, ignoreProtect;
    int sides;
 
    this(string title, Polycurve o)
@@ -83,6 +86,7 @@ class PolyCurveDlg: Dialog, CSTarget
    void onCSSaveSelection() {}
    void onCSTextParam(Purpose p, string sval, int ival) {}
    void onCSNameChange(string s) {}
+   void setNameEntry(Entry e) {}
 
    bool catchClose(Event e, Widget w)
    {
@@ -143,20 +147,25 @@ class PolyCurveDlg: Dialog, CSTarget
       cs.add(lcb, ICoord(120, vp), Purpose.LINE2CURVE);
 
       vp += vi;
-      b = new Button("Recenter");
-      cs.add(b, ICoord(120, vp), Purpose.RECENTER);
-
-      vp += vi;
       b = new Button("Do");
       b.setTooltipText("Remember this state");
       cs.add(b, ICoord(120, vp), Purpose.REMEMBER);
       b = new Button("Undo");
       cs.add(b, ICoord(150, vp), Purpose.UNDO);
 
-      vp += vi;
+      vp += vi+5;
       l = new Label("Opacity");
       cs.add(l, ICoord(120, vp), Purpose.LABEL);
       new MoreLess(cs, 1, ICoord(200, vp), true);
+
+      vp += 17;
+      cbProtect = new CheckButton("Protect");
+      cbProtect.setTooltipText("Prevent modifications\n by mouse gestures");
+      cs.add(cbProtect, ICoord(60, vp), Purpose.PROTECT);
+      cbZoom = new CheckButton("Zoom");
+      cbZoom.setTooltipText("Zoom in to deal with fine details.\nSwipe the mouse with the control key\ndown to move the viewport");
+      cs.add(cbZoom, ICoord(134, vp), Purpose.ZOOMED);
+      new MoreLess(cs, 2, ICoord(200, vp), true);
 
       cs.realize(layout);
    }
@@ -212,6 +221,27 @@ class PolyCurveDlg: Dialog, CSTarget
          po.reDraw();
          return;
       }
+      if (instance== 2)
+      {
+         if (more)
+         {
+            if (po.esf == 1)
+            {
+               po.setupZoom(true);
+            }
+            else
+               po.adjustZoom(0.05);
+            po.notifyContainer(true);
+         }
+         else
+         {
+            if (po.esf-0.05 < 1)
+               po.setupZoom(false);
+            else
+               po.adjustZoom(-0.05);
+            po.notifyContainer(false);
+         }
+      }
    }
 
    void onCurrentChanged()
@@ -252,6 +282,7 @@ class PolyCurveDlg: Dialog, CSTarget
          po.currentStack ~= po.current;
          po.insertVertex();
          sides++;
+         po.dirty = true;
          po.reDraw();
          return;
       }
@@ -261,6 +292,7 @@ class PolyCurveDlg: Dialog, CSTarget
          po.currentStack ~= po.current;
          po.deleteEdge();
          sides--;
+         po.dirty = true;
          po.reDraw();
          return;
       }
@@ -280,14 +312,7 @@ class PolyCurveDlg: Dialog, CSTarget
 
 
          po.pcPath[po.current].type = t;
-         po.reDraw();
-         return;
-      }
-      if (p == Purpose.RECENTER)
-      {
-         po.editStack ~= po.pcPath.dup;
-         po.currentStack ~= po.current;
-         po.centerPath();
+         po.dirty = true;
          po.reDraw();
          return;
       }
@@ -306,8 +331,26 @@ class PolyCurveDlg: Dialog, CSTarget
             po.current = po.currentStack[l-1];
             po.editStack.length = l-1;
             po.currentStack.length = l-1;
+            po.dirty = true;
             po.reDraw();
          }
+         return;
+      }
+      if (p== Purpose.ZOOMED)
+      {
+         if (ignoreZoom)
+            return;
+         if (po.zoomed)
+            po.setupZoom(false);
+         else
+            po.setupZoom(true);
+         return;
+      }
+      if (p== Purpose.PROTECT)
+      {
+         if (ignoreProtect)
+            return;
+         po.protect = !po.protect;
          return;
       }
    }
@@ -320,15 +363,17 @@ class Polycurve : LineSet
    PathItem[] pcPath, pcRPath;
    PathItem[][] editStack;
    int[] currentStack;
-   RGBA saveAltColor;
    double editOpacity;
-   bool fill, solid;
    bool constructing, editing;
-   int current, prev, next, lastCurrent, lastActive;
+   int current, prev, next, lastCurrent, lastActive, edits;
    PolyCurveDlg md;
    int activeCoords;
+   // For zoomed edting
+   double esf;
+   Coord zo, vo, zbr;
+   bool zoomed, protect;
 
-   void syncControls()
+   override void syncControls()
    {
       cSet.setLineParams(lineWidth);
       cSet.toggling(false);
@@ -381,8 +426,9 @@ class Polycurve : LineSet
       center.x = width/2;
       center.y = height/2;
       constructing = true;
-      altColor = new RGBA();
+      altColor = new RGBA(1,1,1,1);
       editOpacity = 0.5;
+      esf = 1;
       les = true;
       md = new PolyCurveDlg("Edit "~s, this);
       md.setSizeRequest(240, 200);
@@ -392,12 +438,15 @@ class Polycurve : LineSet
       aw.getPosition(px, py);
       md.move(px+4, py+300);
       tm = new Matrix(&tmData);
+      edits = 0;
 
       setupControls(3);
+      cSet.addInfo(
+"Click in the Drawing Area to add curves.\nThese will initially be shown as straight\n lines. Right-click when finished - the\nlast curve will be added then.");
       positionControls(true);
    }
 
-   void extendControls()
+   override void extendControls()
    {
       int vp = cSet.cy;
 
@@ -420,8 +469,8 @@ class Polycurve : LineSet
 
       Button b = new Button("Edit");
       b.setSizeRequest(70, -1);
-      b.setSensitive(0);
-      cSet.add(b, ICoord(203, vp+2), Purpose.REDRAW, false);
+      b.setSensitive(!constructing);
+      cSet.add(b, ICoord(203, vp+2), Purpose.REDRAW);
 
       vp += 40;
 
@@ -437,6 +486,23 @@ class Polycurve : LineSet
       cSet.cy = vp+30;
    }
 
+   override void afterDeserialize()
+   {
+      constructing = editing = false;
+      dirty = true;
+      cSet.enable(Purpose.REDRAW);
+      cSet.setInfo("Click the Edit button to move, add, or delete curves");
+   }
+
+   void setComplete()
+   {
+      constructing = false;
+      figureCenter();
+      centerPath();
+      cSet.enable(Purpose.REDRAW);
+      cSet.setInfo("Click the Edit button to move, add, or delete curves");
+   }
+
    void hideDialogs()
    {
       if (editing)
@@ -447,56 +513,19 @@ class Polycurve : LineSet
       }
    }
 
-   void onCSNotify(Widget w, Purpose wid)
+   override bool specificNotify(Widget w, Purpose wid)
    {
       switch (wid)
       {
-      case Purpose.COLOR:
-         lastOp = push!RGBA(this, baseColor, OP_COLOR);
-         setColor(false);
-         break;
-      case Purpose.FILLCOLOR:
-         lastOp = push!RGBA(this, altColor, OP_ALTCOLOR);
-         setColor(true);
-         break;
-      case Purpose.LESROUND:
-         if ((cast(RadioButton) w).getActive())
-            les = false;
-         break;
-      case Purpose.LESSHARP:
-         if ((cast(RadioButton) w).getActive())
-            les = true;
-         break;
-      case Purpose.XFORMCB:
-         xform = (cast(ComboBoxText) w).getActive();
-         break;
-      case Purpose.FILL:
-         fill = !fill;
-         break;
-      case Purpose.SOLID:
-         solid = !solid;
-         if (solid)
-         {
-            cSet.disable(Purpose.FILL);
-            cSet.disable(Purpose.FILLCOLOR);
-         }
-         else
-         {
-            cSet.enable(Purpose.FILL);
-            cSet.enable(Purpose.FILLCOLOR);
-         }
-         break;
       case Purpose.REDRAW:
          lastOp = push!(PathItem[])(this, pcPath, OP_REDRAW);
          editing = !editing;
          switchMode();
-         dummy.grabFocus();
-         return;
+         focusLayout();
+         return true;
       default:
-         break;
+         return false;
       }
-      aw.dirty = true;
-      reDraw();
    }
 
    void switchMode()
@@ -505,16 +534,19 @@ class Polycurve : LineSet
       {
          md.showAll();
          cSet.setLabel(Purpose.REDRAW, "Design");
+         cSet.setInfo("Click the Design button, or close the edit\ndialog to exit edit mode.");
       }
       else
       {
+         setupZoom(false);
          md.hide();
          cSet.setLabel(Purpose.REDRAW, "Edit");
+         cSet.setInfo("Click the Edit button to move, add, or delete curves");
       }
       reDraw();
    }
 
-   bool specificUndo(CheckPoint cp)
+   override bool specificUndo(CheckPoint cp)
    {
       switch (cp.type)
       {
@@ -530,7 +562,7 @@ class Polycurve : LineSet
       return true;
    }
 
-   void preResize(int oldW, int oldH)
+   override void preResize(int oldW, int oldH)
    {
       center.x = width/2;
       center.y = height/2;
@@ -559,25 +591,52 @@ class Polycurve : LineSet
       return pi;
    }
 
-   static double distance(Coord a, Coord b)
+   static pure double distance(Coord a, Coord b)
    {
       double dx = a.x-b.x, dy = a.y-b.y;
       return sqrt(dx*dx+dy*dy);
    }
 
-   static movePoint(ref Coord c, double dx, double dy, double factor = 1)
+   double scaledDistance(Coord a, Coord b)
    {
-      c.x += dx*factor;
-      c.y += dy*factor;
+//writefln("w %f h %f zw %f zh %f", 1.0*width, 1.0*height, zbr.x-zo.x, zbr.y-zo.y);
+//writefln("%f - %f %f, %f %f",esf, zo.x,zo.y,vo.x,vo.y);
+//writefln("cog %f %f mouse %f %f", a.x, a.y, b.x,b.y);
+      Coord as = a, bs = b;
+      if (zoomed)
+      {
+         as.x = a.x*esf;
+         as.y = a.y*esf;
+         bs.x = vo.x-zo.x+b.x;
+         bs.y = vo.y-zo.y+b.y;
+//writefln("scog %f %f mouse %f %f", as.x, as.y, bs.x, bs.y);
+      }
+      double d = distance(as,bs);
+      return d;
    }
 
-   bool buttonPress(Event e, Widget w)
+   static movePoint(ref Coord c, double dx, double dy, double factor = 1)
+   {
+      if (factor == 1)
+      {
+         c.x += dx*factor;
+         c.y += dy*factor;
+      }
+      else
+      {
+         c.x += dx;
+         c.y += dy;
+      }
+   }
+
+
+   override bool buttonPress(Event e, Widget w)
    {
       GdkModifierType state;
       e.getState(state);
       if (constructing)
       {
-         dummy.grabFocus();
+         focusLayout();
          PathItem last;
          bool started;
          if (root.type == -2)
@@ -615,11 +674,9 @@ class Polycurve : LineSet
             }
             PathItem pi = makePathItem(last, root.end.x, root.end.y);
             pcPath ~= pi;
-            constructing = false;
-            centerPath(true);
             dirty = true;
             editStack ~= pcPath.dup;
-            cSet.enable(Purpose.REDRAW);
+            setComplete();
             currentStack ~= 0;
             aw.dirty = true;
             reDraw();
@@ -631,13 +688,16 @@ class Polycurve : LineSet
       {
          if (e.button.button == 3)
          {
-            Coord m = Coord(e.button.x-center.x, e.button.y-center.y);
-            double minsep = 100000;
+//writeln("CLICKED");
+            Coord m = Coord(e.button.x, e.button.y);
+            double cogoffx = 0, cogoffy = 0;
+            double minsep = double.max;
             int best = 0;
             int last = pcPath.length-1;
             foreach (int i, PathItem pi; pcPath)
             {
-               double d = distance(pi.cog, m);
+               Coord ccog = Coord(center.x+pi.cog.x, center.y+pi.cog.y);
+               double d = scaledDistance(ccog, m);
                if (d < minsep)
                {
                   best = i;
@@ -659,7 +719,7 @@ class Polycurve : LineSet
       return ACBase.buttonPress(e, w);
    }
 
-   bool buttonRelease(Event e, Widget w)
+   override bool buttonRelease(Event e, Widget w)
    {
       if (constructing)
       {
@@ -671,7 +731,7 @@ class Polycurve : LineSet
       }
    }
 
-   bool mouseMove(Event e, Widget w)
+   override bool mouseMove(Event e, Widget w)
    {
       if (constructing)
       {
@@ -691,50 +751,9 @@ class Polycurve : LineSet
       pcPath[current].cog = Coord(tx/4, ty/4);
    }
 
-   void centerPath(bool firstTime = false)
+   override void onCSMoreLess(int instance, bool more, bool coarse)
    {
-      double cx = 0, cy = 0;
-      if (firstTime)
-      {
-         cx = root.end.x, cy = root.end.y;
-         foreach (PathItem pi; pcPath)
-         {
-            cx += pi.cp1.x+pi.cp2.x+pi.end.x;
-            cy += pi.cp1.y+pi.cp2.y+pi.end.y;
-         }
-         cx /= 1+pcPath.length*3;
-         cy /= 1+pcPath.length*3;
-      }
-      else
-      {
-         foreach (PathItem pi; pcPath)
-         {
-            cx += pi.start.x+pi.cp1.x+pi.cp2.x+pi.end.x;
-            cy += pi.start.y+pi.cp1.y+pi.cp2.y+pi.end.y;
-         }
-         cx /= pcPath.length*4;
-         cy /= pcPath.length*4;
-      }
-
-      foreach (ref PathItem pi; pcPath)
-      {
-         pi.start.x -= cx;
-         pi.cp1.x -= cx;
-         pi.cp2.x -= cx;
-         pi.end.x -= cx;
-         pi.start.y -= cy;
-         pi.cp1.y -= cy;
-         pi.cp2.y -= cy;
-         pi.end.y -= cy;
-
-         pi.cog.x -= cx;
-         pi.cog.y -= cy;
-      }
-   }
-
-   void onCSMoreLess(int instance, bool more, bool coarse)
-   {
-      dummy.grabFocus();
+      focusLayout();
       if (instance == 0)
          modifyTransform(xform, more, coarse);
       else
@@ -828,16 +847,54 @@ class Polycurve : LineSet
       movePoint(pi.cp2, dx, dy, d/rd);
    }
 
-
-   void transformPath(bool mValid)
+   Coord figureCenter()
    {
-      //rRoot =root;
-      pcRPath = pcPath.dup;
-      //if (mValid)
-      //   tm.transformPoint(rRoot.end.x, rRoot.end.y);
-      //rRoot.end.x += center.x;
-      //rRoot.end.y += center.y;
+      int points = 0;
+      double cx = 0, cy = 0;
+      for (int i = 0; i < pcPath.length; i++)
+      {
+         with (pcPath[i])
+         {
+            cx += start.x;
+            cy += start.y;
+            cx += end.x;
+            cy += end.y;
+            points += 2;
+            if (type ==1)
+            {
+               cx += cp1.x;
+               cy += cp1.y;
+               cx += cp2.x;
+               cy += cp2.y;
+               points += 2;
+            }
+         }
+      }
+      center = Coord(cx/points, cy/points);
+      return center;
+   }
 
+   void centerPath()
+   {
+      for (int i = 0; i < pcPath.length; i++)
+      {
+         pcPath[i].start.x -= center.x;
+         pcPath[i].start.y -= center.y;
+         pcPath[i].cp1.x -= center.x;
+         pcPath[i].cp1.y -= center.y;
+         pcPath[i].cp2.x -= center.x;
+         pcPath[i].cp2.y -= center.y;
+         pcPath[i].end.x -= center.x;
+         pcPath[i].end.y -= center.y;
+
+         pcPath[i].cog.x -= center.x;
+         pcPath[i].cog.y -= center.y;
+      }
+   }
+
+   override void transformPath(bool mValid)
+   {
+      pcRPath = pcPath.dup;
       for (int i = 0; i < pcRPath.length; i++)
       {
          if (mValid)
@@ -847,23 +904,23 @@ class Polycurve : LineSet
             tm.transformPoint(pcRPath[i].cp2.x, pcRPath[i].cp2.y);
             tm.transformPoint(pcRPath[i].end.x, pcRPath[i].end.y);
          }
-         pcRPath[i].start.x += center.x;
-         pcRPath[i].start.y += center.y;
-         pcRPath[i].cp1.x += center.x;
-         pcRPath[i].cp1.y += center.y;
-         pcRPath[i].cp2.x += center.x;
-         pcRPath[i].cp2.y += center.y;
-         pcRPath[i].end.x += center.x;
-         pcRPath[i].end.y += center.y;
+         pcRPath[i].start.x += center.x+hOff;
+         pcRPath[i].start.y += center.y+vOff;
+         pcRPath[i].cp1.x += center.x+hOff;
+         pcRPath[i].cp1.y += center.y+vOff;
+         pcRPath[i].cp2.x += center.x+hOff;
+         pcRPath[i].cp2.y += center.y+vOff;
+         pcRPath[i].end.x += center.x+hOff;
+         pcRPath[i].end.y += center.y+vOff;
       }
    }
 
    void rSegTo(Context c, PathItem pi)
    {
       if (pi.type == 1)
-         c.curveTo(hOff+pi.cp1.x, vOff+pi.cp1.y, hOff+pi.cp2.x, vOff+pi.cp2.y, hOff+pi.end.x, vOff+pi.end.y);
+         c.curveTo(pi.cp1.x, pi.cp1.y, pi.cp2.x, pi.cp2.y, pi.end.x, pi.end.y);
       else
-         c.lineTo(hOff+pi.end.x, vOff+pi.end.y);
+         c.lineTo(pi.end.x, pi.end.y);
    }
 
    void eSegTo(Context c, PathItem pi)
@@ -877,11 +934,12 @@ class Polycurve : LineSet
    void colorEdge(Context c, double r, double g, double b, PathItem pi)
    {
       c.setSourceRgb(r,g,b);
-      c.setLineWidth(1);
+      double lw = 1;
+      if (zoomed) lw /= esf;
+      c.setLineWidth(lw);
       c.moveTo(center.x+pi.start.x, center.y+pi.start.y);
       if (pi.type == 1)
-         c.curveTo(center.x+pi.cp1.x, center.y+pi.cp1.y, center.x+pi.cp2.x,
-                   center.y+pi.cp2.y, center.x+pi.end.x, center.y+pi.end.y);
+         c.curveTo(center.x+pi.cp1.x, center.y+pi.cp1.y, center.x+pi.cp2.x, center.y+pi.cp2.y, center.x+pi.end.x, center.y+pi.end.y);
       else
          c.lineTo(center.x+pi.end.x, center.y+pi.end.y);
       c.stroke();
@@ -905,14 +963,10 @@ class Polycurve : LineSet
       }
       if (pcPath.length < 2)
          return;
-      if (dirty)
-      {
-         transformPath(compoundTransform());
-         dirty = false;
-      }
+      transformPath(compoundTransform());
       c.setLineWidth(lineWidth);
       c.setLineJoin(les? CairoLineJoin.MITER: CairoLineJoin.ROUND);
-      c.moveTo(hOff+pcRPath[0].start.x, vOff+pcRPath[0].start.y);
+      c.moveTo(pcRPath[0].start.x, pcRPath[0].start.y);
       for (int i = 0; i < pcRPath.length; i++)
          rSegTo(c, pcRPath[i]);
       c.closePath();
@@ -936,6 +990,7 @@ class Polycurve : LineSet
 
    void adjustPI(double dx, double dy)
    {
+      edits++;
       if (current != lastCurrent || activeCoords != lastActive )
       {
          editStack ~= pcPath.dup;
@@ -986,20 +1041,34 @@ class Polycurve : LineSet
          default:
             break;
       }
+      dirty = true;
    }
 
-   void mouseMoveOp(double dx, double dy)
+   override void mouseMoveOp(double dx, double dy, GdkModifierType state)
    {
+      if (constructing)  // Only interested in clicks
+         return;
       if (!editing)
       {
          hOff += dx;
          vOff += dy;
          return;
       }
+      if (state & GdkModifierType.CONTROL_MASK)
+      {
+         adjustView(dx, dy);
+         reDraw();
+         return;
+      }
+
+      if (protect)
+      {
+         aw.popupMsg("You were zooming or moving the viewport, and so protect\nhas been turned on automatically.\nUncheck 'Protect' to proceed.", MessageType.INFO);
+         return;
+      }
       figureNextPrev();
       adjustPI(dx, dy);
       resetCog();
-      dirty = true;
    }
 
    void figureNextPrev()
@@ -1017,10 +1086,13 @@ class Polycurve : LineSet
 
    void renderForEdit(Context c)
    {
+      doZoom(c);
       c.setSourceRgba(1,1,1, editOpacity);
       c.paint();
       c.setSourceRgb(0,0,0);
-      c.setLineWidth(0.5);
+      double lw = 1;
+      if(zoomed) lw /= esf;
+      c.setLineWidth(lw);
       c.moveTo(center.x+pcPath[0].start.x, center.y+pcPath[0].start.y);
       for (int i = 0; i < pcPath.length; i++)
          eSegTo(c, pcPath[i]);
@@ -1028,37 +1100,135 @@ class Polycurve : LineSet
       c.stroke();
 
       figureNextPrev();
-//writefln("length %d current %d next %d prev %d", pcPath.length, current, next, prev);
 
-      c.setLineWidth(1);
+      lw *= 2;
+      c.setLineWidth(lw);
       colorEdge(c, 1, 0, 0, pcPath[current]);
 
       colorEdge(c, 0, 1, 0, pcPath[prev]);
       if (pcPath[current].type == 1)
       {
+         double cpd = 3;
+         if (zoomed) cpd /= esf;
          // Render the current control points
          c.setSourceRgb(0,0,0);
-         c.moveTo(center.x+pcPath[current].cp1.x, center.y+pcPath[current].cp1.y-3);
-         c.lineTo(center.x+pcPath[current].cp1.x+3, center.y+pcPath[current].cp1.y+3);
-         c.lineTo(center.x+pcPath[current].cp1.x-3, center.y+pcPath[current].cp1.y+3);
+         c.moveTo(center.x+pcPath[current].cp1.x, center.y+pcPath[current].cp1.y-cpd);
+         c.lineTo(center.x+pcPath[current].cp1.x+cpd, center.y+pcPath[current].cp1.y+cpd);
+         c.lineTo(center.x+pcPath[current].cp1.x-cpd, center.y+pcPath[current].cp1.y+cpd);
          c.closePath();
          c.fill();
 
          c.setSourceRgb(0,0,1);
-         c.moveTo(center.x+pcPath[current].cp2.x, center.y+pcPath[current].cp2.y+3);
-         c.lineTo(center.x+pcPath[current].cp2.x+3, center.y+pcPath[current].cp2.y-3);
-         c.lineTo(center.x+pcPath[current].cp2.x-3, center.y+pcPath[current].cp2.y-3);
+         c.moveTo(center.x+pcPath[current].cp2.x, center.y+pcPath[current].cp2.y+cpd);
+         c.lineTo(center.x+pcPath[current].cp2.x+cpd, center.y+pcPath[current].cp2.y-cpd);
+         c.lineTo(center.x+pcPath[current].cp2.x-cpd, center.y+pcPath[current].cp2.y-cpd);
          c.closePath();
          c.fill();
       }
    }
 
-   void render(Context c)
+   override void render(Context c)
    {
       if (editing)
          renderForEdit(c);
       else
          renderActual(c);
+   }
+
+   void notifyContainer(bool ofWhat)
+   {
+
+   }
+
+   void adjustView(double dx, double dy)
+   {
+      if (dx > 0)
+      {
+         if (vo.x-dx > zo.x)
+            vo.x -= dx;
+         else
+            vo.x = zo.x;
+      }
+      else
+      {
+         dx = -dx;
+         if (vo.x+width+dx < zbr.x)
+            vo.x += dx;
+         else
+            vo.x = zbr.x-width;
+      }
+      if (dy > 0)
+      {
+         if (vo.y-dy > zo.y)
+            vo.y -= dy;
+         else
+            vo.y = zo.y;
+      }
+      else
+      {
+         dy = -dy;
+         if (vo.y+height+dy < zbr.y)
+            vo.y += dy;
+         else
+            vo.y = zbr.y-height;
+      }
+   }
+
+   void adjustZoom(double by)
+   {
+      esf += by;
+      double zw = width*esf;
+      double zh = height*esf;
+      zo = Coord(-zw/2,-zh/2);
+      zbr = Coord(zw/2, zh/2);
+      reDraw();
+   }
+
+   void setupZoom(bool b)
+   {
+      if (b)
+      {
+         zoomed = true;
+         protect = true;
+         if (esf == 1)
+            adjustZoom(1);
+         vo = Coord(-0.5*width,-0.5*height);
+         md.ignoreZoom = true;
+         md.cbZoom.setActive(1);
+         md.ignoreZoom = false;
+         md.ignoreProtect = true;
+         md.cbProtect.setActive(1);
+         md.cbProtect.setSensitive(1);
+         md.ignoreProtect = false;
+         reDraw();
+      }
+      else
+      {
+         md.ignoreZoom = true;
+         md.cbZoom.setActive(0);
+         md.ignoreZoom = false;
+         md.ignoreProtect = true;
+         md.cbProtect.setActive(0);
+         md.ignoreProtect = false;
+         zoomed = false;
+         protect = false;
+         md.cbProtect.setSensitive(0);
+         if (parent !is null && parent.type == AC_CONTAINER)
+            (cast(Container) parent).unZoom();
+         reDraw();
+      }
+   }
+
+   override void doZoom(Context c)
+   {
+      if (zoomed)
+      {
+         double offsetX = vo.x+0.5*width;
+         double offsetY = vo.y+0.5*height;
+         c.translate(width/2-offsetX, height/2-offsetY);
+         c.scale(esf,esf);
+         c.translate(-width/2, -height/2);
+      }
    }
 }
 

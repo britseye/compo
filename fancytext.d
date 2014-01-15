@@ -20,6 +20,7 @@ import std.stdio;
 import std.conv;
 import std.array;
 import std.format;
+import std.math;
 
 import gtk.Layout;
 import gtk.Frame;
@@ -43,6 +44,7 @@ import pango.PgFontDescription;
 import gdk.Screen;
 import gtkc.gdktypes;
 import cairo.Surface;
+import cairo.Matrix;
 import pango.PgCairo;
 import pango.PgLayout;
 import gtkc.pangotypes;
@@ -77,13 +79,13 @@ class FancyText : TextViewItem
    int orientation;
    double angle;
    double olt;
+   double lastHo = double.min, lastVo = double.max;
    bool angleFixed, fill, solid;
    RGBA saveAltColor;
-   //Surface hiddenSurface;
-   //Context hidden;
-   CairoPath *tpath;
+   CairoPath* tPath;
+   CairoPath pathCopy;
    double ascent, descent;
-   bool havePath;
+   bool textChanged, angleChanged;
 
    string formatLT(double lt)
    {
@@ -92,7 +94,7 @@ class FancyText : TextViewItem
       return w.data;
    }
 
-   void syncControls()
+   override void syncControls()
    {
       cSet.setLineWidth(olt);
       cSet.setTextParams(alignment, pfd.toString());
@@ -140,7 +142,7 @@ class FancyText : TextViewItem
       angle = other.angle;
       angleFixed = other.angleFixed;
       syncControls();
-      dirty = true;
+      textChanged = true;
    }
 
    this(AppWindow w, ACBase parent)
@@ -148,18 +150,20 @@ class FancyText : TextViewItem
       string s = "Fancy Text "~to!string(++nextOid);
       super(w, parent, s, AC_FANCYTEXT);
       aw = w;
-      altColor = new RGBA();
+      olt = 0.2;
+      altColor = new RGBA(0,0,0,1);
       angle = 0.0;
       angleFixed = true;
-      olt = 0.5;
+      tm = new Matrix(&tmData);
 
       int vp = rpTm+height+85;
       int tvp = vp;
       setupControls(1);
+      cSet.setLineWidth(olt);
       positionControls(true);
    }
 
-   void extendControls()
+   override void extendControls()
    {
       int vp = cSet.cy;
       int tvp = vp;
@@ -198,11 +202,17 @@ class FancyText : TextViewItem
       cSet.cy=vp+40;
    }
 
-   void preResize(int oldW, int oldH)
+   override void afterDeserialize()
    {
-      havePath = false;
-      center.x = width/2;
-      center.y = height/2;
+      textBlock.setAlignment(cast(PangoAlignment) alignment);
+      te.modifyFont(pfd);
+      te.overrideColor(te.getStateFlags(), baseColor);
+      dirty = true;
+   }
+
+   override void preResize(int oldW, int oldH)
+   {
+      lastHo = double.min, lastVo = double.max;
       double vr = cast(double) width/oldW;
       double hr = cast(double) width/oldW;
       hOff *= hr;
@@ -212,25 +222,15 @@ class FancyText : TextViewItem
    void bufferChanged(TextBuffer b)
    {
       aw.dirty = true;
-      dirty = true;
-      havePath = false;
+      textChanged = true;
    }
 
-   void onCSNotify(Widget w, Purpose wid)
+   override bool specificNotify(Widget w, Purpose wid)
    {
       switch (wid)
       {
-      case Purpose.COLOR:
-         lastOp = push!RGBA(this, baseColor, OP_COLOR);
-         setColor(false);
-         dummy.grabFocus();
-         break;
       case Purpose.FILLCOLOR:
          setColor(true);
-         break;
-      case Purpose.EDITMODE:
-         editMode = !editMode;
-         toggleView();
          break;
       case Purpose.FILL:
          fill = !fill;
@@ -253,31 +253,33 @@ class FancyText : TextViewItem
          }
          break;
       default:
-         break;
+         return false;
       }
-      aw.dirty = true;
-      reDraw();
+      return true;
    }
 
-   void onCSLineWidth(double lw)
+   override void onCSLineWidth(double lw)
    {
       olt = lw;
       aw.dirty = true;
       reDraw();
    }
 
-   void onCSMoreLess(int instance, bool more, bool far)
+   override void onCSMoreLess(int instance, bool more, bool far)
    {
       int direction = more? 1: -1;
       if (instance == 0)
       {
          adjustFontSize(direction, far);
+         textChanged = true;
       }
       else if (instance == 1)
       {
-         if (far)
-            direction *= 5;
-            angle += direction;
+         double ra = far? rads*5: rads/3;
+         if (more)
+            ra = -ra;
+         //lastOp = pushC!Transform(this, tf, OP_ROT);
+         angle -= ra;
       }
       else
          return;
@@ -288,22 +290,23 @@ class FancyText : TextViewItem
    void setOrientation(int o)
    {
       orientation = o;
+      angleChanged = true;
       switch (orientation)
       {
          case 0:
             angle = 0.0;
             break;
          case 1:
-            angle = 270.0;
+            angle = 3*PI/2;
             break;
          case 2:
-            angle = 180.0;
+            angle = PI;
             break;
          case 3:
-            angle = 90.0;
+            angle = PI/2;
             break;
          default:
-            angle = 330.0;
+            angle = 7*PI/4;
             angleFixed = false;
             cSet.enable(Purpose.MOL, 1);
             return;
@@ -312,7 +315,7 @@ class FancyText : TextViewItem
       cSet.disable(Purpose.MOL, 1);
       aw.dirty = true;
       reDraw();
-   };
+   }
 
    void toggleView()
    {
@@ -349,60 +352,88 @@ class FancyText : TextViewItem
       }
       aw.dirty = true;
    }
-/*
-   void adjust(int id, int direction, bool much)
+
+   void transformEachPath()
    {
-      if (angleFixed)
-         return;
-      direction = -direction;
-      if (much)
-         direction *= 5;
-      angle += direction;
-      reDraw();
+      CairoPathData* data;
+      if (angle != 0)
+         tm.initRotate(angle);
+
+      void rotate(int n)
+      {
+         for (int i = 1; i < n; i++)  // First item in a CairoPathData sequence is the header
+         {
+            if (angle != 0)
+               tm.transformPoint(data[i].point.x, data[i].point.y);
+            data[i].point.x += hOff;
+            data[i].point.y += vOff;
+         }
+      }
+
+      for (int i = 0; i < pathCopy.numData; i += pathCopy.data[i].header.length)
+      {
+         data = &pathCopy.data[i];
+         switch (data.header.type)
+         {
+         case cairo_path_data_type_t.MOVE_TO:
+         case cairo_path_data_type_t.LINE_TO:
+            rotate(2);
+            break;
+         case cairo_path_data_type_t.CURVE_TO:
+            rotate(4);
+            break;
+         case cairo_path_data_type_t.CLOSE_PATH:
+            break;
+         default:
+            break;
+         }
+      }
    }
-*/
-   void render(Context c)
+
+   void getTextPath(string text, Context c)
+   {
+      scope Surface surface = c.getTarget().createSimilar(cairo_content_t.COLOR_ALPHA, width, height);
+      scope Context tc = c.create(surface);
+      PgLayout pgl = PgCairo.createLayout(tc);
+      pgl.setSpacing(0);
+      pgl.setFontDescription(pfd);
+      pgl.setText(text);
+      PgCairo.layoutPath(tc, pgl);
+      tc.strokePreserve();
+      tPath = cast(CairoPath*) tc.copyPath();
+   }
+
+   override void render(Context c)
    {
       string text = tb.getText();
       if (!text.length)
          return;
-      double r = baseColor.red();
-      double g = baseColor.green();
-      double b = baseColor.blue();
+      c.save();
       c.newPath();
       c.translate(hOff+0.5*width, vOff+0.5*height);
-      c.rotate(angle*rads);
-      c.translate(-0.5*width, -0.5*height);
+      c.rotate(angle);
+      c.translate(-lpX-0.5*width, -lpY-0.5*height);
       PgLayout pgl = PgCairo.createLayout(c);
       pgl.setText(text);
       pgl.setAlignment(cast(PangoAlignment) alignment);
       pgl.setFontDescription(pfd);
-      c.moveTo(0.5*width, 0.5*height);
+      PangoRectangle pr;
+      pgl.getExtents(null, &pr);
+      c.moveTo(lpX+0.5*width-pr.width/2048, lpY+.5*height-pr.height/2048);
       PgCairo.layoutPath(c, pgl);
-      c.setSourceRgb(0,0,0);
+
+      c.setSourceRgb(baseColor.red,baseColor.green,baseColor.blue);
       c.setLineWidth(olt);
       c.strokePreserve();
       if (solid)
-      {
-         c.setSourceRgba(r, g, b, 1.0);
          c.fill();
-      }
       else if (fill)
       {
-         double fr = altColor.red();
-         double fg = altColor.green();
-         double fb = altColor.blue();
-         c.setSourceRgba(fr, fg, fb, 1.0);
-         c.fillPreserve();
+         c.setSourceRgba(altColor.red, altColor.green, altColor.blue, 1.0);
+         c.fill();
       }
-      if (!solid)
-      {
-         c.setSourceRgb(r, g, b);
-         c.stroke();
-      }
+      c.restore();
 
       if (!isMoved) cSet.setDisplay(0, reportPosition());
    }
 }
-
-

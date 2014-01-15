@@ -39,7 +39,7 @@ class Fader: ACBase
    Pattern pat;
    Label ov;
 
-   void syncControls()
+   override void syncControls()
    {
       cSet.toggling(false);
       cSet.setToggle(Purpose.SOLID, pin);
@@ -85,7 +85,7 @@ class Fader: ACBase
       return ++nextOid;
    }
 
-   void extendControls()
+   override void extendControls()
    {
       int vp = cSet.cy;
 
@@ -103,6 +103,11 @@ class Fader: ACBase
       cb.setActive(true);
       cSet.add(cb, ICoord(0, vp), Purpose.FILLOUTLINE);
 
+      vp += 20;
+      cb = new CheckButton("Pin to Size");
+      cb.setActive(false);
+      cSet.add(cb, ICoord(0, vp), Purpose.PIN);
+
       l = new Label("Width");
       l.setTooltipText("Adjust width - hold down <Ctrl> for faster action");
       cSet.add(l, ICoord(195, vp), Purpose.LABEL);
@@ -114,12 +119,13 @@ class Fader: ACBase
       cSet.add(l, ICoord(195, vp), Purpose.LABEL);
       new MoreLess(cSet, 2, ICoord(260, vp), true);
 
+      vp += 20;
       new InchTool(cSet, 0, ICoord(0, vp+5), true);
 
       cSet.cy = vp+40;
    }
 
-   void preResize(int oldW, int oldH)
+   override void preResize(int oldW, int oldH)
    {
       hOff = width/4;
       vOff = height/4;
@@ -127,15 +133,11 @@ class Fader: ACBase
       rh = height/2;
    }
 
-   void onCSNotify(Widget w, Purpose wid)
+   override bool specificNotify(Widget w, Purpose wid)
    {
       switch (wid)
       {
-      case Purpose.COLOR:
-         lastOp = push!RGBA(this, baseColor, OP_COLOR);
-         setColor(false);
-         break;
-      case Purpose.SOLID:
+      case Purpose.PIN:
          pin = !pin;
          if (pin)
             outline= false;
@@ -144,10 +146,9 @@ class Fader: ACBase
          outline = !outline;
          break;
       default:
-         return;
+         return false;
       }
-      aw.dirty = true;
-      reDraw();
+      return true;
    }
 
    void undo()
@@ -159,7 +160,6 @@ class Fader: ACBase
       switch (cp.type)
       {
       case OP_COLOR:
-         dummy.grabFocus();
          baseColor = cp.color.copy();
          lastOp = OP_UNDEF;
          break;
@@ -188,9 +188,9 @@ class Fader: ACBase
       reDraw();
    }
 
-   void onCSMoreLess(int instance, bool more, bool coarse)
+   override void onCSMoreLess(int instance, bool more, bool coarse)
    {
-      dummy.grabFocus();
+      focusLayout();
       double n = more? 1: -1;
       if (coarse)
          n *= 10;
@@ -235,18 +235,17 @@ class Fader: ACBase
       reDraw();
    }
 
-   void render(Context c)
+   override void render(Context c)
    {
       // for testing
-      c.save();
-      c.setSourceRgb(0,0,0);
+      c.setSourceRgb(0.7,0.7,0.7);
       c.setLineWidth(10);
-      c.moveTo(0, height/2);
-      c.lineTo(width, height/2);
-      c.moveTo(width/2, 0);
-      c.lineTo(width/2, height);
+      c.moveTo(lpX, lpY+height/2);
+      c.lineTo(lpX+width, lpY+height/2);
+      c.moveTo(lpX+width/2, lpY);
+      c.lineTo(lpX+width/2, lpY+height);
       c.stroke();
-      c.restore();
+      //c.restore();
 
       double r = baseColor.red();
       double g = baseColor.green();

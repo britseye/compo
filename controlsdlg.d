@@ -26,6 +26,7 @@ import gobject.Value;
 
 extern(C) bool teFocusFunc(void* vp)
 {
+   writeln("teFocusFunc");
    ACBase acb = cast(ACBase) vp;
    if (acb.getGroup()== ACGroups.TEXT)
    {
@@ -33,11 +34,11 @@ extern(C) bool teFocusFunc(void* vp)
       if (tv.editMode)
          tv.te.grabFocus();
       else
-         acb.dummy.grabFocus();
+         acb.focusLayout();
 
    }
    else
-      acb.dummy.grabFocus();
+      acb.focusLayout();
    return true;
 }
 

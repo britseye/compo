@@ -59,7 +59,7 @@ class USPS : TextViewItem
    char[66] strokeData;
    string bcStrokes, bcData;
 
-   void syncControls()
+   override void syncControls()
    {
       cSet.setTextParams(alignment, pfd.toString());
       cSet.toggling(false);
@@ -98,7 +98,7 @@ class USPS : TextViewItem
       positionControls(true);
    }
 
-   void extendControls()
+   override void extendControls()
    {
       int vp = cSet.cy;
 
@@ -114,7 +114,7 @@ class USPS : TextViewItem
       cSet.cy = vp+35;
    }
 
-   void preResize(int oldW, int oldH)
+   override void preResize(int oldW, int oldH)
    {
       double hr = cast(double) width/oldW;
       double vr = cast(double) height/oldH;
@@ -130,25 +130,20 @@ class USPS : TextViewItem
       dirty = true;
    }
 
-   void onCSNotify(Widget w, Purpose wid)
+   override bool specificNotify(Widget w, Purpose wid)
    {
       switch (wid)
       {
-      case Purpose.EDITMODE:
-         editMode = !editMode;
-         toggleView();
-         break;
       case Purpose.HRDATA:
          showData = !showData;
          break;
       default:
-         return;
+         return false;;
       }
-      aw.dirty = true;
-      reDraw();
+      return true;
    }
 
-   void toggleView()
+   override void toggleView()
    {
       if (editMode)
       {
@@ -459,7 +454,7 @@ class USPS : TextViewItem
       double tbPadding = 0.7112;
    }
 
-   void render(Context c)
+   override void render(Context c)
    {
       string[] split;
       split = splitText();
@@ -519,7 +514,7 @@ class USPS : TextViewItem
       double b = t+dims.barHeight;     // b is the position for the bottom of the full bars and the descenders
       double mb = t+dims.medHeight;    // mb is the position for the bottom of the short bars and the ascenders
       double mt = mb-dims.shortHeight; // mt is the position for the top of the short bars and the descenders
-      double step = dims.c2c;;
+      double step = dims.c2c;
       double cx = hOff + 0.5*(width-dims.width);
 
       c.save();
@@ -553,7 +548,7 @@ class USPS : TextViewItem
       c.restore;
       cx = 0.5*(width-tbw);
       double cy = b+dims.tbPadding;  // Note that the total height for the barcode includes the minimum padding
-      c.moveTo(hOff+cx, vOff+cy);    // but we double that here so as not to be cramped
+      c.moveTo(hOff+cx, vOff-lpY+cy);    // but we double that here so as not to be cramped
       textBlock.render();
 
       if (showData)

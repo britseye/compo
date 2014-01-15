@@ -22,9 +22,7 @@ import uspsib;
 import line;
 import separator;
 import bevel;
-import box;
 import circle;
-import connector;
 import corner;
 import fader;
 import lgradient;
@@ -54,6 +52,14 @@ import crescent;
 import cross;
 import polycurve;
 import strokeset;
+import curve;
+import drawing;
+import pointset;
+import regpc;
+import shapelib;
+import mesh;
+import moon;
+import triangle;
 
 import std.stdio;
 import std.conv;
@@ -106,6 +112,7 @@ import gdk.Screen;
 class AppWindow : MainWindow
 {
    COMPOConfig config;
+   ShapeLib shapeLib;
    Recent recent;
    bool iso;
    MainMenu mm;
@@ -134,6 +141,7 @@ class AppWindow : MainWindow
    Container[] refs;
    double cWidth, cHeight, cWidthMM, cHeightMM;
    int rpView;
+   string drawingName;
 
    ControlsPos controlsPos;
 
@@ -168,6 +176,8 @@ class AppWindow : MainWindow
       treeOps.select(copy);
       copy = null;
    }
+
+   void setDrawing(string dn) { drawingName = dn; }
 
    int getItemAddContext() { return itemAddContext; }
    void setItemAddContext(int i) { itemAddContext = i; }
@@ -220,14 +230,11 @@ class AppWindow : MainWindow
       case "Bevel":
          nt = AC_BEVEL;
          break;
-      case "Box":
-         nt = AC_BOX;
-         break;
       case "Circle":
          nt = AC_CIRCLE;
          break;
-      case "Connector":
-         nt = AC_CONNECTOR;
+      case "Curve":
+         nt = AC_CURVE;
          break;
       case "Corner":
          nt = AC_CORNER;
@@ -247,6 +254,9 @@ class AppWindow : MainWindow
       case "RGradient":
          nt = AC_RGRADIENT;
          break;
+      case "Moon":
+         nt = AC_MOON;
+         break;
       case "Heart":
          nt = AC_HEART;
          break;
@@ -255,6 +265,9 @@ class AppWindow : MainWindow
          break;
       case "Partition":
          nt = AC_PARTITION;
+         break;
+      case "PointSet":
+         nt = AC_POINTSET;
          break;
       case "Polygon":
          nt = AC_POLYGON;
@@ -271,10 +284,13 @@ class AppWindow : MainWindow
       case "Regular Polygon":
          nt = AC_REGPOLYGON;
          break;
+      case "Regular Polycurve":
+         nt = AC_REGPOLYCURVE;
+         break;
       case "Separator":
          nt = AC_SEPARATOR;
          break;
-      case "SGVImage":
+      case "SVGImage":
          nt = AC_SVGIMAGE;
          break;
       case "Reference":
@@ -282,6 +298,15 @@ class AppWindow : MainWindow
          break;
       case "StrokeSet":
          nt = AC_STROKESET;
+         break;
+      case "Drawing":
+         nt = AC_DRAWING;
+         break;
+      case "Mesh":
+         nt = AC_MESH;
+         break;
+      case "Triangle":
+         nt = AC_TRIANGLE;
          break;
       default:
          break;
@@ -291,7 +316,6 @@ class AppWindow : MainWindow
 
    void doItemInsert(MenuItem mi, int where, ACBase newItem = null)
    {
-writefln("%s %d %s", mi.getLabel(), where, (newItem is null));
       bool inCtr = false;
       dirty = true;
       ACBase ni;
@@ -304,21 +328,18 @@ writefln("%s %d %s", mi.getLabel(), where, (newItem is null));
          ni = newItem;
       else
       {
-         if (cmCtr !is null)     // Right click on container
+         if (cmItem.type == AC_ROOT)  // Standalone item
          {
-writeln("cmCtr not null");
+            ni = createItem(nt, RelTo.ROOT);
+         }
+         else if (cmCtr !is null)     // Right click on container
+         {
             ni = createItem(nt, RelTo.CONTAINER);
          }
          else if (cmItem.parent.type == AC_CONTAINER)
          {
-writeln("Setting container");
             cmCtr = cmItem.parent;
             ni = createItem(nt, RelTo.CONTAINER);
-         }
-         else
-         {
-writeln("relto root");
-            ni = createItem(nt, RelTo.ROOT);
          }
       }
       if (where == 1)      // after
@@ -329,11 +350,16 @@ writeln("relto root");
       {
          ACBase.insertChild(cmItem, ni, false);
       }
-      else
+      else if (where == 0)
       {
          cmCtr.children ~= ni;
       }
-      treeOps.notifyInsertion(ni);
+      else
+      {
+         tm.appendRoot(ni);
+      }
+      if (where != -1)
+         treeOps.notifyInsertion(ni);
       // Show new item in rightpane
       switchLayouts(ni, true, true);
       if (ni.parent is tm.root)
@@ -344,7 +370,6 @@ writeln("relto root");
          treeOps.expand(ni.parent);
       }
       // Now fix up the TreeView
-      //tv.expandAll();
       tv.queueDraw();
       treeOps.select(ni);
    }
@@ -384,13 +409,13 @@ writeln("relto root");
    void imgSaveHandler(MenuItem mi)
    {
       string label = mi.getLabel();
-      if (label == "PNG")
+      if (label == "PixelImage")
       {
          if (cto is null)
             return;
          cto.renderToPNG();
       }
-      else if (label == "SVG")
+      else if (label == "SVGImage")
       {
          if (cto is null)
             return;
@@ -497,10 +522,6 @@ writeln("relto root");
       string label = mi.getLabel();
       switch (label)
       {
-      case "Save Image to PNG":
-         if (cto !is null)
-            cto.renderToPNG();
-         break;
       case "Move up":
          dirty = true;
          ACBase.moveChild(cmItem, true);
@@ -511,9 +532,11 @@ writeln("relto root");
          ACBase.moveChild(cmItem, false);
          tv.queueDraw();
          break;
-      case "Add layer before":
+      case "Add item before":
+         itemAddContext = 2;
          break;
-      case "Add layer after":
+      case "Add item after":
+         itemAddContext = 1;
          break;
       case "Duplicate":
          ACBase t = cloneItem(cmItem);
@@ -542,43 +565,32 @@ writeln("relto root");
 
    void rootMenuHandler(MenuItem mi)
    {
-// "Move up", "Move down", "Add item after", "Add item before", "Duplicate", "Copy", "Cut", "Paste"
       string label = mi.getLabel();
       switch (label)
       {
-      case "Move up":
-         dirty = true;
-         ACBase.moveChild(cmItem, true);
-         tv.queueDraw();
+      case "Append Composition":
+         addContainer();
          break;
-      case "Move down":
-         dirty = true;
-         ACBase.moveChild(cmItem, false);
-         tv.queueDraw();
+      case "Append Standalone Item":
          break;
-      case "Add item after":
-         break;
-      case "Add item before":
-         break;
-      case "Duplicate":
-         ACBase t = cloneItem(cmItem);
-         doItemInsert(mi, 1, t);
-         break;
-      case "Copy":
-         copy = cloneItem(cmItem);
-         break;
-      case "Cut":
-      {
-         doCut(cmItem);
-         dirty = true;
-      }
-      break;
       case "Paste":
          if (copy !is null)
          {
             ACBase ni = cloneItem(copy);
-            doItemInsert(mi, 2, ni);
+            doItemInsert(mi, -1, ni);
          }
+         break;
+      case "Toggle RHS View":
+         if (rpView == 1)
+            onPageLayout(false);
+         else
+            onPageLayout(true);
+         break;
+      case "Fill":
+         pageLayout.fill(true);
+         break;
+      case "Print Immediate":
+         printHandler.print(true);
          break;
       default:
          break;
@@ -640,6 +652,9 @@ writeln("relto root");
       case AC_RGRADIENT:
          ni = new RGradient(this, p);
          break;
+      case AC_MOON:
+         ni = new Moon(this, p);
+         break;
       case AC_HEART:
          ni = new Heart(this, p);
          break;
@@ -655,14 +670,11 @@ writeln("relto root");
       case AC_BEVEL:
          ni = new Bevel(this, p);
          break;
-      case AC_BOX:
-         ni = new Box(this, p);
-         break;
       case AC_CIRCLE:
          ni = new Circle(this, p);
          break;
-      case AC_CONNECTOR:
-         ni = new Connector(this, p);
+      case AC_CURVE:
+         ni = new Curve(this, p);
          break;
       case AC_CORNER:
          ni = new Corner(this, p);
@@ -675,6 +687,9 @@ writeln("relto root");
          break;
       case AC_PARTITION:
          ni = new Partition(this, p);
+         break;
+      case AC_POINTSET:
+         ni = new PointSet(this, p);
          break;
       case AC_POLYGON:
          ni = new Polygon(this, p);
@@ -691,6 +706,9 @@ writeln("relto root");
       case AC_REGPOLYGON:
          ni = new RegularPolygon(this, p);
          break;
+      case AC_REGPOLYCURVE:
+         ni = new RegularPolycurve(this, p);
+         break;
       case AC_ARROW:
          ni = new Arrow(this, p);
          break;
@@ -699,6 +717,15 @@ writeln("relto root");
          break;
       case AC_STROKESET:
          ni = new StrokeSet(this, p);
+         break;
+      case AC_DRAWING:
+         ni = new Drawing(this, p, drawingName);
+         break;
+      case AC_MESH:
+         ni = new Mesh(this, p);
+         break;
+      case AC_TRIANGLE:
+         ni = new Triangle(this, p);
          break;
       default:
          return null;
@@ -738,12 +765,10 @@ writeln("relto root");
          return new Separator(cast(Separator) x);
       case AC_BEVEL:
          return new Bevel(cast(Bevel) x);
-      case AC_BOX:
-         return new Box(cast(Box) x);
       case AC_CIRCLE:
          return new Circle(cast(Circle) x);
-      case AC_CONNECTOR:
-         return new Connector(cast(Connector) x);
+      case AC_CURVE:
+         return new Curve(cast(Curve) x);
       case AC_CORNER:
          return new Corner(cast(Corner) x);
       case AC_CRESCENT:
@@ -756,12 +781,17 @@ writeln("relto root");
          return new LGradient(cast(LGradient) x);
       case AC_RGRADIENT:
          return new RGradient(cast(RGradient) x);
+      case AC_MOON:
+         return new Moon(cast(Moon) x);
       case AC_HEART:
          return new Heart(cast(Heart) x);
       case AC_ARROW:
          return new Arrow(cast(Arrow) x);
       case AC_PARTITION:
          return new Partition(cast(Partition) x);
+      case AC_POINTSET:
+         return new PointSet(cast(PointSet) x);
+         break;
       case AC_POLYGON:
          return new Polygon(cast(Polygon) x);
          break;
@@ -777,11 +807,23 @@ writeln("relto root");
       case AC_REGPOLYGON:
          return new RegularPolygon(cast(RegularPolygon) x);
          break;
+      case AC_REGPOLYCURVE:
+         return new RegularPolycurve(cast(RegularPolycurve) x);
+         break;
       case AC_SVGIMAGE:
          return new SVGImage(cast(SVGImage) x);
          break;
       case AC_STROKESET:
          return new StrokeSet(cast(StrokeSet) x);
+         break;
+      case AC_DRAWING:
+         return new Drawing(cast(Drawing) x);
+         break;
+      case AC_MESH:
+         return new Mesh(cast(Mesh) x);
+         break;
+      case AC_TRIANGLE:
+         return new Triangle(cast(Triangle) x);
          break;
       default:
          break;
@@ -887,8 +929,19 @@ writeln("relto root");
       cmItem = cmCtr = copy = sourceCtr = null;
       if (sheetName !is null)
       {
-         Sheet s = sheetLib.getSheet(sheetName);
-         setSheet(s, false);
+         if (sheetName[0..7] == "COMPO: ")
+         {
+            string ss = sheetName[7..$];
+            string[] sa = ss.split(",");
+            double w = to!double(sa[0]);
+            double h = to!double(sa[1]);
+            setScrapSheet(w, h);
+         }
+         else
+         {
+            Sheet s = sheetLib.getSheet(sheetName);
+            setSheet(s, false);
+         }
       }
       treeComplete = false;
       rp.remove(layout);
@@ -1044,7 +1097,7 @@ writeln("relto root");
    {
       scrapGrid.w = w;
       scrapGrid.h = h;
-      scrapSheet.layout.g = Grid(1, 1, w, h, 10, 10, 0, 0,false);
+      scrapSheet.layout.g = Grid(1, 1, w*screenRes, h*screenRes, 10, 10, 0, 0,false);
       setSheet(scrapSheet);
    }
 
@@ -1056,7 +1109,10 @@ writeln("relto root");
          TreePath tp;
          TreeViewColumn tvc;
          if (!tv.getPathAtPos (cast(int) event.motion.x, cast(int) event.motion.y, tp, tvc, cellX, cellY))
+         {
+            rootMenu.popup(3,0);
             return false;
+         }
          if (event.button.button == 1)
          {
             if (tvc.getTitle() != "Active")
@@ -1078,7 +1134,6 @@ writeln("relto root");
             TreeIter ti = new TreeIter();
             tm.getIter(ti, tp);
             ACBase x = cast(ACBase) ti.userData;
-writefln("Right click %s", x.name);
             if (x.type == AC_CONTAINER)
             {
                cmCtr = x;
@@ -1188,6 +1243,7 @@ writefln("Right click %s", x.name);
       scrapGrid = Grid(1, 1, 75, 50, 10, 10, 0, 0, false);
       scrapSheet = Sheet(true, "COMPO", "", "scrap", Category.SPECIAL, Paper.A4, false);
       scrapSheet.layout.g = scrapGrid;
+      shapeLib = new ShapeLib();
 
       setDefaultSize(config.width, config.height);
       /*

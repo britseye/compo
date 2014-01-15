@@ -52,6 +52,18 @@ struct CairoPath
    int numData;
 }
 
+CairoPath copyCairoPath(CairoPath* pp)
+{
+   CairoPath rv;
+   CairoPathData[] pd;
+   pd.length = pp.numData;
+   pd[] = pp.data[0..pp.numData];
+   rv.status = pp.status;
+   rv.data = pd.ptr;
+   rv.numData = pp.numData;
+   return rv;
+}
+
 struct ShapeInfo
 {
    double c1 = 0.0, c2 = 0.0, c3 = 0.0, c4 = 0.0, c5 = 0.0, c6 = 0.0;
@@ -68,7 +80,46 @@ struct Transform
    double ra = 0;
 }
 
+struct PartColor
+{
+   double r = 1;
+   double g = 1;
+   double b = 1;
+   double a = 1;
+}
+
+struct Part
+{
+   int type;
+   bool closed;
+   string name;
+   Coord center;
+   PartColor color;
+   double lwf;
+   int length;
+   PathItemR[] ia;
+
+   void copy(Part other)
+   {
+      type = other.type;
+      closed = other.closed;
+      length = other.length;
+      center = other.center;
+      color = other.color;
+      lwf = other.lwf;
+      ia.length = other.ia.length;
+      ia[] = other.ia[];
+   }
+}
+
 struct PathItem
+{
+   int type;
+   Coord start, cp1, cp2, end;
+   Coord cog;
+}
+
+struct PathItemR
 {
    int type;
    Coord start, cp1, cp2, end;

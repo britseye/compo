@@ -112,9 +112,9 @@ class Taper : Morpher
       }
       else
       {
-         tgs = Coord(0.05*w, 0);
+         tgs = Coord(0.05*w, 0.01*h);
          tge = Coord(0.95*w, 0.4*h);
-         bgs = Coord(0.05*w, h);
+         bgs = Coord(0.05*w, 0.99*h);
          bge = Coord(0.95*w, 0.6*h);
       }
    }
@@ -239,9 +239,11 @@ class Circular: Morpher
    double astart, aend, tot;
    double odepth, depth;
    double width, height;
+   bool anti;
 
    this(double w, double h, ParamBlock* p)
    {
+      anti = false;
       width = w;
       height = h;
       mp = p;
@@ -272,18 +274,38 @@ class Circular: Morpher
    Coord getTGPoint(double xf)
    {
       xf *= tot;
-      double a = astart+xf;
-      double x = radiuso*cos(a)+width/2;
-      double y = radiuso*sin(a)+height/2;
+      double a, x, y;
+      if (anti)
+      {
+         a = aend-xf;
+         x = radiusi*cos(a)+width/2;
+         y = radiusi*sin(a)+height/2;
+      }
+      else
+      {
+         a = astart+xf;
+         x = radiuso*cos(a)+width/2;
+         y = radiuso*sin(a)+height/2;
+      }
       return Coord(x, y);
    }
 
    Coord getBGPoint(double xf)
    {
       xf *= tot;
-      double a = astart+xf;
-      double x = radiusi*cos(a)+width/2;
-      double y = radiusi*sin(a)+height/2;
+      double a, x, y;
+      if (anti)
+      {
+         a = aend-xf;
+         x = radiuso*cos(a)+width/2;
+         y = radiuso*sin(a)+height/2;
+      }
+      else
+      {
+         a = astart+xf;
+         x = radiusi*cos(a)+width/2;
+         y = radiusi*sin(a)+height/2;
+      }
       return Coord(x, y);
    }
 
@@ -567,9 +589,9 @@ class Catenary: Morpher
    double a, b;
    double odepth, depth;
    double width, height;
-   bool inverted;
    Coord delegate(double) tg;
    Coord delegate(double) bg;
+   bool inverted;
 
    this(double w, double h, ParamBlock* p)
    {
@@ -730,6 +752,7 @@ class Convex: Morpher
       double y = b*sin(theta)+height/2;
       return Coord(x, y);
    }
+
 
    void transform(CairoPathData* data, int dt, Rect extent)
    {

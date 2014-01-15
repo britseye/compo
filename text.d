@@ -48,7 +48,7 @@ class PlainText : TextViewItem
    bool centerText, shrink2Fit;
    bool gotLines;
 
-   void syncControls()
+   override void syncControls()
    {
       cSet.setTextParams(alignment, pfd.toString());
       cSet.toggling(false);
@@ -92,7 +92,7 @@ class PlainText : TextViewItem
       te.setWrapMode(GtkWrapMode.WORD);
    }
 
-   void extendControls()
+   override void extendControls()
    {
       int vp = cSet.cy;
 
@@ -112,7 +112,7 @@ class PlainText : TextViewItem
       cSet.cy = vp+25;
    }
 
-   void preResize(int oldW, int oldH)
+   override void preResize(int oldW, int oldH)
    {
       double hr = cast(double) width/oldW;
       double vr = cast(double) height/oldH;
@@ -127,19 +127,10 @@ class PlainText : TextViewItem
       dirty = true;
    }
 
-   void onCSNotify(Widget w, Purpose wid)
+   override bool specificNotify(Widget w, Purpose wid)
    {
       switch (wid)
       {
-      case Purpose.COLOR:
-         lastOp = push!RGBA(this, baseColor, OP_COLOR);
-         setColor(false);
-         dummy.grabFocus();
-         break;
-      case Purpose.EDITMODE:
-         editMode = !editMode;
-         toggleView();
-         break;
       case Purpose.CENTERTEXT:
          centerText = !centerText;
          break;
@@ -147,10 +138,9 @@ class PlainText : TextViewItem
          shrink2Fit = !shrink2Fit;
          break;
       default:
-         break;
+         return false;;
       }
-      aw.dirty = true;
-      reDraw();
+      return true;
    }
 
    void toggleView()
@@ -203,7 +193,7 @@ class PlainText : TextViewItem
       return rv;
    }
 
-   void render(Context c)
+   override void render(Context c)
    {
       int xoff, yoff;
       if (dirty)

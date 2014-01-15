@@ -39,14 +39,24 @@ import cairo.Context;
 import gtkc.cairotypes;
 import cairo.Matrix;
 
+// The sensible limita are about these
+//r0 = 0.4*height, r1 = 0.24*height, d = 0.705*r1;
+//r0 = 0.4*height, r1 = 0.38*height, d = 0.705*r1;
+
 class Crescent : LineSet
 {
    static int nextOid = 0;
    double radius, rr, radius2, ha;
-   bool fill, solid;
-   RGBA saveAltColor;
+   double dmax= 0.705, dmin = 0.3;
+   double r1min = 0.24, r1max = 0.38;
+   double r0, r1, d;
+   double a0, a1;
+   double a, b, h;
+   int touching;
+   bool guidelines;
 
-   void syncControls()
+
+   override void syncControls()
    {
       cSet.setLineParams(lineWidth);
       cSet.toggling(false);
@@ -62,9 +72,16 @@ class Crescent : LineSet
       }
       else if (fill)
          cSet.setToggle(Purpose.FILL, true);
+      cSet.setToggle(Purpose.SHOWMARKERS, guidelines);
       cSet.setComboIndex(Purpose.XFORMCB, xform);
       cSet.toggling(true);
       cSet.setHostName(name);
+   }
+
+   void afterDeserialize()
+   {
+      syncControls();
+      dirty = true;
    }
 
    this(Crescent other)
@@ -79,12 +96,12 @@ class Crescent : LineSet
       solid = other.solid;
       altColor = other.altColor.copy();
       center = other.center;
-      oPath = other.oPath.dup;
       xform = other.xform;
       tf = other.tf;
-      radius = other.radius;
-      rr = other.rr;
-      radius2 = other.radius2;
+      r0 = other.r0;
+      r1 = other.r1;
+      d = other.d;
+      guidelines = other.guidelines;
       dirty = true;
       syncControls();
    }
@@ -97,14 +114,14 @@ class Crescent : LineSet
       les = true;
       fill = solid = false;
 
-      center.x = width/2;
-      center.y = height/2;
+      center.x = 0.5*width;
+      center.y = 0.5*height;
+      // For classical crescent
+      r0 = 0.4*height;
+      r1 = 0.3*height;
+      d = 0.3*r0;
+      guidelines = true;
       tm = new Matrix(&tmData);
-      radius = (width > height)? 0.4*height: 0.4*width;
-      rr = -2;
-      radius2 = (1+exp(rr))*radius;
-//writefln("%f %f %f", rr, exp(rr), radius);
-
       setupControls(3);
       positionControls(true);
       dirty = true;
@@ -114,13 +131,21 @@ class Crescent : LineSet
    {
       int vp = cSet.cy;
 
-      Label l = new Label("Phase");
+      Label l = new Label("Separation");
       cSet.add(l, ICoord(172, vp-40), Purpose.LABEL);
       new MoreLess(cSet, 0, ICoord(275, vp-40), true);
+      l = new Label("Inner Radius");
+      cSet.add(l, ICoord(172, vp-20), Purpose.LABEL);
+      new MoreLess(cSet, 1, ICoord(275, vp-20), true);
+      CheckButton cb = new CheckButton("Show GuideLines");
+      cb.setActive(1);
+      cSet.add(cb, ICoord(172, vp), Purpose.SHOWMARKERS);
+
 
       vp += 5;
       new InchTool(cSet, 0, ICoord(0, vp), true);
 
+      vp += 25;
       ComboBoxText cbb = new ComboBoxText(false);
       cbb.appendText("Scale");
       cbb.appendText("Stretch-H");
@@ -134,7 +159,7 @@ class Crescent : LineSet
       cbb.setSizeRequest(100, -1);
       cSet.add(cbb, ICoord(172, vp-5), Purpose.XFORMCB);
 
-      new MoreLess(cSet, 0, ICoord(275, vp), true);
+      new MoreLess(cSet, 2, ICoord(275, vp), true);
 
       vp += 35;
 
@@ -153,7 +178,7 @@ class Crescent : LineSet
       //RenameGadget rg = new RenameGadget(cSet, ICoord(0, vp), name, true);
    }
 
-   void preResize(int oldW, int oldH)
+   override void preResize(int oldW, int oldH)
    {
       center.x = width/2;
       center.y = height/2;
@@ -166,73 +191,45 @@ class Crescent : LineSet
       dirty = true;
    }
 
-   void onCSNotify(Widget w, Purpose wid)
+   override bool specificNotify(Widget w, Purpose wid)
    {
       switch (wid)
       {
-      case Purpose.COLOR:
-         lastOp = push!RGBA(this, baseColor, OP_COLOR);
-         setColor(false);
-         dummy.grabFocus();
-         break;
-      case Purpose.FILLCOLOR:
-         lastOp = push!RGBA(this, altColor, OP_ALTCOLOR);
-         setColor(true);
-         break;
-      case Purpose.LESROUND:
-         if ((cast(RadioButton) w).getActive())
-            les = false;
-         break;
-      case Purpose.LESSHARP:
-         if ((cast(RadioButton) w).getActive())
-            les = true;
-         break;
-      case Purpose.FILL:
-         fill = !fill;
-         break;
-      case Purpose.SOLID:
-         if (lastOp != OP_SOLID)
-            solid = !solid;
-         if (solid)
-         {
-            cSet.disable(Purpose.FILL);
-            cSet.disable(Purpose.FILLCOLOR);
-         }
-         else
-         {
-            cSet.enable(Purpose.FILL);
-            cSet.enable(Purpose.FILLCOLOR);
-         }
-         break;
-      case Purpose.XFORMCB:
-         xform = (cast(ComboBoxText) w).getActive();
+      case Purpose.SHOWMARKERS:
+         guidelines = !guidelines;
          break;
       default:
-         break;
+         return false;
       }
-      aw.dirty = true;
-      reDraw();
+      return true;
    }
 
-   void onCSMoreLess(int instance, bool more, bool coarse)
+   override void onCSMoreLess(int instance, bool more, bool coarse)
    {
-      dummy.grabFocus();
-      if (instance == 0)
+      focusLayout();
+      if (instance == 0) // Distance between centers
+      {
+         double dd = more? 1: -1;
+         d += dd;
+      }
+      else if (instance == 1)  // Radius of smaller circle
       {
          if (more)
          {
-            if (rr < 3)
-               rr += 0.1;
+            if (r1+1 > r0)
+               r1 = r0;
             else
-               return;
+               r1 += 1;
          }
          else
          {
-            rr -= 0.1;
+            if (r1-1 < 5)
+               r1 = 5;
+            else
+               r1 -= 1;
          }
-         radius2 = (1+exp(rr))*radius;
       }
-      else if (instance == 1)
+      else if (instance == 2)
          modifyTransform(xform, more, coarse);
       else
          return;
@@ -244,47 +241,86 @@ class Crescent : LineSet
    void getAngle2(Coord a, Coord b)
    {
       double hc = (a.y-b.y)/2;
-      ha = asin(hc/radius2);
+      ha = atan2(hc,radius2);
    }
 
-   void render(Context c)
+   void figureIPs()
    {
-      c.setLineWidth(lineWidth);
-      c.setLineJoin(les? CairoLineJoin.MITER: CairoLineJoin.ROUND);
-      c.setSourceRgb(baseColor.red, baseColor.green, baseColor.blue);
-      c.translate(hOff+width/2, vOff+height/2);
-      if (compoundTransform())
-         c.transform(tm);
-      c.translate(-(width/2), -(height/2));
-      c.newSubPath();
-      c.arc(width/2, height/2, radius, 3*PI/2, PI/2);
+      double ad = abs(d);
+      touching = -1;
+      if (ad > r0+r1)
+         touching = 4;
+      if (ad == r0+r1)
+         touching = 3;
+      if (ad == r0-r1)
+         touching = 2;
+      if (ad < abs(r1-r0))
+         touching = 1;
+      if (ad == 0)
+         touching = 0;
+      if (touching != -1)
+         return;
+      b=(r0*r0-r1*r1-d*d)/(2*ad);
+      h = sqrt(r1*r1-b*b);
+      a=sqrt(r0*r0-h*h);
+
+      a0 = atan2(h,a);
+      a1 = atan2(h,b);
+   }
+
+   override void render(Context c)
+   {
       if (dirty)
       {
-         double x, y, sx, sy;
-         c.getCurrentPoint(x, y);
-         sx = x; sy = y-2*radius;
-         getAngle2(Coord(x, y), Coord(sx, sy));
+         figureIPs();
          dirty = false;
       }
-      c.arcNegative(width/2-radius2*cos(ha), height/2, radius2, ha, -ha);
-      c.closePath();
-      if (solid)
+      c.setLineWidth(lineWidth/((tf.hScale+tf.vScale)/2));
+      c.setLineJoin(les? CairoLineJoin.MITER: CairoLineJoin.ROUND);
+      c.setSourceRgb(baseColor.red, baseColor.green, baseColor.blue);
+
+      c.translate(hOff+center.x, vOff+center.y);
+      if (compoundTransform())
+         c.transform(tm);
+      c.translate(-center.x, -center.y);
+
+      if (touching != -1)
       {
-         c.setSourceRgba(baseColor.red, baseColor.green, baseColor.blue, 1.0);
-         c.fill();
+
+         c.arc(center.x, center.y, r0, 0, PI*2);
+         c.closePath();
+         c.stroke();
+         if (guidelines)
+         {
+            c.newPath();
+            c.arc(center.x+d, center.y, r1, 0, PI*2);
+            c.closePath();
+            c.setLineWidth(0.5);
+            c.setSourceRgb(1,0,0);
+            c.stroke();
+         }
+         return;
+      }
+
+
+      c.setSourceRgb(0,0,0);
+      if (d < 0)
+      {
+         c.arc(center.x, center.y, r0, a0+PI, -(a0+PI));
+         c.arcNegative(center.x+d, center.y, r1, -(a1+PI), a1+PI);
       }
       else
       {
-         c.setSourceRgb(baseColor.red, baseColor.green, baseColor.blue);
-         if (fill)
-         {
-            c.strokePreserve();
-            c.setSourceRgba(altColor.red, altColor.green, altColor.blue, 1.0);
-            c.fill();
-         }
-         else
-            c.stroke();
+         c.arcNegative(center.x, center.y, r0, -a0, a0);
+         c.arc(center.x+d, center.y, r1, a1, -a1);
       }
+
+      c.closePath();
+      c.setSourceRgba(baseColor.red, baseColor.green, baseColor.blue, 1.0);
+      if (!(solid || fill))
+         c.stroke();
+      else
+         doFill(c, solid, fill);
       if (!isMoved) cSet.setDisplay(0, reportPosition());
    }
 }

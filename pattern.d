@@ -35,7 +35,7 @@ class Pattern : LineSet
    double unit;
    int choice;
 
-   void syncControls()
+   override void syncControls()
    {
       cSet.setLineParams(lineWidth);
       cSet.setComboIndex(Purpose.PATTERN, choice);
@@ -66,7 +66,7 @@ class Pattern : LineSet
       positionControls(true);
    }
 
-   void extendControls()
+   override void extendControls()
    {
       int vp = cSet.cy;
 
@@ -103,26 +103,21 @@ class Pattern : LineSet
       cSet.cy = vp+40;
    }
 
-   void onCSNotify(Widget w, Purpose wid)
+   override bool specificNotify(Widget w, Purpose wid)
    {
       switch (wid)
       {
-      case Purpose.COLOR:
-         lastOp = push!RGBA(this, baseColor, OP_COLOR);
-         setColor(false);
-         break;
       case Purpose.PATTERN:
          lastOp = push!int(this, choice, OP_IV0);
          choice = (cast(ComboBoxText) w).getActive();
          break;
       default:
-         return;
+         return false;
       }
-      aw.dirty = true;
-      reDraw();
+      return true;
    }
 
-   void onCSMoreLess(int instance, bool more, bool coarse)
+   override void onCSMoreLess(int instance, bool more, bool coarse)
    {
       if (instance == 0)
       {
@@ -164,7 +159,7 @@ class Pattern : LineSet
       reDraw();
    }
 
-   bool specificUndo(CheckPoint cp)
+   override bool specificUndo(CheckPoint cp)
    {
       switch (cp.type)
       {
@@ -187,16 +182,12 @@ class Pattern : LineSet
       return true;
    }
 
-   void preResize(int oldW, int oldH)
+   override void preResize(int oldW, int oldH)
    {
       double hr = cast(double) width/oldW;
       double vr = cast(double) height/oldH;
       hOff *= hr;
       vOff *= vr;
-   }
-
-   void onCSAdjust(int id, int direction, bool much)
-   {
    }
 
    void renderShape(Context c, double x, double y, double u)
@@ -366,7 +357,7 @@ class Pattern : LineSet
       if (!isMoved) cSet.setDisplay(0, reportPosition());
    }
 
-   void render(Context c)
+   override void render(Context c)
    {
       if (choice == 0)
       {

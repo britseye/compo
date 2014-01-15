@@ -52,24 +52,27 @@ string[] fileNewSa = [ "Layered Composition", "Standalone Items", ];
 string[] cmSa = [ "Append item", "Save Image", "Move up", "Move down", "Add item after", "Add item before",
                   "Duplicate", "Cut", "Copy", "Paste"];
 string[] imSa = [ "Move up", "Move down", "Add item after", "Add item before", "Duplicate", "Copy", "Cut", "Paste" ];
+string[] rootSa = [ "Append Composition", "Append Standalone Item", "Paste", "Toggle RHS View", "Fill", "Print Immediate"];
 /*
 string[] itemsSa = [ "Plain Text", "USPS Address", "Serial Number", "Rich Text", "Fancy Text", "Morphed Text", "Pattern", "Picture", "Arrow",
                      "Bevel", "Box", "Circle", "Connector", "Corner", "Fader", "LGradient", "RGradient", "Heart", "Line", "Partition",
                      "Polygon", "Random", "Rectangle", "Regular Polygon", "Separator", "Reference" ];
-*/
-string[] allSa = [ "Plain Text", "USPS Address", "Serial Number", "Rich Text", "Fancy Text", "Morphed Text", "Pattern", "PixelImage", "Arrow",
-                   "Bevel", "Box", "Circle", "Connector", "Corner", "Crescent", "Cross", "Fader", "LGradient", "RGradient", "Heart", "Line", "Partition",
-                   "Polygon", "Polycurve", "Random", "Rectangle", "Regular Polygon", "Separator", "StrokeSet", "Reference", "Container" ];
-string[] mfrsSa = [ "Generic", "Avery" ];
+
 string[] saveimgSa = [ "PNG", "SVG" ];
+*/
+string[] mfrsSa = [ "Generic", "Avery" ];
+string[] allSa = [ "Plain Text", "USPS Address", "Serial Number", "Rich Text", "Fancy Text", "Morphed Text", "Pattern", "PixelImage", "Arrow",
+                   "Bevel", "Circle", "Curve", "Connector", "Corner", "Crescent", "Cross", "Fader", "Mesh", "Moon", "LGradient", "RGradient", "Heart", "Line", "Partition",
+                   "PointSet", "Polygon", "Polycurve", "Random", "Rectangle", "Regular Polygon", "Separator", "StrokeSet", "Reference", "Triangle", "Container" ];
 
 // All the things that can appear under 'Add/Append Item'
-string[] itemsSa = [ "Text", "Effects", "Geometric", "Image", "Reference", "Shapes" ];
+string[] itemsSa = [ "Text", "Effects", "Geometric", "Image", "Reference", "Shapes", "Drawings" ];
 string[] txtSa = [ "Plain Text", "USPS Address", "Serial Number", "Rich Text", "Fancy Text", "Morphed Text" ];
-string[] effectsSa = [ "Bevel", "Fader", "LGradient", "Partition", "Pattern", "Random", "RGradient", "Separator" ];
-string[] geoSa = ["Circle", "Line", "Polygon", "Polycurve", "Regular Polygon", "StrokeSet"];
-string[] shapesSa = [ "Arrow", "Box", "Corner", "Crescent", "Cross", "Heart", "Rectangle" ];
+string[] effectsSa = [ "Bevel", "Corner", "Fader", "LGradient", "Mesh", "Partition", "Pattern", "Random", "RGradient", "Separator" ];
+string[] geoSa = [ "Curve", "Line", "PointSet", "Polygon", "Polycurve", "Regular Polygon", "Regular Polycurve", "StrokeSet"];
+string[] shapesSa = [ "Arrow", "Circle", "Crescent", "Cross", "Heart", "Moon", "Rectangle", "Star", "Triangle" ];
 string[] imgSa = ["PixelImage", "SVGImage"];
+string[] drawingsSa = ["Cat", "Puppy", "Dove", "Fish", "Whale", "Tree"];
 
 Menu createMenu(void delegate(MenuItem) dg, string[] items)
 {
@@ -94,6 +97,12 @@ class ContextMenus
    this(AppWindow w)
    {
       aw = w;
+   }
+
+   void fixupCMItem(MenuItem mi)
+   {
+      aw.setItemAddContext(-1);
+      aw.cmItem = aw.tm.root;
    }
 
    Menu createCtrContextMenu(void delegate(MenuItem) dg, void delegate(MenuItem) dgi)
@@ -161,6 +170,10 @@ class ContextMenus
                Menu sm = createMenu(&itemsHandler, shapesSa);
                t.setSubmenu(sm);
                break;
+            case 6:
+               Menu sm = createMenu(&itemsHandler, drawingsSa);
+               t.setSubmenu(sm);
+               break;
             default:
                break;
          }
@@ -179,22 +192,39 @@ class ContextMenus
    void childItemsGroupHandler(MenuItem mi)
    {
       string label = mi.getLabel();
-      if (label == "Insert item after")
-      {
-         aw.setItemAddContext(1);
-      }
-      else if (label == "Insert item before")
-      {
-         aw.setItemAddContext(2);
-      }
-      else if (label == "Reference")
+      if (label == "Reference")
          aw.doItemInsert(mi, aw.getItemAddContext());
    }
 
    void itemsHandler(MenuItem mi)
    {
       string label = mi.getLabel();
-      aw.doItemInsert(mi, aw.getItemAddContext());
+      switch (label)
+      {
+         case "Cat":
+            aw.popupMsg(label~" is not yet implemented ;=(", MessageType.INFO);
+            return;
+         case "Dove":
+         case "Fish":
+         case "Puppy":
+         case "Tree":
+         case "Whale":
+            mi.setLabel("Drawing");
+            aw.setDrawing(label);
+            aw.doItemInsert(mi, aw.getItemAddContext());
+            mi.setLabel(label);
+            return;
+         case "Star":
+            mi.setLabel("Regular Polygon");
+            aw.doItemInsert(mi, aw.getItemAddContext());
+            string xplain = "To draw a star, use 'Regular Polygon',\ncheck 'Render as Star', and set\n an even number of sides.";
+            aw.popupMsg(xplain, MessageType.INFO);
+            mi.setLabel(label);
+            return;
+         default:
+            aw.doItemInsert(mi, aw.getItemAddContext());
+            break;
+      }
    }
 
    Menu createChildContextMenu(void delegate(MenuItem) dg)
@@ -206,14 +236,9 @@ class ContextMenus
          MenuItem t = new MenuItem(dg, s);
          m.append(t);
          if (i == 2)
-         {
             t.setSubmenu(itemsSm);
-         }
          else if (i == 3)
-         {
-            aw.setItemAddContext(2);
             t.setSubmenu(itemsSm);
-         }
       }
       m.showAll();
       return m;
@@ -222,39 +247,16 @@ class ContextMenus
    Menu createRootContextMenu(void delegate(MenuItem) dg)
    {
       Menu m = new Menu();
-      Menu itemsSm = createMenu(&itemsHandler, allSa);
-      foreach (int i, string s; imSa)
+      Menu itemsSm = createItemsMenu(true);
+      foreach (int i, string s; rootSa)
       {
          MenuItem t = new MenuItem(dg, s);
          m.append(t);
-         if (i == 2)
+         if (i == 1)
          {
-            aw.setItemAddContext(1);
+            t.addOnActivate(&fixupCMItem);
             t.setSubmenu(itemsSm);
          }
-         else if (i == 3)
-         {
-            aw.setItemAddContext(2);
-            t.setSubmenu(itemsSm);
-         }
-      }
-      m.showAll();
-      return m;
-   }
-
-   Menu createItemGroupMenu(string[] sa, int where)
-   {
-      void delegate(MenuItem) dg;
-      if (where == 1)
-         dg = &aw.insertAfterHandler;
-      else if (where == 2)
-         dg = &aw.insertBeforeHandler;
-      else
-         dg = &aw.insertAppendHandler;
-      Menu m = new Menu();
-      foreach (int i, string s; sa)
-      {
-         MenuItem t = new MenuItem(dg, s);
       }
       m.showAll();
       return m;
@@ -373,6 +375,7 @@ class ScrapDlg: Dialog
       if (s == "")
          return;
       height = to!double(s);
+
       unit = cast(bool) inches.getActive();
    }
 }
@@ -686,8 +689,9 @@ class MainMenu: MenuBar
    {
       MenuItem[] mits;
 
+      ContextMenus cms = new ContextMenus(aw);
       Menu edit = new Menu();
-      Menu itemOptions = createMenu(&itemHandler, itemsSa);
+      Menu itemOptions = cms.createItemsMenu(false);
 
       MenuItem em = new MenuItem("_Edit");
       em.setSubmenu(edit);
@@ -731,6 +735,7 @@ class MainMenu: MenuBar
 
       x = new MenuItem("Add a Standalone _Item");
       mits ~= x;
+      x.addOnActivate(&fixupCMItem);
       x.setSubmenu(itemOptions);
       edit.append(x);
 
@@ -746,10 +751,10 @@ class MainMenu: MenuBar
       return em;
    }
 
-   void itemHandler(MenuItem mi)
+   void fixupCMItem(MenuItem mi)
    {
-      int type = aw.getTypeFromName(mi.getLabel());
-      aw.addSingleton(type);
+      aw.setItemAddContext(-1);
+      aw.cmItem = aw.tm.root;
    }
 
    void editMenuHandler(MenuItem mi)

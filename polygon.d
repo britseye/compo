@@ -8,6 +8,7 @@
 module polygon;
 
 import main;
+import container;
 import constants;
 import acomp;
 import common;
@@ -38,6 +39,7 @@ import gtk.CheckButton;
 import gtk.Label;
 import gtk.Dialog;
 import gtk.VBox;
+import gtk.Entry;
 import cairo.Context;
 import gtkc.cairotypes;
 import cairo.Matrix;
@@ -55,6 +57,8 @@ class PolyEditDlg: Dialog, CSTarget
    ControlSet cs;
    Layout layout;
    int sside, sides;
+   CheckButton cbZoom, cbProtect;
+   bool ignoreZoom, ignoreProtect;
 
    this(string title, Polygon o)
    {
@@ -77,6 +81,7 @@ class PolyEditDlg: Dialog, CSTarget
    void onCSSaveSelection() {}
    void onCSTextParam(Purpose p, string sval, int ival) {}
    void onCSNameChange(string s) {}
+   void setNameEntry(Entry e) {}
 
    bool catchClose(Event e, Widget w)
    {
@@ -125,6 +130,20 @@ class PolyEditDlg: Dialog, CSTarget
       b = new Button("Undo");
       cs.add(b, ICoord(150, vp), Purpose.UNDO);
 
+      vp += 30;
+      l = new Label("Opacity");
+      cs.add(l, ICoord(145, vp), Purpose.LABEL);
+      new MoreLess(cs, 1, ICoord(200, vp), true);
+
+      vp += 17;
+      cbProtect = new CheckButton("Protect");
+      cbProtect.setTooltipText("Prevent modifications\n by mouse gestures");
+      cs.add(cbProtect, ICoord(60, vp), Purpose.PROTECT);
+      cbZoom = new CheckButton("Zoom");
+      cbZoom.setTooltipText("Zoom in to deal with fine details.\nSwipe the mouse with the control key\ndown to move the viewport");
+      cs.add(cbZoom, ICoord(134, vp), Purpose.ZOOMED);
+      new MoreLess(cs, 2, ICoord(200, vp), true);
+
       cs.realize(layout);
    }
 
@@ -136,24 +155,70 @@ class PolyEditDlg: Dialog, CSTarget
 
    void onCSMoreLess(int instance, bool more, bool coarse)
    {
-      sides = po.oPath.length;
-      po.lastCurrent = po.current;
-      if (more)
+      if (instance == 0)
       {
-         if (po.current < sides-1)
-            po.current++;
+         sides = po.oPath.length;
+         po.lastCurrent = po.current;
+         if (more)
+         {
+            if (po.current < sides-1)
+               po.current++;
+            else
+               po.current=0;
+         }
          else
-            po.current=0;
+         {
+            if (po.current == 0)
+               po.current = sides-1;
+            else
+               po.current--;
+         }
+         sside = po.current;
+         po.reDraw();
+         return;
       }
-      else
+      if (instance == 1)
       {
-         if (po.current == 0)
-            po.current = sides-1;
+         double t = po.editOpacity;
+         if (more)
+         {
+            if (t+0.05 > 1)
+               t = 1;
+            else
+               t += 0.05;
+         }
          else
-            po.current--;
+         {
+            if (t-0.05 < 0)
+               t = 0;
+            else
+               t -= 0.05;
+         }
+         po.editOpacity = t;
+         po.reDraw();
+         return;
       }
-      sside = po.current;
-      po.reDraw();
+      if (instance== 2)
+      {
+         if (more)
+         {
+            if (po.esf == 1)
+            {
+               po.setupZoom(true);
+            }
+            else
+               po.adjustZoom(0.05);
+            po.notifyContainer(true);
+         }
+         else
+         {
+            if (po.esf-0.05 < 1)
+               po.setupZoom(false);
+            else
+               po.adjustZoom(-0.05);
+            po.notifyContainer(false);
+         }
+      }
    }
 
    void onCSCompass(int instance, double angle, bool coarse)
@@ -215,23 +280,42 @@ class PolyEditDlg: Dialog, CSTarget
          }
          return;
       }
+      if (p== Purpose.ZOOMED)
+      {
+         if (ignoreZoom)
+            return;
+         if (po.zoomed)
+            po.setupZoom(false);
+         else
+            po.setupZoom(true);
+         return;
+      }
+      if (p== Purpose.PROTECT)
+      {
+         if (ignoreProtect)
+            return;
+         po.protect = !po.protect;
+         return;
+      }
    }
 }
 
 class Polygon : LineSet
 {
    static int nextOid = 0;
-   Coord[] orig;
    Coord[][] editStack;
    int[] currentStack;
-   RGBA saveAltColor;
-   bool fill, solid;
+   double editOpacity;
    bool constructing, editing;
    int current, next, prev, lastCurrent, lastActive;
    PolyEditDlg md;
    int activeCoords;
+   // For zoomed edting
+   double esf;
+   Coord zo, vo, zbr;
+   bool zoomed, protect;
 
-   void syncControls()
+   override void syncControls()
    {
       cSet.setLineParams(lineWidth);
       cSet.toggling(false);
@@ -278,7 +362,9 @@ class Polygon : LineSet
       string s = "Polygon "~to!string(++nextOid);
       super(w, parent, s, AC_POLYGON);
       constructing = true;
-      altColor = new RGBA();
+      altColor = new RGBA(1,1,1,1);
+      editOpacity = 0.5;
+      esf = 1;
       les = true;
       md = new PolyEditDlg("Edit "~s, this);
       md.setSizeRequest(240, 200);
@@ -291,10 +377,12 @@ class Polygon : LineSet
       tm = new Matrix(&tmData);
 
       setupControls(3);
+      cSet.addInfo("Click in the Drawing Area to add edges.\nRight-click when finished - the\n last edge will be added then.");
       positionControls(true);
+      dirty = true;
    }
 
-   void extendControls()
+   override void extendControls()
    {
       int vp = cSet.cy;
 
@@ -334,56 +422,45 @@ class Polygon : LineSet
       cSet.cy = vp+30;
    }
 
-   void onCSNotify(Widget w, Purpose wid)
+   override void afterDeserialize()
+   {
+      constructing = editing = false;
+      dirty = true;
+      cSet.setInfo("Click the Edit button to move, add, or delete points");
+   }
+
+   void setComplete()
+   {
+      figureCenter();
+      centerPath();
+      constructing = false;
+      cSet.enable(Purpose.REDRAW);
+      cSet.setInfo("Click the Edit button to move, add, or delete edges");
+   }
+
+   override void hideDialogs()
+   {
+      if (editing)
+      {
+         editing = false;
+         md.hide();
+         switchMode();
+      }
+   }
+
+   override bool specificNotify(Widget w, Purpose wid)
    {
       switch (wid)
       {
-      case Purpose.COLOR:
-         lastOp = push!RGBA(this, baseColor, OP_COLOR);
-         setColor(false);
-         break;
-      case Purpose.FILLCOLOR:
-         lastOp = push!RGBA(this, altColor, OP_ALTCOLOR);
-         setColor(true);
-         break;
-      case Purpose.LESROUND:
-         if ((cast(RadioButton) w).getActive())
-            les = false;
-         break;
-      case Purpose.LESSHARP:
-         if ((cast(RadioButton) w).getActive())
-            les = true;
-         break;
-      case Purpose.XFORMCB:
-         xform = (cast(ComboBoxText) w).getActive();
-         break;
-      case Purpose.FILL:
-         fill = !fill;
-         break;
-      case Purpose.SOLID:
-         solid = !solid;
-         if (solid)
-         {
-            cSet.disable(Purpose.FILL);
-            cSet.disable(Purpose.FILLCOLOR);
-         }
-         else
-         {
-            cSet.enable(Purpose.FILL);
-            cSet.enable(Purpose.FILLCOLOR);
-         }
-         break;
       case Purpose.REDRAW:
          lastOp = push!Path_t(this, oPath, OP_REDRAW);
          editing = !editing;
          switchMode();
-         dummy.grabFocus();
-         return;
+         focusLayout();
+         return true;
       default:
-         break;
+         return false;
       }
-      aw.dirty = true;
-      reDraw();
    }
 
    void switchMode()
@@ -392,16 +469,19 @@ class Polygon : LineSet
       {
          md.showAll();
          cSet.setLabel(Purpose.REDRAW, "Design");
+         cSet.setInfo("Click the Design button, or close the edit\ndialog to exit edit mode.");
       }
       else
       {
+         setupZoom(false);
          md.hide();
          cSet.setLabel(Purpose.REDRAW, "Edit");
+         cSet.setInfo("Click the Edit button to move, add, or delete edges");
       }
       reDraw();
    }
 
-   bool specificUndo(CheckPoint cp)
+   override bool specificUndo(CheckPoint cp)
    {
       switch (cp.type)
       {
@@ -417,7 +497,7 @@ class Polygon : LineSet
       return true;
    }
 
-   void preResize(int oldW, int oldH)
+   override void preResize(int oldW, int oldH)
    {
       center.x = width/2;
       center.y = height/2;
@@ -432,14 +512,38 @@ class Polygon : LineSet
       vOff *= vr;
    }
 
-   bool buttonPress(Event e, Widget w)
+   static pure double distance(Coord a, Coord b)
+   {
+      double dx = a.x-b.x, dy = a.y-b.y;
+      return sqrt(dx*dx+dy*dy);
+   }
+
+   double scaledDistance(Coord a, Coord b)
+   {
+//writefln("w %f h %f zw %f zh %f", 1.0*width, 1.0*height, zbr.x-zo.x, zbr.y-zo.y);
+//writefln("%f - %f %f, %f %f",esf, zo.x,zo.y,vo.x,vo.y);
+//writefln("cog %f %f mouse %f %f", a.x, a.y, b.x,b.y);
+      Coord as = a, bs = b;
+      if (zoomed)
+      {
+         as.x = a.x*esf;
+         as.y = a.y*esf;
+         bs.x = vo.x-zo.x+b.x;
+         bs.y = vo.y-zo.y+b.y;
+//writefln("scog %f %f mouse %f %f", as.x, as.y, bs.x, bs.y);
+      }
+      double d = distance(as,bs);
+      return d;
+   }
+
+   override bool buttonPress(Event e, Widget w)
    {
       GdkModifierType state;
       e.getState(state);
       if (constructing)
       {
          bool prev = (oPath.length > 0);
-         dummy.grabFocus();
+         focusLayout();
          Coord last;
          if (prev)
             last = oPath[oPath.length-1];
@@ -471,9 +575,7 @@ class Polygon : LineSet
                double y0 = oPath[0].y;
                oPath[oPath.length-1].y = y0;
             }
-            constructing = false;
-            setPath();
-            cSet.enable(Purpose.REDRAW);
+            setComplete();
             dirty = true;
             aw.dirty = true;
             reDraw();
@@ -485,28 +587,22 @@ class Polygon : LineSet
       {
          if (e.button.button == 3)
          {
-            double distance(Coord a, Coord b)
-            {
-               double dx = a.x-b.x, dy = a.y-b.y;
-               return sqrt(dx*dx+dy*dy);
-            }
-
-            Coord m = Coord(e.button.x-center.x, e.button.y-center.y);
-            double minsep = 100000;
+            Coord m = Coord(e.button.x, e.button.y);
+            double minsep = double.max;
             int best = 0;
             int last = oPath.length-1;
             foreach (int i, Coord c; oPath)
             {
                Coord nextv;
                if (i == last)
-                  nextv=oPath[0];
+                  nextv = oPath[0];
                else
                   nextv = oPath[i+1];
                Coord half;
-               half.x = c.x+(nextv.x-c.x)/2;
-               half.y = c.y+(nextv.y-c.y)/2;
+               half.x = center.x+c.x+(nextv.x-c.x)/2;
+               half.y = center.y+c.y+(nextv.y-c.y)/2;
 
-               double d = distance(half, m);
+               double d = scaledDistance(half, m);
                if (d < minsep)
                {
                   best = i;
@@ -525,7 +621,7 @@ class Polygon : LineSet
       return ACBase.buttonPress(e, w);
    }
 
-   bool buttonRelease(Event e, Widget w)
+   override bool buttonRelease(Event e, Widget w)
    {
       if (constructing)
       {
@@ -537,40 +633,9 @@ class Polygon : LineSet
       }
    }
 
-   bool mouseMove(Event e, Widget w)
+   override void onCSMoreLess(int instance, bool more, bool coarse)
    {
-      if (constructing)
-      {
-         return true;
-      }
-      else
-      {
-         return ACBase.mouseMove(e, w);
-      }
-   }
-
-   void setPath()
-   {
-      double cx = 0.0, cy = 0.0;
-      foreach (Coord p; oPath)
-      {
-         cx += p.x;
-         cy += p.y;
-      }
-      cx /= oPath.length;
-      cy /= oPath.length;
-      center.x = cx;
-      center.y = cy;
-      foreach (int i, ref Coord p; oPath)
-      {
-         p.x -= cx;
-         p.y -= cy;
-      }
-   }
-
-   void onCSMoreLess(int instance, bool more, bool coarse)
-   {
-      dummy.grabFocus();
+      focusLayout();
       if (instance == 0)
          modifyTransform(xform, more, coarse);
       else
@@ -623,6 +688,18 @@ class Polygon : LineSet
       dirty = true;
    }
 
+   void figureCenter()
+   {
+      double cx = 0, cy = 0;
+      for (int i = 0; i < oPath.length; i++)
+      {
+         cx += oPath[i].x;
+         cy += oPath[i].y;
+      }
+      center.x = cx/oPath.length;
+      center.y = cy/oPath.length;
+   }
+
    void renderActual(Context c)
    {
       if (constructing)
@@ -637,15 +714,13 @@ class Polygon : LineSet
          c.stroke();
          return;
       }
-      if (oPath.length <   2)
+      if (oPath.length <  3)
          return;
-      if (dirty)
-      {
-         transformPath(compoundTransform());
-         dirty = false;
-      }
+
+      transformPath(compoundTransform());
       c.setLineWidth(lineWidth);
       c.setLineJoin(les? CairoLineJoin.MITER: CairoLineJoin.ROUND);
+
       c.moveTo(hOff+rPath[0].x, vOff+rPath[0].y);
       for (int i = 1; i < rPath.length; i++)
          c.lineTo(hOff+rPath[i].x, vOff+rPath[i].y);
@@ -700,17 +775,31 @@ class Polygon : LineSet
       }
    }
 
-   void mouseMoveOp(double dx, double dy)
+   override void mouseMoveOp(double dx, double dy, GdkModifierType state)
    {
+      if (constructing)  // Only interested in clicks
+         return;
       if (!editing)
       {
          hOff += dx;
          vOff += dy;
          return;
       }
+      if (state & GdkModifierType.CONTROL_MASK)
+      {
+         adjustView(dx, dy);
+         reDraw();
+         return;
+      }
+      if (protect)
+      {
+         aw.popupMsg("You were zooming or moving the viewport, and so protect\nhas been turned on automatically.\nUncheck 'Protect' to proceed.", MessageType.INFO);
+         return;
+      }
       adjustPI(dx, dy);
       dirty = true;
    }
+
 
    void figureNextPrev()
    {
@@ -727,10 +816,13 @@ class Polygon : LineSet
 
    void renderForEdit(Context c)
    {
-      c.setSourceRgba(1,1,1,1);
+      doZoom(c);
+      c.setSourceRgba(1,1,1,editOpacity);
       c.paint();
       c.setSourceRgb(0,0,0);
-      c.setLineWidth(0.5);
+      double lw = 1;
+      if(zoomed) lw /= esf;
+      c.setLineWidth(lw);
       c.moveTo(center.x+oPath[0].x, center.y+oPath[0].y);
       for (int i = 1; i < oPath.length; i++)
          c.lineTo(center.x+oPath[i].x, center.y+oPath[i].y);
@@ -749,12 +841,107 @@ class Polygon : LineSet
       c.stroke();
    }
 
-   void render(Context c)
+   override void render(Context c)
    {
       if (editing)
          renderForEdit(c);
       else
          renderActual(c);
+   }
+   void notifyContainer(bool ofWhat)
+   {
+
+   }
+
+   void adjustView(double dx, double dy)
+   {
+      if (dx > 0)
+      {
+         if (vo.x-dx > zo.x)
+            vo.x -= dx;
+         else
+            vo.x = zo.x;
+      }
+      else
+      {
+         dx = -dx;
+         if (vo.x+width+dx < zbr.x)
+            vo.x += dx;
+         else
+            vo.x = zbr.x-width;
+      }
+      if (dy > 0)
+      {
+         if (vo.y-dy > zo.y)
+            vo.y -= dy;
+         else
+            vo.y = zo.y;
+      }
+      else
+      {
+         dy = -dy;
+         if (vo.y+height+dy < zbr.y)
+            vo.y += dy;
+         else
+            vo.y = zbr.y-height;
+      }
+   }
+
+   void adjustZoom(double by)
+   {
+      esf += by;
+      double zw = width*esf;
+      double zh = height*esf;
+      zo = Coord(-zw/2,-zh/2);
+      zbr = Coord(zw/2, zh/2);
+      reDraw();
+   }
+
+   void setupZoom(bool b)
+   {
+      if (b)
+      {
+         zoomed = true;
+         protect = true;
+         if (esf == 1)
+            adjustZoom(1);
+         vo = Coord(-0.5*width,-0.5*height);
+         md.ignoreZoom = true;
+         md.cbZoom.setActive(1);
+         md.ignoreZoom = false;
+         md.ignoreProtect = true;
+         md.cbProtect.setActive(1);
+         md.cbProtect.setSensitive(1);
+         md.ignoreProtect = false;
+         reDraw();
+      }
+      else
+      {
+         md.ignoreZoom = true;
+         md.cbZoom.setActive(0);
+         md.ignoreZoom = false;
+         md.ignoreProtect = true;
+         md.cbProtect.setActive(0);
+         md.ignoreProtect = false;
+         zoomed = false;
+         protect = false;
+         md.cbProtect.setSensitive(0);
+         if (parent !is null && parent.type == AC_CONTAINER)
+            (cast(Container) parent).unZoom();
+         reDraw();
+      }
+   }
+
+   override void doZoom(Context c)
+   {
+      if (zoomed)
+      {
+         double offsetX = vo.x+0.5*width;
+         double offsetY = vo.y+0.5*height;
+         c.translate(width/2-offsetX, height/2-offsetY);
+         c.scale(esf,esf);
+         c.translate(-width/2, -height/2);
+      }
    }
 }
 

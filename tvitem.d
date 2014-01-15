@@ -101,7 +101,7 @@ class TextViewItem : ACBase
       te.show();
    }
 
-   void setupControls(uint flags = 0)
+   override void setupControls(uint flags = 0)
    {
       bool hasAlign = (flags & 1) != 0;
       bool hasStyle = (flags & 2) != 0;
@@ -109,7 +109,7 @@ class TextViewItem : ACBase
       tp = new TextParams(cSet, ICoord(0, vp), true, hasAlign, hasStyle);
       vp += 10;
       CheckButton cb = new CheckButton("Edit the Text");
-      cb.setTooltipText("Uncheck this to switch to design mode");
+      cb.setTooltipText("Check or Uncheck this to switch\nbetween text editing and\ndesign modes");
       cb.setActive(1);
       vp += 20;
       cSet.add(cb, ICoord(0, vp), Purpose.EDITMODE);
@@ -126,9 +126,39 @@ class TextViewItem : ACBase
       extendControls();
       RenameGadget rg = new RenameGadget(cSet, ICoord(2, cSet.cy), name, true);
       rg.setName(name);
+      cSet.addInfo("Enter the required text in the drawing area,\nand then uncheck the \"Edit the Text\"\ncheckbutton to continue.");
    }
 
    void dgToggleView(ToggleButton rb) {}
+   void toggleView() {}
+
+   void onCSNotify(Widget w, Purpose wid)
+   {
+      switch (wid)
+      {
+      case Purpose.COLOR:
+         lastOp = push!RGBA(this, baseColor, OP_COLOR);
+         onCSSaveSelection();
+         setColor(false);
+         focusLayout();
+         break;
+      case Purpose.EDITMODE:
+         if (editMode)
+            cSet.setInfo("Set parameters for the text.");
+         else
+            cSet.setInfo("Modify the text as required, then uncheck\nthe \"Edit the Text\" checkbutton to\ncontinue.");
+         editMode = !editMode;
+         toggleView();
+         break;
+      default:
+         if (!specificNotify(w, wid))
+         return;
+      }
+      aw.dirty = true;
+      reDraw();
+   }
+
+   override void afterDeserialize() { dirty = true; }
 
    void resize(int oldW, int oldH)
    {
@@ -286,7 +316,7 @@ class TextViewItem : ACBase
       ssStart = ssEnd = 0;
    }
 
-   void onCSTextParam(Purpose p, string sv, int iv)
+   override void onCSTextParam(Purpose p, string sv, int iv)
    {
       if (p == Purpose.FONT)
       {
@@ -340,7 +370,7 @@ class TextViewItem : ACBase
       }
    }
 
-   void onCSMoreLess(int instance, bool more, bool far)
+   override void onCSMoreLess(int instance, bool more, bool far)
    {
       if (instance == 0)
       {
@@ -354,22 +384,6 @@ class TextViewItem : ACBase
    double fontSize()
    {
       return (pfd.getSize()/1024) * (screenRes/72.0);
-   }
-
-   bool installColor()
-   {
-      if (type == AC_RICHTEXT)
-      {
-         string sc = RGBA2hex(baseColor);
-         RichText rti = cast(RichText) this;
-         // This following may cause things to be pushed to undo stacks
-         if (rti.setSelectionAttribute("foreground", sc, 1))
-            return false;
-      }
-
-      te.overrideColor(GtkStateFlags.NORMAL, baseColor);
-      te.overrideCursor(cursorColor, cursorColor);
-      return true;
    }
 }
 

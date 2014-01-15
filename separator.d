@@ -34,7 +34,7 @@ class Separator : LineSet
    Coord vStart, vEnd;
    bool horizontal;
 
-   void syncControls()
+   override void syncControls()
    {
       cSet.setLineParams(lineWidth);
       cSet.toggling(false);
@@ -88,7 +88,7 @@ class Separator : LineSet
       positionControls(true);
    }
 
-   void extendControls()
+   override void extendControls()
    {
       int vp = cSet.cy;
 
@@ -110,26 +110,10 @@ class Separator : LineSet
       cSet.cy = vp+40;
    }
 
-   void onCSNotify(Widget w, Purpose wid)
+   override bool specificNotify(Widget w, Purpose wid)
    {
       switch (wid)
       {
-      case Purpose.COLOR:
-         lastOp = push!RGBA(this, baseColor, OP_COLOR);
-         setColor(false);
-         break;
-      case Purpose.LINEWIDTH:
-         lastOp = pushC!double(this, lineWidth, OP_THICK);
-         lineWidth = (cast(SpinButton) w).getValue();
-         break;
-      case Purpose.LESROUND:
-         if ((cast(RadioButton) w).getActive())
-            les = false;
-         break;
-      case Purpose.LESSHARP:
-         if ((cast(RadioButton) w).getActive())
-            les = true;
-         break;
       case Purpose.HORIZONTAL:
          if ((cast(RadioButton) w).getActive())
             horizontal = true;
@@ -139,15 +123,14 @@ class Separator : LineSet
             horizontal = false;
          break;
       default:
-         break;
+         return false;
       }
-      aw.dirty = true;
-      reDraw();
+      return true;
    }
 
-   void onCSMoreLess(int instance, bool more, bool far)
+   override void onCSMoreLess(int instance, bool more, bool far)
    {
-      dummy.grabFocus();
+      focusLayout();
       int n = more? 1: -1;
       if (far)
          n *= 10;
@@ -165,7 +148,7 @@ class Separator : LineSet
       reDraw();
    }
 
-   bool specificUndo(CheckPoint cp)
+   override bool specificUndo(CheckPoint cp)
    {
       switch (cp.type)
       {
@@ -183,7 +166,7 @@ class Separator : LineSet
       return true;
    }
 
-   void preResize(int oldW, int oldH)
+   override void preResize(int oldW, int oldH)
    {
       double hr = cast(double) width/oldW;
       double vr = cast(double) height/oldH;
@@ -195,7 +178,7 @@ class Separator : LineSet
       vOff *= vr;
    }
 
-   void render(Context c)
+   override void render(Context c)
    {
       c.setLineWidth(lineWidth);
       c.setLineCap(les? CairoLineCap.BUTT: CairoLineCap.ROUND);

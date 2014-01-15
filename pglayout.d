@@ -825,6 +825,7 @@ class PageLayout: Layout
       }
    }
 
+
    void renderToPrinter(Context c)
    {
       for (int i = 0; i < marked.length; i++)
@@ -834,7 +835,9 @@ class PageLayout: Layout
             c.save();
             marked[i].printFlag = true;
             if (marked[i].type == AC_CONTAINER)
+            {
                aw.renderCtrToPL(marked[i], c, rects[i].x, rects[i].y);
+            }
             else
                marked[i].renderToPL(c, rects[i].x, rects[i].y);
             marked[i].printFlag = false;

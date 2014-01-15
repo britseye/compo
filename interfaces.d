@@ -6,12 +6,14 @@ import types;
 
 import controlset;
 import gtk.Widget;
+import gtk.Entry;
 import cairo.Context;
 
 // Modifications to COMPO layer objects are made using a ControlSet.
 // ControlSets send messages to their host as follows:
 interface CSTarget
 {
+   void setNameEntry(Entry e);
    // Plain GTK Widgets in the ControlSet will notify the taget
    // using this.
    void onCSNotify(Widget w, Purpose p);

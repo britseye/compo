@@ -46,12 +46,11 @@ class PixelImage : ACBase
    static int nextOid = 0;
    int scaleType;
    string fileName;
-   Pixbuf pxb, spxb, pspxb;
-   double sadj;
-   int cw, ch;
-   bool useFile, realized;
+   Pixbuf pxb, spxb, rpxb;
+   double sadj, scaleX, scaleY, pw, ph;
+   bool useFile, scale4Printer;
 
-   void syncControls()
+   override void syncControls()
    {
       cSet.toggling(false);
       if (scaleType == 0)
@@ -73,11 +72,9 @@ class PixelImage : ACBase
       spxb = null;
       scaleType = other.scaleType;
       sadj = other.sadj;
-      cw = other.cw;
-      ch = other.ch;
       useFile = other.useFile;
       syncControls();
-      doScaling();
+      setScaling();
    }
 
    this(AppWindow w, ACBase parent)
@@ -86,13 +83,14 @@ class PixelImage : ACBase
       super(w, parent, s, AC_PIXBUF);
       scaleType = 0;
       sadj = 1.0;
+      scale4Printer = true;
       setupControls();
       positionControls(true);
    }
 
-   void setupControls()
+   override void extendControls()
    {
-      int vp = 0;
+      int vp = cSet.cy;
 
       Button b = new Button("Choose picture file");
       cSet.add(b, ICoord(0, vp), Purpose.OPENFILE);
@@ -114,54 +112,53 @@ class PixelImage : ACBase
       CheckButton cb = new CheckButton("Reference the File");
       cSet.add(cb, ICoord(150, vp+20), Purpose.USEFILE);
 
-      vp += 50;
-
-      RenameGadget rg = new RenameGadget(cSet, ICoord(0, vp), name, true);
+      cSet.cy = vp+50;
    }
 
-   void onCSNotify(Widget w, Purpose wid)
+   override bool specificNotify(Widget w, Purpose wid)
    {
       switch (wid)
       {
       case Purpose.OPENFILE:
          onCFB();
-         dummy.grabFocus();
-         return;
+         focusLayout();
+         return true;
       case Purpose.SCALEPROP:
          if ((cast(RadioButton) w).getActive())
          {
             scaleType = 0;
-            doScaling();
-            return;
+            setScaling();
+            return true;
          }
          break;
       case Purpose.SCALEFIT:
          if ((cast(RadioButton) w).getActive())
          {
             scaleType = 1;
-            doScaling();
-            return;
+            setScaling();
+            return true;
          }
          break;
       case Purpose.SCALENON:
          if ((cast(RadioButton) w).getActive())
          {
             scaleType = 2;
-            doScaling();
-            return;
+            setScaling();
+            return true;
          }
+         break;
       case Purpose.USEFILE:
          useFile = !useFile;
          break;
       default:
-         break;
+         return false;
       }
-      reDraw();
+      return true;
    }
 
-   void onCSMoreLess(int id, bool more, bool coarse)
+   override void onCSMoreLess(int id, bool more, bool coarse)
    {
-      dummy.grabFocus();
+      focusLayout();
       if (scaleType != 0)
          return;
       lastOp = pushC!double(this, sadj, OP_SCALE);
@@ -185,9 +182,6 @@ class PixelImage : ACBase
          else
             sadj *= 0.99;
       }
-      int cw = cast(int) (cw * sadj);
-      int ch = cast(int) (ch * sadj);
-      spxb = pxb.scaleSimple(cw, ch, GdkInterpType.BILINEAR);
 
       aw.dirty = true;
       if (pxb !is null)
@@ -206,7 +200,7 @@ class PixelImage : ACBase
       case OP_SCALE:
          sadj = cp.dVal;
          lastOp = OP_UNDEF;
-         doScaling();
+         setScaling();
          break;
       case OP_MOVE:
          Coord t = cp.coord;
@@ -220,63 +214,61 @@ class PixelImage : ACBase
       reDraw();
    }
 
-   void preResize(int oldW, int oldH)
+   override void preResize(int oldW, int oldH)
    {
       double hr = cast(double) width/oldW;
       double vr = cast(double) height/oldH;
       hOff *= hr;
       vOff *= vr;
-      doScaling();
+      setScaling();
    }
 
    void pasteImg(Pixbuf img)
    {
       pxb = img;
-      doScaling();
+      setScaling();
    }
 
-   void doScaling()
+   void setScaling()
    {
+      double bw, bh;
+      if (pxb is null)
+         return;
+      pw = 1.0*pxb.getWidth();
+      ph = 1.0*pxb.getHeight();
       if (scaleType == 0)
       {
-         if (pxb !is null)
+         double tar = (1.0*width)/height;
+         double ar = pw/ph;
+         if (tar > ar)  // Limited by height
          {
-            int pw = pxb.getWidth();
-            int ph = pxb.getHeight();
-            int nw, nh;
-            double tar = cast(double)width/height;
-            double ar = cast(double)pw/ph;
-            if (tar > ar)
-            {
-               nh = height;
-               nw = cast(int)(nh*ar);
-            }
-            else
-            {
-               nw = width;
-               nh = cast(int)(nw/ar);
-            }
-            cw = cast(int) (nw*sadj);
-            ch = cast(int) (nh*sadj);
-            spxb = pxb.scaleSimple(cw, ch, GdkInterpType.BILINEAR);
+            scaleY = height/ph;
+            scaleX = scaleY;
+            bw = width;
+            bh = width/ar;
          }
+         else           // limited by width;
+         {
+            scaleX = width/pw;
+            scaleY = scaleX;
+            bh = height;
+            bw = bh/ar;
+         }
+         // This is what we'll save in the .compo file if requested
+         if (scale4Printer)
+            spxb = pxb.scaleSimple(to!int(bw), to!int(bh), GdkInterpType.HYPER);
       }
       else if (scaleType == 1)
       {
-         if (pxb !is null)
-         {
-            spxb = pxb.scaleSimple(width, height, GdkInterpType.BILINEAR);
-         }
-         hOff = vOff = 0.0;
+         scaleX = width/pw;
+         scaleY =height/ph;
       }
       else
       {
-         spxb = pxb.copy();
-         hOff = vOff = 0.0;
+         scaleX = scaleY = 1;
       }
       aw.dirty = true;
-      if (pxb !is null)
-         reDraw();
+      reDraw();
    }
 
    void getPxb()
@@ -319,28 +311,8 @@ class PixelImage : ACBase
          s = fileName[];
       setName(s);
       aw.tv.queueDraw();
-
-      int pw = pxb.getWidth();
-      int ph = pxb.getHeight();
-      double tar = cast(double)width/height;
-      double ar = cast(double)pw/ph;
-      if (tar > ar)
-      {
-         ch = height;
-         cw = cast(int)(ch*ar);
-      }
-      else
-      {
-         cw = width;
-         ch = cast(int)(cw/ar);
-      }
-      spxb = pxb.scaleSimple(cw, ch, GdkInterpType.BILINEAR);
-      aw.dirty = true;
+      setScaling();
       reDraw();
-   }
-
-   void scaleForPrint()
-   {
    }
 
    void onCFB()
@@ -362,19 +334,20 @@ class PixelImage : ACBase
       getPxb();
    }
 
-   void render(Context c)
+   override void render(Context c)
    {
-      if (printFlag)
-      {
-         if (pspxb is null)
-            scaleForPrint();
-      }
-      Pixbuf pbt = printFlag? pspxb: spxb;
-      if (pxb !is null)
-      {
+      if (pxb is null)
+         return;
+      double sx = scaleX*sadj, sy = scaleY*sadj;
+      rpxb = pxb.scaleSimple(to!int(pw*sx), to!int(ph*sy), GdkInterpType.HYPER);
+      //c.scale(sx, sy);
          // GTK+3 essentially moved the previous Cairo method into gdk.Cairo
-         setSourcePixbuf(c, spxb, hOff, vOff);
-         c.paint();
-      }
+      setSourcePixbuf(c, rpxb, hOff, vOff);
+      c.moveTo(lpX, lpY);
+      c.lineTo(lpX, lpY+height);
+      c.lineTo(lpX+width, lpY+height);
+      c.lineTo(lpX+width, lpY);
+      c.closePath();
+      c.fill();
    }
 }

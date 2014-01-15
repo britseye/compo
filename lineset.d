@@ -13,7 +13,12 @@ import controlset;
 
 import gtkc.cairotypes;
 import cairo.Matrix;
+import gdk.RGBA;
 import gtk.ComboBox;
+import gtk.Widget;
+import gtk.RadioButton;
+import gtk.CheckButton;
+import gtk.ComboBoxText;
 
 class LineSet : ACBase
 {
@@ -21,15 +26,12 @@ class LineSet : ACBase
 
    Coord[] oPath;
    Coord[] rPath;
-   Transform tf;
    Coord center;
-   int xform;
+   bool fill, solid;
 
    cairo_path_t* cpath;
    bool les;
    bool killAdjust;
-   cairo_matrix_t tmData;
-   Matrix tm;
 
    this(AppWindow _aw, ACBase _parent, string _name, uint _type)
    {
@@ -48,7 +50,7 @@ class LineSet : ACBase
          aw.tv.queueDraw();
    }
 
-   void setupControls(uint flags = 0)
+   override void setupControls(uint flags = 0)
    {
       bool withLes = (flags & 1) != 0;
       bool sharp = (flags & 2) != 0;
@@ -57,6 +59,7 @@ class LineSet : ACBase
       extendControls();
       RenameGadget rg = new RenameGadget(cSet, ICoord(2, cSet.cy), name, true);
       rg.setName(name);
+      cSet.setLineWidth(lineWidth);
    }
 
    string formatLT(double lt)
@@ -65,6 +68,58 @@ class LineSet : ACBase
       formattedWrite(w, "%1.1f", lt);
       return w.data;
    }
+
+   override void onCSNotify(Widget w, Purpose wid)
+   {
+      switch (wid)
+      {
+      case Purpose.COLOR:
+         focusLayout();
+         lastOp = push!RGBA(this, baseColor, OP_COLOR);
+         setColor(false);
+         break;
+      case Purpose.FILLCOLOR:
+         focusLayout();
+         lastOp = push!RGBA(this, altColor, OP_ALTCOLOR);
+         setColor(true);
+         break;
+      case Purpose.LESROUND:
+         if ((cast(RadioButton) w).getActive())
+            les = false;
+         break;
+      case Purpose.LESSHARP:
+         if ((cast(RadioButton) w).getActive())
+            les = true;
+         break;
+      case Purpose.FILL:
+         fill = !fill;
+         break;
+      case Purpose.SOLID:
+         if (lastOp != OP_SOLID)
+            solid = !solid;
+         if (solid)
+         {
+            cSet.disable(Purpose.FILL);
+            cSet.disable(Purpose.FILLCOLOR);
+         }
+         else
+         {
+            cSet.enable(Purpose.FILL);
+            cSet.enable(Purpose.FILLCOLOR);
+         }
+         break;
+      case Purpose.XFORMCB:
+         xform = (cast(ComboBoxText) w).getActive();
+         break;
+      default:
+         if (!specificNotify(w, wid))
+            return;  // Ingore whatever
+         break;
+      }
+      aw.dirty = true;
+      reDraw();
+   }
+
 
    bool specificUndo(CheckPoint cp) { return false; }
 
@@ -111,8 +166,10 @@ class LineSet : ACBase
          hOff = t.x;
          vOff = t.y;
          lastOp = OP_UNDEF;
+         break;
       default:
          if (!specificUndo(cp))
+            return;
          break;
       }
       aw.dirty = true;
@@ -123,7 +180,7 @@ class LineSet : ACBase
    {
       xform = cb.getActive();
    }
-
+/*
    void modifyTransform(int tt, bool more, bool coarse)
    {
       // We rather arbitrarily do anisotropic scaling first, then transformations
@@ -172,10 +229,10 @@ class LineSet : ACBase
       else if (tt == 5) // Rotate
       {
          double ra = coarse? rads*5: rads/3;
-         if (!more)
+         if (more)
             ra = -ra;
          lastOp = pushC!Transform(this, tf, OP_ROT);
-         tf.ra += ra;
+         tf.ra -= ra;
       }
       else if (tt == 6)
       {
@@ -234,6 +291,15 @@ class LineSet : ACBase
       }
       return any;
    }
+*/
+   void centerPath()
+   {
+      for (int i = 0; i < oPath.length; i++)
+      {
+         oPath[i].x -= center.x;
+         oPath[i].y -= center.y;
+      }
+   }
 
    void transformPath(bool mValid)
    {
@@ -247,9 +313,9 @@ class LineSet : ACBase
       }
    }
 
-   void onCSLineWidth(double lw)
+   override void onCSLineWidth(double lw)
    {
-      dummy.grabFocus();
+      focusLayout();
       lastOp = pushC!double(this, lineWidth, OP_THICK);
       lineWidth = lw;
       aw.dirty = true;

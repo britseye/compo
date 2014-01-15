@@ -17,7 +17,6 @@ import controlset;
 import std.stdio;
 import std.math;
 import std.conv;
-
 import gtk.Widget;
 import gtk.Label;
 import gtk.Button;
@@ -32,24 +31,15 @@ import gtkc.cairotypes;
 class LGradient: ACBase
 {
    static int nextOid = 0;
-   double rw, rh, lastH, lastV;
+   double fw, fp, angle;
    double[50] opStops;
+   Coord start, end, cp1, cp2;
    int nStops;
    double maxOpacity;
-   bool pin, outline, revfade, orient;
+   bool revfade, orient, showGuides;
    int gType;
    Pattern pat;
    Label ov;
-   CheckButton outlineCB;
-
-   void syncControls()
-   {
-      cSet.toggling(false);
-      cSet.setToggle(Purpose.SOLID, pin);
-      cSet.setToggle(Purpose.FILLOUTLINE, outline);
-      cSet.toggling(true);
-      cSet.setHostName(name);
-   }
 
    this(LGradient other)
    {
@@ -58,11 +48,9 @@ class LGradient: ACBase
       vOff = other.vOff;
       baseColor = other.baseColor.copy();
       maxOpacity = other.maxOpacity;
-      rw = other.rw;
-      rh = other.rh;
+      fw = other.fw;
+      fp = other.fp;
       gType = other.gType;
-      pin = other.pin;
-      outline = other.outline;
       revfade = other.revfade;
       orient = other.orient;
       nStops = other.nStops;
@@ -74,10 +62,9 @@ class LGradient: ACBase
    {
       string s = "LGradient "~to!string(++nextOid);
       super(w, parent, s, AC_LGRADIENT);
-      hOff = width/4;
-      vOff = height/4;
-      rw = width/2;
-      rh = height/2;
+      fw = 0.3333333;
+      fp = 0.3333333;
+      angle = atan2(-1.0*height, 1.0*width);
       baseColor = new RGBA(1,1,1);
       maxOpacity = 1.0;
       gType = 0;
@@ -85,11 +72,11 @@ class LGradient: ACBase
 
       setupControls();
       positionControls(true);
-      outline = false;
-      pin = true;
       revfade = false;
       orient = false;
-      setupStops();
+      showGuides = true;
+      setOrientation(0);
+      dirty = true;
    }
 
    override int getNextOid()
@@ -97,7 +84,7 @@ class LGradient: ACBase
       return ++nextOid;
    }
 
-   void extendControls()
+   override void extendControls()
    {
       int vp = cSet.cy;
 
@@ -105,34 +92,26 @@ class LGradient: ACBase
       cSet.add(b, ICoord(0, vp), Purpose.COLOR);
 
       Label l = new Label("Max Opacity");
-      cSet.add(l, ICoord(153, vp), Purpose.LABEL);
-      new MoreLess(cSet, 0, ICoord(260, vp), true);
-      ov = new Label("1.0");
-      cSet.add(ov, ICoord(300, vp), Purpose.LABEL);
-
-      vp += 35;
-      CheckButton cb = new CheckButton("Pin to full size");
-      cb.setActive(1);
-      cSet.add(cb, ICoord(0, vp), Purpose.SOLID);
-
-      l = new Label("Width");
-      l.setTooltipText("Adjust width - hold down <Ctrl> for faster action");
       cSet.add(l, ICoord(195, vp), Purpose.LABEL);
-      new MoreLess(cSet, 1, ICoord(260, vp), true);
+      new MoreLess(cSet, 0, ICoord(285, vp), true);
+      ov = new Label("1.0");
+      cSet.add(ov, ICoord(320, vp), Purpose.LABEL);
 
       vp += 20;
-      outlineCB = new CheckButton("Show Outline");
-      cSet.add(outlineCB, ICoord(0, vp), Purpose.FILLOUTLINE);
+      l = new Label("Fade Width");
+      l.setTooltipText("Adjust width - hold down <Ctrl> for faster action");
+      cSet.add(l, ICoord(195, vp), Purpose.LABEL);
+      new MoreLess(cSet, 1, ICoord(285, vp), true);
 
-      l = new Label("Height");
+      vp += 20;
+      l = new Label("Fade Position");
       l.setTooltipText("Adjust height - hold down <Ctrl> for faster action");
       cSet.add(l, ICoord(195, vp), Purpose.LABEL);
-      new MoreLess(cSet, 2, ICoord(260, vp), true);
+      new MoreLess(cSet, 2, ICoord(285, vp), true);
 
-      vp += 25;
-      new InchTool(cSet, 0, ICoord(0, vp), true);
+      new InchTool(cSet, 0, ICoord(0, vp-7), true);
 
-      vp += 35;
+      vp += 20;
       l = new Label("Gradient Rule");
       cSet.add(l, ICoord(95, vp+5), Purpose.LABEL);
       ComboBoxText cbb = new ComboBoxText(false);
@@ -146,74 +125,139 @@ class LGradient: ACBase
       cbb.appendText("Exponential");
       cbb.appendText("Linear");
       cbb.setActive(0);
-      cSet.add(cbb, ICoord(195, vp), Purpose.XFORMCB);
+      cSet.add(cbb, ICoord(195, vp), Purpose.PATTERN);
 
-      vp += 35;
-      cb = new CheckButton("Reverse fade");
+      vp += 20;
+      TextOrient to = new TextOrient(cSet, 0, ICoord(0, vp), true);
+      l = new Label("Angle");
+      cSet.add(l, ICoord(60, vp+15), Purpose.LABEL);
+      new MoreLess(cSet, 3, ICoord(120, vp+15),false);
+
+      vp += 43;
+      CheckButton cb = new CheckButton("Reverse fade");
       cSet.add(cb, ICoord(0, vp), Purpose.FADELEFT);
-      cb = new CheckButton("Vertical");
-      cSet.add(cb, ICoord(150, vp), Purpose.FADETOP);
+      cb = new CheckButton("Show Guidelines");
+      cSet.add(cb, ICoord(120, vp), Purpose.SHOWMARKERS);
 
-      cSet.cy = vp+30;
+      cSet.cy = vp+50;
    }
 
-   void preResize(int oldW, int oldH)
+   override void preResize(int oldW, int oldH)
    {
       hOff = width/4;
       vOff = height/4;
-      rw = width/2;
-      rh = height/2;
+      fw = width/3;
+      fp = height/3;
    }
 
-   void onCSNotify(Widget w, Purpose wid)
+   override bool specificNotify(Widget w, Purpose wid)
    {
 
       switch (wid)
       {
-      case Purpose.COLOR:
-         dummy.grabFocus();
-         lastOp = push!RGBA(this, baseColor, OP_COLOR);
-         setColor(false);
-         dirty = true;
-         break;
-      case Purpose.SOLID:
-         pin = !pin;
-         if (pin)
-         {
-            outlineCB.setActive(0);
-         }
-         else
-         {
-            outlineCB.setActive(1);
-         }
-         dirty = true;
-         break;
-      case Purpose.FILLOUTLINE:
-         outline = !outline;
-         break;
-      case Purpose.XFORMCB:
-         gType = (cast(ComboBoxText) w).getActive();
-         setupStops();
-         dirty = true;
-         break;
       case Purpose.FADELEFT:
          revfade = !revfade;
          dirty = true;
          break;
-      case Purpose.FADETOP:
-         orient = !orient;
+      case Purpose.SHOWMARKERS:
+         showGuides = !showGuides;
+         dirty = true;
+         break;
+      case Purpose.PATTERN:
+         gType = (cast(ComboBoxText) w).getActive();
          dirty = true;
          break;
       default:
-         return;
+         return false;
       }
-      aw.dirty = true;
-      reDraw();
+      return true;
    }
 
-   void onCSMoreLess(int instance, bool more, bool coarse)
+   void setOrientation(int o)
    {
-      dummy.grabFocus();
+      void figureSE(double a)
+      {
+         double r = 0.5*sqrt(1.0*width*width+1.0*height*height);
+         start.x = lpX+width/2-r*cos(a);
+         start.y = lpY+height/2+r*sin(a);
+         end.x = lpX+width/2+r*cos(a);
+         end.y = lpY+height/2-r*sin(a);
+         cp1.x = start.x+(end.x-start.x)*fp;
+         cp1.y = start.y+(end.y-start.y)*fp;
+         cp2.x = start.x+(end.x-start.x)*(fp+fw);
+         cp2.y = start.y+(end.y-start.y)*(fp+fw);
+      }
+
+      switch (o)
+      {
+         case 0:
+            // left to right
+            start.x = lpX;
+            start.y = lpY+height/2;
+            end.x = lpX+width;
+            end.y = lpY+height/2;
+            cp1.x = lpX+fp*width;
+            cp1.y = lpY+0.5*height;
+            cp2.x = lpX+(fp+fw)*width;
+            cp2.y = lpY+0.5*height;
+            break;
+         case 1:
+            // bottom to top
+            start.x = lpX+width/2;
+            start.y = lpY+height;
+            end.x = start.x;
+            end.y = lpY;
+            cp1.x = lpX+0.5*width;
+            cp1.y = lpY+height-fp*height;
+            cp2.x = lpX+0.5*width;
+            cp2.y = lpY+height-(fp+fw)*height;
+            break;
+         case 2:
+            // right to left
+            start.x = lpX+width;
+            start.y = lpY+height/2;
+            end.x = lpX;
+            end.y = lpY+height/2;
+            cp1.x = lpX+width-fp*width;
+            cp1.y = lpY+0.5*height;
+            cp2.x = lpX+width-(fp+fw)*width;
+            cp2.y = lpY+0.5*height;
+            break;
+         case 3:
+            // top to bottom
+            start.x = lpX+width/2;
+            start.y = lpY;
+            end.x = start.x;
+            end.y = lpY+height;
+            cp1.x = lpX+0.5*width;
+            cp1.y = lpY+fp*height;
+            cp2.x = lpX+0.5*width;
+            cp2.y = lpY+(fp+fw)*height;
+            break;
+         default:
+            figureSE(angle);
+            cSet.enable(Purpose.MOL, 3);
+            aw.dirty = true;
+            reDraw();
+            return;
+      }
+      cSet.disable(Purpose.MOL, 3);
+   }
+
+   override void onCSTextParam(Purpose p, string sv, int iv)
+   {
+      if (p == Purpose.TORIENT)
+      {
+         setOrientation(iv);
+         dirty = true;
+         aw.dirty = true;
+         reDraw();
+      }
+   }
+
+   override void onCSMoreLess(int instance, bool more, bool coarse)
+   {
+      focusLayout();
       double n = more? 1: -1;
       if (coarse)
          n *= 10;
@@ -247,14 +291,51 @@ class LGradient: ACBase
       }
       else if (instance == 1)
       {
-         lastOp = pushC!double(this, rw, OP_HSIZE);
-         rw += n;
+         double delta = coarse? 0.05: 0.01;
+         lastOp = pushC!double(this, fw, OP_HSIZE);
+         if (more)
+         {
+            if (fw+delta > 1)
+               fw = 1;
+            else
+               fw += delta;
+         }
+         else
+         {
+            if (fw-delta < 0.05)
+               fw = 0.05;
+            else
+               fw -= delta;
+         }
          dirty = true;
       }
       else if (instance == 2)
       {
-         lastOp = pushC!double(this, rh, OP_VSIZE);
-         rh += n;
+         double delta = coarse? 0.05: 0.01;
+         lastOp = pushC!double(this, fp, OP_VSIZE);
+         if (more)
+         {
+            if (fp+delta > 1-fw)
+               fp = 1-fw;
+            else
+               fp += delta;
+         }
+         else
+         {
+            if (fp-delta < 0)
+               fp = 0;
+            else
+               fp -= delta;
+         }
+         dirty = true;
+      }
+      else if (instance == 3)
+      {
+         double theta = coarse? 5*rads: 1*rads;
+         lastOp = pushC!double(this, fp, OP_VSIZE);
+         if (!more) theta = -theta;
+         angle -= theta;
+         setOrientation(4);
          dirty = true;
       }
       aw.dirty = true;
@@ -279,11 +360,11 @@ class LGradient: ACBase
          lastOp = OP_UNDEF;
          break;
       case OP_HSIZE:
-         rw = cp.dVal;
+         fw = cp.dVal;
          lastOp = OP_UNDEF;
          break;
       case OP_VSIZE:
-         rh = cp.dVal;
+         fp = cp.dVal;
          lastOp = OP_UNDEF;
          break;
       case OP_MOVE:
@@ -415,93 +496,97 @@ class LGradient: ACBase
       double offset = 0;
       if (revfade)
       {
+         pat.addColorStopRgba (0, r, g, b, 0);
          if (isNaN(opStops[0]))
          {
-            pat.addColorStopRgba (0, r, g, b, 0);
-            pat.addColorStopRgba (1, r, g, b, 1);
-            return;
+            pat.addColorStopRgba (fp, r, g, b, 0);
+            pat.addColorStopRgba ((fp+fw), r, g, b, 1);
          }
-         for (int i = 49; i >= 0; i--)
+         else
          {
-            pat.addColorStopRgba (offset, r, g, b, opStops[i]*maxOpacity);
-            offset += 0.02;
+            pat.addColorStopRgba (fp, r, g, b, 0);
+            offset = fp;
+            for (int i = nStops-1; i >= 0; i--)
+            {
+               pat.addColorStopRgba (offset, r, g, b, opStops[i]*maxOpacity);
+               offset += 0.02*fw;
+            }
+            pat.addColorStopRgba (fp+fw, r, g, b, 1);
          }
+         pat.addColorStopRgba (1, r, g, b, 1);
       }
       else
       {
+         pat.addColorStopRgba (0, r, g, b, 1);
          if (isNaN(opStops[0]))
          {
-            pat.addColorStopRgba (0, r, g, b, 1);
-            pat.addColorStopRgba (1, r, g, b, 0);
-            return;
+            pat.addColorStopRgba (fp, r, g, b, 1);
+            pat.addColorStopRgba ((fp+fw), r, g, b, 0);
          }
-         for (int i = 0; i < nStops; i++)
+         else
          {
-            pat.addColorStopRgba (offset, r, g, b, opStops[i]*maxOpacity);
-            offset += 0.02;
+            pat.addColorStopRgba (fp, r, g, b, 1);
+            offset = fp;
+            for (int i = 0; i < nStops; i++)
+            {
+               pat.addColorStopRgba (offset, r, g, b, opStops[i]*maxOpacity);
+               offset += 0.02*fw;
+            }
+            pat.addColorStopRgba (fp+fw, r, g, b, 0);
          }
+         pat.addColorStopRgba (1, r, g, b, 0);
       }
    }
 
    void createPattern()
    {
-      if (orient)
-      {
-         if (pin)
-            pat = Pattern.createLinear(width/2, 0, width/2, height);
-         else
-            pat = Pattern.createLinear(hOff+rw/2, vOff, hOff+rw/2, vOff+rh);
-      }
-      else
-      {
-         if (pin)
-            pat = Pattern.createLinear(0, height/2, width, height/2);
-         else
-            pat = Pattern.createLinear(hOff, vOff+rh/2, hOff+rw, vOff+rh/2);
-      }
+         pat = Pattern.createLinear(start.x, start.y, end.x, end.y);
    }
 
-   void render(Context c)
+   void renderGuides(Context c)
    {
-      if (!pin && (hOff != lastH || vOff != lastV))
-         dirty = true;
-      if (dirty || pat is null)
-      {
-         createPattern();
-         double r = baseColor.red();
-         double g = baseColor.green();
-         double b = baseColor.blue();
-         addStops(r, g, b);
-         dirty = false;
-         lastH = hOff;
-         lastV = vOff;
-      }
-      // for testing
+      c.setSourceRgb(0.8,0.8,0.8);
+      c.setLineWidth(1);
+      c.moveTo(start.x, start.y);
+      c.lineTo(end.x, end.y);
+      c.stroke();
+      c.moveTo(cp1.x-3, cp1.y+3);
+      c.lineTo(cp1.x, cp1.y-3);
+      c.lineTo(cp1.x+3, cp1.y+3);
+      c.closePath();
       c.setSourceRgb(0,0,0);
-      c.paint();
+      c.fill();
+      c.moveTo(cp2.x-3, cp2.y+3);
+      c.lineTo(cp2.x, cp2.y-3);
+      c.lineTo(cp2.x+3, cp2.y+3);
+      c.closePath();
+      c.setSourceRgb(0,0,1);
+      c.fill();
+   }
+
+   override void render(Context c)
+   {
+      if (dirty)
+      {
+         setupStops();
+         dirty = false;
+      }
+      createPattern();
+      addStops(baseColor.red, baseColor.green, baseColor.blue);
+      // for testing
+      //c.setSourceRgb(0,0,0);
+      //c.paint();
 
       c.setSource(pat);
-      if (pin)
-      {
-         c.paint();
-      }
-      else
-      {
-         c.moveTo(hOff, vOff);
-         c.lineTo(hOff, vOff+rh);
-         c.lineTo(hOff+rw, vOff+rh);
-         c.lineTo(hOff+rw, vOff);
-         c.closePath();
-         c.fillPreserve();
-      }
-      if (outline)
-      {
-         c.setSourceRgb(0,0,0);
-         c.setLineWidth(0.3);
-         c.stroke();
-      }
+      c.moveTo(lpX, lpY);
+      c.lineTo(lpX, lpY+height);
+      c.lineTo(lpX+width, lpY+height);
+      c.lineTo(lpX+width, lpY);
+      c.closePath();
+      c.fill();
 
+      if (showGuides)
+         renderGuides(c);
+      if (!isMoved) cSet.setDisplay(0, reportPosition());
    }
 }
-
-

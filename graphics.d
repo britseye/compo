@@ -39,7 +39,7 @@ void renderPNG(ACBase item)
    }
    fileName = fcd.getFilename();
    folder = fcd.getCurrentFolder();
-   //ctr.aw.recent.lastImageFolder = folder;
+   item.aw.recent.lastImageFolder = folder;
    fcd.destroy();
 
    ImageSurface isf = ImageSurface.create(cairo_format_t.ARGB32, item.width, item.height);
@@ -74,7 +74,7 @@ void renderSVG(ACBase item)
    }
    fileName = fcd.getFilename();
    folder = fcd.getCurrentFolder();
-   //ctr.aw.recent.lastImageFolder = folder;
+   item.aw.recent.lastImageFolder = folder;
    fcd.destroy();
    SvgSurface svgs = SvgSurface.create(fileName, item.width, item.height);
    Context svgc = Context.create(svgs);

@@ -44,6 +44,10 @@ class Container: ACBase
    bool glShowing, glUseV, decorate;
    double glSaved;
 
+   double zsf;
+   Coord cvo;
+   bool cZoomed;
+
    override void syncControls()
    {
       cSet.toggling(false);
@@ -87,7 +91,7 @@ class Container: ACBase
       positionControls(true);
    }
 
-   void extendControls()
+   override void extendControls()
    {
       int vp = cSet.cy;
 
@@ -116,7 +120,7 @@ class Container: ACBase
 
    override void onCSNotify(Widget w, Purpose wid)
    {
-      dummy.grabFocus();
+      focusLayout();
       switch (wid)
       {
       case Purpose.COLOR:
@@ -143,12 +147,12 @@ class Container: ACBase
       default:
          break;
       }
-      dummy.grabFocus();
+      focusLayout();
    }
 
    override void onCSMoreLess(int instance, bool more, bool coarse)
    {
-      dummy.grabFocus();
+      focusLayout();
       double delta = 1.0;
       if (coarse)
          delta *= 10;
@@ -203,20 +207,20 @@ class Container: ACBase
 
    override void renderToPL(Context c, double xpos, double ypos)
    {
-      //c.save();
-      //c.rectangle(xpos, ypos, width, height);
-      //c.clip();
+      c.rectangle(xpos, ypos, width, height);
+      c.clip();
 
       foreach (ACBase x; children)
       {
          x.printFlag = printFlag;
+         c.save();
          x.cRender(c, xpos, ypos);
+         c.restore();
          x.printFlag = false;
       }
-      //c.restore();
    }
 
-   bool drawCallback(Context c, Widget widget)
+   override bool drawCallback(Context c, Widget widget)
    {
       // This is where we draw on the design window
       c.setSourceRgba(1.0, 1.0, 1.0, 1.0);
@@ -261,18 +265,28 @@ class Container: ACBase
       return rv;
    }
 
-   void render(Context c)
+   void zoom(double sf, Coord vpo)
    {
-      c.save();
+      cZoomed = true;
+      if (sf == 0)
+         return;
+      zsf = sf;
+      cvo = vpo;
+   }
+
+   void unZoom() { cZoomed = false; }
+
+   override void render(Context c)
+   {
+      //c.save();
       c.setSourceRgb(baseColor.red, baseColor.green, baseColor.blue);
       c.paint();
+      //c.restore();
       if (decorate)
          decorateSheet(c);
-      c.restore();
-
       foreach (ACBase x; children)
       {
-         if (x is skip)
+         if (x is skip || x.hidden)
             continue;
          c.save();
          x.render(c);
@@ -308,4 +322,3 @@ class Container: ACBase
       }
    }
 }
-

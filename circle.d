@@ -39,11 +39,9 @@ import cairo.Matrix;
 class Circle : LineSet
 {
    static int nextOid = 0;
-   RGBA saveAltColor;
    double radius;
-   bool fill, solid;
 
-   void syncControls()
+   override void syncControls()
    {
       cSet.setLineParams(lineWidth);
       cSet.toggling(false);
@@ -83,17 +81,16 @@ class Circle : LineSet
       string s = "Circle "~to!string(++nextOid);
       super(w, parent, s, AC_CIRCLE);
       hOff = vOff = 0;
-      altColor = new RGBA();
+      altColor = new RGBA(0,0,0,1);
       center = Coord(0.5*width, 0.5*height);
       radius = (width > height)? 0.4*height: 0.4*width;
-      lineWidth = 1.0;
       tm = new Matrix(&tmData);
 
       setupControls();
       positionControls(true);
    }
 
-   void extendControls()
+   override void extendControls()
    {
       int vp = cSet.cy;
 
@@ -124,55 +121,9 @@ class Circle : LineSet
       cSet.cy = vp+30;
    }
 
-   void onCSNotify(Widget w, Purpose wid)
-   {
-      switch (wid)
-      {
-      case Purpose.COLOR:
-         dummy.grabFocus();
-         lastOp = push!RGBA(this, baseColor, OP_COLOR);
-         pushOp(lcp);
-         setColor(false);
-         break;
-      case Purpose.FILLCOLOR:
-         lastOp = push!RGBA(this, altColor, OP_ALTCOLOR);
-         setColor(true);
-         break;
-         /*
-      case Purpose.LINEWIDTH:
-         lastOp = pushC!double(this, lineWidth, OP_THICK);
-         lineWidth = (cast(SpinButton) w).getValue();
-         break;
-         */
-      case Purpose.FILL:
-         fill = !fill;
-         break;
-      case Purpose.SOLID:
-         solid = !solid;
-         if (solid)
-         {
-            cSet.disable(Purpose.FILL);
-            cSet.disable(Purpose.FILLCOLOR);
-         }
-         else
-         {
-            cSet.enable(Purpose.FILL);
-            cSet.enable(Purpose.FILLCOLOR);
-         }
-         break;
-      case Purpose.XFORMCB:
-         xform = (cast(ComboBoxText) w).getActive();
-         break;
-      default:
-         break;
-      }
-      aw.dirty = true;
-      reDraw();
-   }
-
    override void onCSMoreLess(int instance, bool more, bool coarse)
    {
-      dummy.grabFocus();
+      focusLayout();
       int[] xft = [0,2,5,6,7];
       int tt = xft[xform];
       modifyTransform(tt, more, coarse);
@@ -181,7 +132,7 @@ class Circle : LineSet
       reDraw();
    }
 
-   void preResize(int oldW, int oldH)
+   override void preResize(int oldW, int oldH)
    {
       double hr = cast(double) width/oldW;
       double vr = cast(double) height/oldH;
@@ -194,29 +145,21 @@ class Circle : LineSet
       return formatCoord(Coord(center.x+hOff, center.y+vOff));
    }
 
-   void render(Context c)
+   override void render(Context c)
    {
-      c.setLineWidth(lineWidth);
-      c.setLineJoin(les? CairoLineJoin.MITER: CairoLineJoin.ROUND);
-      c.setSourceRgb(baseColor.red, baseColor.green, baseColor.blue);
       c.translate(hOff+width/2, vOff+height/2);
       if (compoundTransform())
          c.transform(tm);
-      c.translate(-(width/2), -(height/2));
+      c.translate(-lpX-(width/2), -lpY-(height/2));
+      c.setLineWidth(lineWidth/((tf.hScale+tf.vScale)/2));
+      c.setLineJoin(les? CairoLineJoin.MITER: CairoLineJoin.ROUND);
+      c.setSourceRgb(baseColor.red, baseColor.green, baseColor.blue);
       c.newSubPath();
       c.arc(width/2, height/2, radius, 0, PI*2);
-      c.strokePreserve();
-      if (solid)
-      {
-         // fill with same color
-         c.fill();
-      }
-      else if (fill)
-      {
-         c.setSourceRgb(altColor.red, altColor.green, altColor.blue);
-         c.fill();
-      }
-      // else don't fill at all
+      if (!(solid || fill))
+         c.stroke();
+      else
+         doFill(c, solid, fill);
       if (!isMoved) cSet.setDisplay(0, reportPosition());
    }
 }

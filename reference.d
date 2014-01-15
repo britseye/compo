@@ -20,7 +20,7 @@ import std.string;
 import std.conv;
 
 import cairo.Context;
-import cairo.Surface;
+import cairo.Matrix;
 import gtk.Widget;
 import gtk.Label;
 import gtk.Button;
@@ -28,15 +28,20 @@ import gtk.ToggleButton;
 import gtk.RadioButton;
 import gtk.FileFilter;
 import gtk.FileChooserDialog;
+import gtk.ComboBoxText;
 
 class Reference : ACBase
 {
    static int nextOid = 0;
-   Container that;
+   ComboBoxText cbb;
+   ACBase base;
+   ACBase that;
    string fileName;
+   Coord center;
    double scf;
+   bool local;
 
-   void syncControls()
+   override void syncControls()
    {
       //cSet.toggling(false);
       //cSet.toggling(true);
@@ -49,48 +54,122 @@ class Reference : ACBase
       fileName = other.fileName;
       that = cast(Container) aw.cloneItem(other.that);
       scf = other.scf;
+      local = other.local;
    }
 
    this(AppWindow w, ACBase parent)
    {
       string s = "Reference "~to!string(++nextOid);
       super(w, parent, s, AC_REFERENCE);
-      scf = 1.0;
+      tm = new Matrix(&tmData)      ;
 
       setupControls();
       positionControls(true);
    }
 
-   void extendControls()
+   void getLocalCtrs()
+   {
+      string thisName = name;
+      int count = 0;
+      if (parent.type == AC_CONTAINER)
+      {
+         base = parent.parent;
+         thisName = parent.name;
+      }
+      else
+         base = parent;
+      foreach (ACBase x; base.children)
+      {
+         if (x.name == thisName)
+            continue;
+         cbb.appendText(x.name);
+         count++;
+      }
+      if (!count)
+         cbb.appendText("No Locals");
+   }
+
+   void setThat(string thatName)
+   {
+      if (thatName == "Use File")
+         return;
+      foreach (ACBase x; base.children)
+      {
+         if (x.name == thatName)
+         {
+            that = x;
+            break;
+         }
+      }
+   }
+
+   override void extendControls()
    {
       int vp = cSet.cy;
 
       Button b = new Button("Choose COMPO File");
       cSet.add(b, ICoord(0, vp), Purpose.OPENFILE);
 
-      Label l = new Label("Scale");
-      l.setTooltipText("Scale larger or smaller - hold down <Ctrl> for faster action");
-      cSet.add(l, ICoord(200, vp+5), Purpose.LABEL);
-      new MoreLess(cSet, 0, ICoord(260, vp+5), true);
+      cbb = new ComboBoxText(false);
+      cbb.appendText("Use File");
+      getLocalCtrs();
+      cbb.setActive(0);
+      cbb.setSizeRequest(100, -1);
+      cSet.add(cbb, ICoord(167, vp-2), Purpose.LOCALCTR);
+
+      b = new Button("Refresh");
+      cSet.add(b, ICoord(280, vp), Purpose.REDRAW);
 
       vp += 35;
+      ComboBoxText cbb1 = new ComboBoxText(false);
+      cbb1.appendText("Scale");
+      cbb1.appendText("Stretch-H");
+      cbb1.appendText("Stretch-V");
+      cbb1.appendText("Skew-H");
+      cbb1.appendText("Skew-V");
+      cbb1.appendText("Rotate");
+      cbb1.appendText("Flip-H");
+      cbb1.appendText("Flip-V");
+      cbb1.setActive(0);
+      cbb1.setSizeRequest(100, -1);
+      cSet.add(cbb1, ICoord(167, vp), Purpose.XFORMCB);
+      new MoreLess(cSet, 0, ICoord(275, vp+5), true);
+
       new InchTool(cSet, 0, ICoord(0, vp), true);
 
-      cSet.cy = vp+35;
+      cSet.cy = vp+38;
    }
 
-   void onCSNotify(Widget w, Purpose wid)
+   override bool specificNotify(Widget w, Purpose wid)
    {
       switch (wid)
       {
       case Purpose.OPENFILE:
          onCFB();
-         dummy.grabFocus();
-         return;
-      default:
+         focusLayout();
+         return true;
+      case Purpose.LOCALCTR:
+         string s = (cast(ComboBoxText) w).getActiveText();
+         if (s == "Use File")
+         {
+            that = null;
+            return true;
+         }
+         setThat(s);
          break;
+      case Purpose.REDRAW:
+         cbb.removeAll;
+         cbb.appendText("Use File");
+         getLocalCtrs();
+         cbb.setActive(0);
+         break;
+      case Purpose.XFORMCB:
+         xform = (cast(ComboBoxText) w).getActive();
+         break;
+      default:
+         return false;
       }
-      reDraw();
+      return true;
    }
 
    void undo()
@@ -101,10 +180,6 @@ class Reference : ACBase
          return;
       switch (cp.type)
       {
-      case OP_SCALE:
-         scf = cp.dVal;
-         lastOp = OP_UNDEF;
-         break;
       case OP_MOVE:
          Coord t = cp.coord;
          hOff = t.x;
@@ -117,7 +192,7 @@ class Reference : ACBase
       reDraw();
    }
 
-   void preResize(int oldW, int oldH)
+   override void preResize(int oldW, int oldH)
    {
       double hr = cast(double) width/oldW;
       double vr = cast(double) height/oldH;
@@ -132,38 +207,144 @@ class Reference : ACBase
       reDraw();
    }
 
-   void onCSMoreLess(int instance, bool more, bool much)
+   override void onCSMoreLess(int instance, bool more, bool coarse)
    {
-      dummy.grabFocus();
-      lastOp = pushC!double(this, scf, OP_SCALE);
-      int direction = more? 1: -1;
-      if (much)
+      focusLayout();
+      if (instance == 0)
+         modifyTransform(xform, more, coarse);
+      else
+         return;
+      dirty = true;
+      aw.dirty = true;
+      reDraw();
+   }
+
+   void modifyTransform(int tt, bool more, bool coarse)
+   {
+      // We rather arbitrarily do anisotropic scaling first, then transformations
+      // that change the shape - squash and skew, then rotation, then finally flip
+      // of the finished object
+      if (tt <= 2)        // Scale
       {
-         if (direction > 0)
-            scf *= 1.05;
+         double factor;
+         if (more)
+            factor = coarse? 1.1: 1.01;
          else
-            scf *= 0.95;
+            factor = coarse? 0.9: 0.99;
+         switch (tt)
+         {
+            case 1:
+               lastOp = pushC!Transform(this, tf, OP_HSC);
+               tf.hScale *= factor;
+               break;
+            case 2:
+               lastOp = pushC!Transform(this, tf, OP_VSC);
+               tf.vScale *= factor;
+               break;
+            default:
+               lastOp = pushC!Transform(this, tf, OP_SCALE);
+               tf.hScale *= factor;
+               tf.vScale *= factor;
+               break;
+         }
+      }
+      else if (tt == 3 || tt == 4) // Skew/shear horizontal/vertical
+      {
+         double delta = coarse? 0.1: 0.01;
+         if (!more)
+            delta = -delta;
+         if (tt == 3)
+         {
+            lastOp = pushC!Transform(this, tf, OP_HSK);
+            tf.hSkew += delta;
+         }
+         else
+         {
+            lastOp = pushC!Transform(this, tf, OP_VSK);
+            tf.vSkew += delta;
+         }
+      }
+      else if (tt == 5) // Rotate
+      {
+         double ra = coarse? rads*5: rads/3;
+         if (!more)
+            ra = -ra;
+         lastOp = pushC!Transform(this, tf, OP_ROT);
+         tf.ra += ra;
+      }
+      else if (tt == 6)
+      {
+         lastOp = pushC!Transform(this, tf, OP_HFLIP);
+         tf.hFlip = !tf.hFlip;
       }
       else
       {
-         if (direction > 0)
-            scf *= 1.01;
-         else
-            scf *= 0.99;
+         lastOp = pushC!Transform(this, tf, OP_VFLIP);
+         tf.vFlip = !tf.vFlip;
       }
-
-      aw.dirty = true;
-      if (that !is null)
-         reDraw();
    }
 
-   void render(Context c)
+   bool compoundTransform()
    {
+      Matrix tmp;
+      cairo_matrix_t tmpData;
+      tmp = new Matrix(&tmpData);
+      tm.initIdentity();
+      bool any = false;
+      if (tf.hScale != 1 || tf.vScale != 1)
+      {
+         any = true;
+         tmp.initScale(tf.hScale, tf.vScale);
+         tm.multiply(tm, tmp);
+      }
+      if (tf.hSkew != 0)
+      {
+         any = true;
+         tmp.init(1.0, 0.0, -tf.hSkew, 1.0, 0.0, 0.0);
+         tm.multiply(tm, tmp);
+      }
+      if (tf.vSkew != 0)
+      {
+         any = true;
+         tmp.init(1.0, -tf.vSkew, 0.0, 1.0, 0.0, 0.0);
+         tm.multiply(tm, tmp);
+      }
+      if (tf.ra != 0)
+      {
+         any = true;
+         tmp.initRotate(tf.ra);
+         tm.multiply(tm, tmp);
+      }
+      if (tf.hFlip)
+      {
+         any = true;
+         tmp.init(-1.0, 0.0, 0.0, 1.0, 0.0, 0.0);
+         tm.multiply(tm, tmp);
+      }
+      if (tf.vFlip)
+      {
+         any = true;
+         tmp.init(1.0, 0.0, 0.0, -1.0, 0.0, 0.0);
+         tm.multiply(tm, tmp);
+      }
+      return any;
+   }
+
+   override void render(Context c)
+   {
+      c.setSourceRgb(0,0,0);
       if (that !is null)
       {
-         c.translate(hOff, vOff);
-         c.scale(scf, scf);
+         c.translate(hOff+width/2, vOff+height/2);
+         if (compoundTransform())
+            c.transform(tm);
+         c.translate(-(width/2), -(height/2));
          that.render(c);
+      }
+      else
+      {
+         c.moveTo(5,20);
+         c.showText("Nothing is referenced");
       }
       if (!isMoved) cSet.setDisplay(0, reportPosition());
    }

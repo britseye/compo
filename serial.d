@@ -56,7 +56,7 @@ class Serial : TextViewItem
       return w.data;
    }
 
-   void syncControls()
+   override void syncControls()
    {
       cSet.setTextParams(alignment, pfd.toString());
       cSet.toggling(false);
@@ -98,7 +98,7 @@ class Serial : TextViewItem
       positionControls(true);
    }
 
-   void extendControls()
+   override void extendControls()
    {
       int vp = cSet.cy;
 
@@ -118,7 +118,7 @@ class Serial : TextViewItem
       cSet.cy = vp+35;
    }
 
-   void preResize(int oldW, int oldH)
+   override void preResize(int oldW, int oldH)
    {
       double hr = cast(double) width/oldW;
       double vr = cast(double) height/oldH;
@@ -132,30 +132,20 @@ class Serial : TextViewItem
       dirty = true;
    }
 
-   void onCSNotify(Widget w, Purpose wid)
+   override bool specificNotify(Widget w, Purpose wid)
    {
       switch (wid)
       {
-      case Purpose.COLOR:
-         lastOp = push!RGBA(this, baseColor, OP_COLOR);
-         setColor(false);
-         dummy.grabFocus();
-         break;
-      case Purpose.EDITMODE:
-         editMode = !editMode;
-         toggleView();
-         break;
       case Purpose.FILL:
          pad = !pad;
          break;
       default:
-         return;
+         return false;
       }
-      aw.dirty = true;
-      reDraw();
+      return true;
    }
 
-   void onCSMoreLess(int instance, bool more, bool far)
+   override void onCSMoreLess(int instance, bool more, bool far)
    {
       if (instance== 0)
       {
@@ -239,7 +229,7 @@ class Serial : TextViewItem
       return text;
    }
 
-   void render(Context c)
+   override void render(Context c)
    {
       if (printFlag)
          number++;
