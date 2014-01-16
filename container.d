@@ -61,7 +61,15 @@ class Container: ACBase
    this(Container other)
    {
       name = "Container "~to!string(++nextOid);
-      this(other.aw);
+      this(other.aw, other.parent);
+
+      children.length = other.children.length;
+      foreach (int i, ACBase acb; other.children)
+      {
+         children[i] = aw.cloneItem(other.children[i]);
+         children[i].parent = this;
+         //aw.treeOps.notifyInsertion(children[i]);
+      }
 
       glShowing = other.glShowing;
       glUseV = other.glUseV;

@@ -127,6 +127,8 @@ class FancyText : TextViewItem
       string text = other.tb.getText();
       tb.setText(text);
 
+      hOff = other.hOff;
+      vOff = other.vOff;
       baseColor = other.baseColor.copy;
       altColor = other.altColor.copy;
       pfd = other.pfd.copy();

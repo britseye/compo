@@ -452,50 +452,43 @@ class AppWindow : MainWindow
       itemAddContext = 1;
          break;
       case "Duplicate":
-         ACBase x = cloneItem(cmCtr);
-         doItemInsert(null, 1, x);
+         ni = cloneItem(cmCtr);
+         tm.insertRoot(ni, cmCtr, true);
+         switchLayouts(ni, true, true);
+         ni.reDraw();
+         // Now fix up the TreeView
+         tv.queueDraw();
+         treeOps.select(ni);
          break;
 
       case "Cut":
-      {
-         doCut(cmCtr);
+         doCut(cmCtr, true);
          dirty = true;
-      }
-      break;
+         break;
       case "Copy":
          copy = cloneItem(cmCtr);
          sourceCtr = cmCtr;
          break;
-         /*
-         case "Delete":
-            {
-               dirty = true;
-               TreePath tp = treeOps.getPath(cmCtr);
-               ACBase oldCto = cto;
-               treeOps.pushDeleted(cmCtr, tp);
-               if (controlsPos == ControlsPos.FLOATING)
-                  cmItem.controlsDlg.hide();
-               tm.root.removeChild(this, cmCtr);
-               treeOps.notifyDeletion(tp);
-               if (cto !is null && cto != oldCto)
-                  treeOps.select(cto);
-            }
-            break;
-         */
+      case "Delete":
+         doCut(cmCtr, false);
+         dirty = true;
+         break;
       case "Paste":
          if (copy is null)
-            return;     // nothing to paste
+         {
+            popupMsg("There is no copied or cut item to paste.", MessageType.INFO);
+            return;
+         }
          if (copy.type == AC_CONTAINER)
          {
-            ni = cloneItem(copy);
-            doItemInsert(null, 2, ni);
+            popupMsg("Can't paste a Container into a Container.\nUse a Reference instead.", MessageType.WARNING);
+            return;
          }
          else
          {
-            // Adjust parent for new container
-            copy.parent = cmCtr;
+            ni = cloneItem(copy);
             // paste the object into this container - we don't know where so just append
-            doItemInsert(null, 0, copy);
+            doItemInsert(null, 0, ni);
          }
          break;
       default:
@@ -503,10 +496,11 @@ class AppWindow : MainWindow
       }
    }
 
-   void doCut(ACBase ci)
+   void doCut(ACBase ci, bool keep)
    {
       TreePath tp = treeOps.getPath(ci);
-      copy = ci;
+      if (keep)
+         copy = ci;
       ACBase oldCto = cto;
       cto.hideDialogs();
       if (controlsPos == ControlsPos.FLOATING)
@@ -541,18 +535,31 @@ class AppWindow : MainWindow
       case "Duplicate":
          ACBase t = cloneItem(cmItem);
          doItemInsert(mi, 1, t);
+         dirty = true;
          break;
       case "Copy":
          copy = cloneItem(cmItem);
          break;
       case "Cut":
-      {
-         doCut(cmItem);
+         doCut(cmItem, true);
          dirty = true;
-      }
-      break;
+         break;
+      case "Delete":
+         doCut(cmItem, false);
+         dirty = true;
+         break;
       case "Paste":
-         if (copy !is null)
+         if (copy is null)
+         {
+            popupMsg("There is no copied or cut item to paste.", MessageType.INFO);
+            return;
+         }
+         if (copy.type == AC_CONTAINER)
+         {
+            popupMsg("Can't paste a Container into a Container.\nUse a Reference instead.", MessageType.WARNING);
+            return;
+         }
+         else
          {
             ACBase ni = cloneItem(copy);
             doItemInsert(mi, 2, ni);
@@ -574,11 +581,13 @@ class AppWindow : MainWindow
       case "Append Standalone Item":
          break;
       case "Paste":
-         if (copy !is null)
+         if (copy is null)
          {
-            ACBase ni = cloneItem(copy);
-            doItemInsert(mi, -1, ni);
+            popupMsg("There is no copied or cut item to paste.", MessageType.INFO);
+            return;
          }
+         ACBase ni = cloneItem(copy);
+         doItemInsert(mi, -1, ni);
          break;
       case "Toggle RHS View":
          if (rpView == 1)
@@ -842,6 +851,8 @@ class AppWindow : MainWindow
 
    void onCursorChanged(TreeView ttv)
    {
+      if (tm.root.children.length == 0)
+         return;
       if (doingLayout)
          return;
       TreePath tp;

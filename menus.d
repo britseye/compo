@@ -49,9 +49,8 @@ import gtk.MountOperation;
 import gtkc.gtktypes;
 
 string[] fileNewSa = [ "Layered Composition", "Standalone Items", ];
-string[] cmSa = [ "Append item", "Save Image", "Move up", "Move down", "Add item after", "Add item before",
-                  "Duplicate", "Cut", "Copy", "Paste"];
-string[] imSa = [ "Move up", "Move down", "Add item after", "Add item before", "Duplicate", "Copy", "Cut", "Paste" ];
+string[] cmSa = [ "Append item", "Save Image", "Move up", "Move down", "Duplicate", "Cut", "Delete", "Paste" ];
+string[] imSa = [ "Move up", "Move down", "Add item after", "Add item before", "Duplicate", "Copy", "Cut", "Delete", "Paste" ];
 string[] rootSa = [ "Append Composition", "Append Standalone Item", "Paste", "Toggle RHS View", "Fill", "Print Immediate"];
 /*
 string[] itemsSa = [ "Plain Text", "USPS Address", "Serial Number", "Rich Text", "Fancy Text", "Morphed Text", "Pattern", "Picture", "Arrow",
@@ -121,14 +120,6 @@ class ContextMenus
          {
             Menu sm = createMenu(dgi, imgSa);
             t.setSubmenu(sm);
-         }
-         else if (i == 4)
-         {
-            t.setSubmenu(itemsSm);
-         }
-         else if (i == 5)
-         {
-            t.setSubmenu(itemsSm);
          }
       }
       m.showAll();
@@ -836,7 +827,7 @@ class MainMenu: MenuBar
          if (aw.tv.hasFocus())
          {
             if (aw.cto !is null)
-               aw.doCut(aw.cto);
+               aw.doCut(aw.cto, true);
          }
          else
          {

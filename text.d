@@ -66,6 +66,8 @@ class PlainText : TextViewItem
    this(PlainText other)
    {
       this(other.aw, other.parent);
+      hOff = other.hOff;
+      vOff = other.vOff;
       baseColor = other.baseColor.copy;
       pfd = other.pfd.copy();
       editMode = other.editMode;

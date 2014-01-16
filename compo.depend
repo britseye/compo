@@ -1485,7 +1485,7 @@
 	<gtkc/gtktypes.d>
 	<gtkc/gdktypes.d>
 
-1389701174 source:/home/steve/COMPO/acomp.d
+1389807241 source:/home/steve/COMPO/acomp.d
 	<main.d>
 	<constants.d>
 	<types.d>
@@ -1535,7 +1535,7 @@
 	<gtk/ColorSelection.d>
 	<gtk/ColorSelectionDialog.d>
 
-1389769494 /home/steve/COMPO//main.d
+1389857064 /home/steve/COMPO//main.d
 
 1316267666 /home/steve/COMPO//constants.d
 
@@ -1545,7 +1545,7 @@
 
 1389426332 /home/steve/COMPO//controlset.d
 
-1389418102 /home/steve/COMPO//container.d
+1389789199 /home/steve/COMPO//container.d
 
 1389343954 /home/steve/COMPO//controlsdlg.d
 
@@ -1654,7 +1654,7 @@
 	<gtk/Label.d>
 	<gtk/Dialog.d>
 
-1389701174 /home/steve/COMPO//acomp.d
+1389807241 /home/steve/COMPO//acomp.d
 
 1381177161 /usr/local/include/d/gtkd-2/gtk/VBox.d
 	<gtkc/gtktypes.d>
@@ -1792,7 +1792,7 @@
 
 1316267666 source:/home/steve/COMPO/constants.d
 
-1389418102 source:/home/steve/COMPO/container.d
+1389789199 source:/home/steve/COMPO/container.d
 	<constants.d>
 	<types.d>
 	<controlset.d>
@@ -1820,7 +1820,7 @@
 	<cairo/Context.d>
 	<gtkc/cairotypes.d>
 
-1389292384 /home/steve/COMPO//graphics.d
+1389860067 /home/steve/COMPO//graphics.d
 
 1381177161 /usr/local/include/d/gtkd-2/gdk/Pixbuf.d
 	<gtkc/gdktypes.d>
@@ -1846,7 +1846,7 @@
 	<glib/Idle.d>
 	<gobject/Value.d>
 
-1389769300 /home/steve/COMPO//menus.d
+1389855188 /home/steve/COMPO//menus.d
 
 1389343530 /home/steve/COMPO//tvitem.d
 
@@ -1989,11 +1989,11 @@
 
 1387359605 /home/steve/COMPO//treeops.d
 
-1388498615 /home/steve/COMPO//text.d
+1389788357 /home/steve/COMPO//text.d
 
-1388498776 /home/steve/COMPO//uspsib.d
+1389788385 /home/steve/COMPO//uspsib.d
 
-1388498334 /home/steve/COMPO//serial.d
+1389788361 /home/steve/COMPO//serial.d
 
 1388498227 /home/steve/COMPO//richtext.d
 
@@ -2009,7 +2009,7 @@
 
 1389341446 /home/steve/COMPO//corner.d
 
-1389157436 /home/steve/COMPO//fancytext.d
+1389788412 /home/steve/COMPO//fancytext.d
 
 1389341577 /home/steve/COMPO//fader.d
 
@@ -2065,7 +2065,7 @@
 	<cairo/Pattern.d>
 	<gtkc/cairotypes.d>
 
-1389157436 source:/home/steve/COMPO/fancytext.d
+1389788412 source:/home/steve/COMPO/fancytext.d
 	<types.d>
 	<controlset.d>
 	<main.d>
@@ -2122,7 +2122,7 @@
 	<std/stdio.d>
 	<sheets.d>
 
-1389292384 source:/home/steve/COMPO/graphics.d
+1389860067 source:/home/steve/COMPO/graphics.d
 	<acomp.d>
 	<main.d>
 	<std/stdio.d>
@@ -2176,7 +2176,7 @@
 	<gtkc/cairotypes.d>
 	<cairo/Matrix.d>
 
-1389769494 source:/home/steve/COMPO/main.d
+1389857064 source:/home/steve/COMPO/main.d
 	<constants.d>
 	<config.d>
 	<common.d>
@@ -2279,7 +2279,7 @@
 
 1386852897 /home/steve/COMPO//config.d
 
-1389766283 /home/steve/COMPO//tree.d
+1389852119 /home/steve/COMPO//tree.d
 
 1389341698 /home/steve/COMPO//partition.d
 
@@ -2358,7 +2358,7 @@
 1381177161 /usr/local/include/d/gtkd-2/gdk/Rectangle.d
 	<gtkc/gdktypes.d>
 
-1389769300 source:/home/steve/COMPO/menus.d
+1389855188 source:/home/steve/COMPO/menus.d
 	<main.d>
 	<config.d>
 	<treeops.d>
@@ -2603,7 +2603,7 @@
 	<cairo/Surface.d>
 	<cairo/Context.d>
 
-1389766283 source:/home/steve/COMPO/tree.d
+1389852119 source:/home/steve/COMPO/tree.d
 	<main.d>
 	<acomp.d>
 	<std/stdio.d>
@@ -2918,7 +2918,7 @@
 	<gdk/RGBA.d>
 	<cairo/Context.d>
 
-1388498334 source:/home/steve/COMPO/serial.d
+1389788361 source:/home/steve/COMPO/serial.d
 	<main.d>
 	<config.d>
 	<acomp.d>
@@ -3059,7 +3059,7 @@
 	<gtkc/gtktypes.d>
 	<gtkc/gdktypes.d>
 
-1388498615 source:/home/steve/COMPO/text.d
+1389788357 source:/home/steve/COMPO/text.d
 	<main.d>
 	<acomp.d>
 	<tvitem.d>
@@ -3138,7 +3138,7 @@
 1388901321 source:/home/steve/COMPO/types.d
 	<gtkc/gdktypes.d>
 
-1388498776 source:/home/steve/COMPO/uspsib.d
+1389788385 source:/home/steve/COMPO/uspsib.d
 	<main.d>
 	<config.d>
 	<acomp.d>
@@ -3319,12 +3319,12 @@
 	<cairo/Pattern.d>
 	<gtkc/cairotypes.d>
 
-1386676230 source:/home/steve/COMPO/rsvgwrap.d
+1389781636 source:/home/steve/COMPO/rsvgwrap.d
 	<std/string.d>
 	<cairo/Context.d>
 	<cairo/Matrix.d>
 
-1386676230 /home/steve/COMPO//rsvgwrap.d
+1389781636 /home/steve/COMPO//rsvgwrap.d
 
 1381177161 /usr/local/include/d/gtkd-2/cairo/SvgSurface.d
 	<gtkc/cairotypes.d>
@@ -3355,9 +3355,9 @@
 	<gtk/FileFilter.d>
 	<gtk/FileChooserDialog.d>
 
-1389341726 /home/steve/COMPO//pixelimage.d
+1389863862 /home/steve/COMPO//pixelimage.d
 
-1389341726 source:/home/steve/COMPO/pixelimage.d
+1389863688 source:/home/steve/COMPO/pixelimage.d
 	<main.d>
 	<acomp.d>
 	<common.d>

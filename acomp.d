@@ -750,7 +750,7 @@ class ACBase : CSTarget     // Area Composition base class
       }
    }
 
-   static void insertChild(ACBase refChild, ACBase newChild, bool rel)
+   static int insertChild(ACBase refChild, ACBase newChild, bool rel)
    {
       ACBase p = refChild.parent;
       int i;
@@ -760,7 +760,7 @@ class ACBase : CSTarget     // Area Composition base class
             break;
       }
       if (i >= p.children.length)
-         return;  // Or throw an exception!
+         return -1;  // Or throw an exception!
       int len = p.children.length+1;
       p.children.length = len;
       if (rel)       // insert after
@@ -775,6 +775,7 @@ class ACBase : CSTarget     // Area Composition base class
             p.children[j] = p.children[j-1];
          p.children[i] = newChild;
       }
+      return i;
    }
 
    static void moveChild(ACBase child, bool up)

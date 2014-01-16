@@ -76,8 +76,10 @@ void renderSVG(ACBase item)
    folder = fcd.getCurrentFolder();
    item.aw.recent.lastImageFolder = folder;
    fcd.destroy();
-   SvgSurface svgs = SvgSurface.create(fileName, item.width, item.height);
+   double w = item.width/item.aw.screenRes*2.83464567, h = item.height/item.aw.screenRes*2.83464567;
+   SvgSurface svgs = SvgSurface.create(fileName, w, h);
    Context svgc = Context.create(svgs);
+   svgc.scale(w/item.width, h/item.height);
    if (item.type != AC_CONTAINER)
    {
       // Make a white background

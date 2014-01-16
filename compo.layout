@@ -4,8 +4,8 @@
 	<File name="about.d" open="0" top="0" tabpos="0">
 		<Cursor position="673" topLine="0" />
 	</File>
-	<File name="acomp.d" open="0" top="0" tabpos="1">
-		<Cursor position="31536" topLine="1279" />
+	<File name="acomp.d" open="1" top="0" tabpos="3">
+		<Cursor position="16781" topLine="735" />
 	</File>
 	<File name="arrow.d" open="0" top="0" tabpos="2">
 		<Cursor position="6130" topLine="193" />
@@ -85,11 +85,11 @@
 	<File name="lineset.d" open="0" top="0" tabpos="0">
 		<Cursor position="3689" topLine="97" />
 	</File>
-	<File name="main.d" open="1" top="0" tabpos="2">
-		<Cursor position="12485" topLine="538" />
+	<File name="main.d" open="1" top="1" tabpos="2">
+		<Cursor position="13021" topLine="544" />
 	</File>
-	<File name="menus.d" open="1" top="1" tabpos="1">
-		<Cursor position="22692" topLine="822" />
+	<File name="menus.d" open="1" top="0" tabpos="1">
+		<Cursor position="28509" topLine="1043" />
 	</File>
 	<File name="merger.d" open="0" top="0" tabpos="1">
 		<Cursor position="14315" topLine="574" />
@@ -184,8 +184,8 @@
 	<File name="textsrc.d" open="0" top="0" tabpos="4">
 		<Cursor position="251" topLine="85" />
 	</File>
-	<File name="tree.d" open="0" top="0" tabpos="5">
-		<Cursor position="8327" topLine="317" />
+	<File name="tree.d" open="1" top="0" tabpos="4">
+		<Cursor position="8327" topLine="332" />
 	</File>
 	<File name="treeops.d" open="0" top="0" tabpos="3">
 		<Cursor position="1791" topLine="81" />

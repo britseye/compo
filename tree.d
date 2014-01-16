@@ -27,7 +27,7 @@ class ACTreeModel : TreeModel
    {
       aw = _aw;
       root = new ACBase(null, null, "<root>", AC_ROOT);
-      root .width = w;
+      root.width = w;
       root.height = h;
       stamp = uniform(0, int.max);
    }
@@ -357,6 +357,30 @@ class ACTreeModel : TreeModel
       iter.stamp = stamp;
 
       rowInserted(tp, iter);
+      if (nc.type == AC_CONTAINER)
+      {
+         foreach (ref ACBase child; nc.children)
+            aw.treeOps.notifyInsertion(child);
+      }
+   }
+
+   void insertRoot(ACBase nc, ACBase relto, bool rel)
+   {
+      int index = ACBase.insertChild(relto, nc, rel);
+      nc.parent = root;
+      TreePath tp = new TreePath();
+      tp.appendIndex(index+1);
+
+      TreeIter iter = new TreeIter();
+      iter.userData = cast(void*) nc;
+      iter.stamp = stamp;
+
+      rowInserted(tp, iter);
+      if (nc.type == AC_CONTAINER)
+      {
+         foreach (ref ACBase child; nc.children)
+            aw.treeOps.notifyInsertion(child);
+      }
    }
 
    TreeIter tiFromACBase(ACBase x)

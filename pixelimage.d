@@ -23,7 +23,7 @@ import gtk.Layout;
 import gtk.Frame;
 import gtk.DrawingArea;
 import cairo.Context;
-//import cairo.Surface;
+import cairo.Surface;
 //import cairo.ImageSurface;
 import gdk.Cairo;
 import gtk.Widget;
@@ -340,14 +340,33 @@ class PixelImage : ACBase
          return;
       double sx = scaleX*sadj, sy = scaleY*sadj;
       rpxb = pxb.scaleSimple(to!int(pw*sx), to!int(ph*sy), GdkInterpType.HYPER);
-      //c.scale(sx, sy);
-         // GTK+3 essentially moved the previous Cairo method into gdk.Cairo
-      setSourcePixbuf(c, rpxb, hOff, vOff);
+
+      // If our picture is not filling the drawing area, we need to organize it onto a
+      // surface with a white transparent background, and then render that to our
+      // composition. Otherwise, when rendered to an SVG surface, the image will be
+      // used as a repeating pattern.
+      Surface mask = c.getTarget().createSimilar(cairo_content_t.COLOR_ALPHA, width, height);
+      Context mc = c.create(mask);
+
+      mc.setSourceRgba(1,1,1,0);
+      mc.paint();
+      // GTK+3 essentially moved the previous Cairo method into gdk.Cairo
+      setSourcePixbuf(mc, rpxb, hOff, vOff);
+      mc.moveTo(lpX, lpY);
+      mc.lineTo(lpX, lpY+height);
+      mc.lineTo(lpX+width, lpY+height);
+      mc.lineTo(lpX+width, lpY);
+      mc.closePath();
+      mc.fill();
+      c.setSourceSurface(mask, 0, 0);
+      c.paint();
+      /*
       c.moveTo(lpX, lpY);
       c.lineTo(lpX, lpY+height);
       c.lineTo(lpX+width, lpY+height);
       c.lineTo(lpX+width, lpY);
       c.closePath();
       c.fill();
+      */
    }
 }
