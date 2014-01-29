@@ -5,3 +5,15 @@ PNG or SVG images of arbitrary size.
 You can find out what it is supposed to be able to do at
 http://britseyeview.com/compo/
 
+2014/01/29 Checked in changes that allow clean build with warnings
+and deprecations on.
+
+Regularized shape and geometric objects so they are all implemented
+in a similar way for eae of maintenance.
+
+Added a more complete implementation of flatten and drawing, and a new
+pattern type - BrushDabs. This introduces the idea of 'shim' layers/
+objects that do not normally display themselves, but effect the
+following layer. So BrushPats will be used as fill for any closed shape
+or geometric object that is placed over it.
+
