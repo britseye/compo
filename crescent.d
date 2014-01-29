@@ -7,7 +7,7 @@
 // Written in the D programming language
 module crescent;
 
-import main;
+import mainwin;
 import constants;
 import acomp;
 import common;
@@ -78,7 +78,7 @@ class Crescent : LineSet
       cSet.setHostName(name);
    }
 
-   void afterDeserialize()
+   override void afterDeserialize()
    {
       syncControls();
       dirty = true;
@@ -110,6 +110,7 @@ class Crescent : LineSet
    {
       string s = "Crescent "~to!string(++nextOid);
       super(w, parent, s, AC_CRESCENT);
+      group = ACGroups.SHAPES;
       altColor = new RGBA(0,0,0,1);
       les = true;
       fill = solid = false;
@@ -303,7 +304,7 @@ class Crescent : LineSet
       }
 
 
-      c.setSourceRgb(0,0,0);
+      c.setLineWidth(0);
       if (d < 0)
       {
          c.arc(center.x, center.y, r0, a0+PI, -(a0+PI));
@@ -316,12 +317,7 @@ class Crescent : LineSet
       }
 
       c.closePath();
-      c.setSourceRgba(baseColor.red, baseColor.green, baseColor.blue, 1.0);
-      if (!(solid || fill))
-         c.stroke();
-      else
-         doFill(c, solid, fill);
-      if (!isMoved) cSet.setDisplay(0, reportPosition());
+      strokeAndFill(c, lineWidth, solid, fill);
    }
 }
 

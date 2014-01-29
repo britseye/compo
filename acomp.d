@@ -7,7 +7,7 @@
 // Written in the D programming language
 module acomp;
 
-import main;
+import mainwin;
 import constants;
 import types;
 import common;
@@ -101,6 +101,10 @@ enum
    OP_DV1,
    OP_DV2,
    OP_DV3,
+   OP_DV4,
+   OP_DV5,
+   OP_DV6,
+   OP_DV7,
    OP_BOLD,
    OP_ITALIC,
    OP_ALIGN,
@@ -111,11 +115,14 @@ enum
    OP_OUTER,
    OP_CANGLE,
    OP_LAGLEAD,
-   OP_PROP,
-   OP_C00,
-   OP_C01,
-   OP_C10,
-   OP_C11,
+   OP_ALTRADIUS,
+   OP_CP1,
+   OP_CP2,
+   OP_CPBOTH,
+   OP_ACP1,
+   OP_ACP2,
+   OP_RPCCP,
+   OP_ACPBOTH,
    OP_MC0,
    OP_MC1,
    OP_MC2,
@@ -128,7 +135,7 @@ Coord[] copyPath(Coord[] p)
 {
    Coord[] t;
    t.length = p.length;
-   t[] = p;
+   t[] = (p)[];
    return t;
 }
 
@@ -149,6 +156,7 @@ struct CheckPoint
       Transform transform;
       ParamBlock paramBlock;
       PartColor partColor;
+      RPCCP rpccp;
    }
 }
 alias Coord[] Path_t;
@@ -209,6 +217,11 @@ int push(T)(ACBase that, T t, int op)
    else static if (is(T == PartColor))
    {
       that.lcp.partColor = t;
+      that.lcp.type = op;
+   }
+   else static if (is(T == RPCCP))
+   {
+      that.lcp.rpccp = t;
       that.lcp.type = op;
    }
    that.pushOp(that.lcp);
@@ -275,6 +288,11 @@ int pushC(T)(ACBase that, T t, int op)
       that.lcp.partColor = t;
       that.lcp.type = op;
    }
+   else static if (is(T == RPCCP))
+   {
+      that.lcp.rpccp = t;
+      that.lcp.type = op;
+   }
    that.pushOp(that.lcp);
    return op;
 }
@@ -287,6 +305,7 @@ enum
    AC_MORPHTEXT,
    AC_SERIAL,
    AC_RICHTEXT,
+   AC_BRUSHDABS,
    AC_PATTERN,
    AC_PIXBUF,
    AC_LINE,
@@ -324,7 +343,7 @@ enum
    AC_ROOT
 }
 
-string[] _ACTypeNames = [ "Text", "USPS Address", "Fancy Text", "Morphed Text", "Serial Number", "Rich Text", "Pattern",
+string[] _ACTypeNames = [ "Text", "USPS Address", "Fancy Text", "Morphed Text", "Serial Number", "Rich Text", "Brush Dabs", "Pattern",
                           "PixelImage", "Line", "Rectangle", "Circle", "Curve", "Regular Polygon", "Regular Polycurve", "PointSet", "Polygon", "Polycurve", "Arrow", "Heart", "Barcode",
                           "Separator", "Corner", "Crescent", "Cross", "Bevel", "Fader", "LGradient", "RGradient",
                           "Random", "Partition", "Reference", "SVGImage", "StrokeSet", "Drawing", "Mesh", "Moon", "Triangle" ];
@@ -351,9 +370,11 @@ enum ACGroups
    TEXT,
    GEOMETRIC,
    EFFECTS,
-   EVERYDAY,
-   PICTURE,
-   BARCODE,
+   SHAPES,
+   PIXMAP,
+   SVG,
+   DRAWING,
+   REFERENCE,
    CONTAINER
 }
 
@@ -361,6 +382,8 @@ class ACBase : CSTarget     // Area Composition base class
 {                           // Implements the control set notification methods
    static ACBase lastRemoved;
    static CheckPoint emptyCP;
+   static bool svgFlag = false;
+   static bool printFlag = false;
    AppWindow aw;
    bool dirty, hidden;
    int lastOp;
@@ -381,11 +404,11 @@ class ACBase : CSTarget     // Area Composition base class
    Layout layout;
    DrawingArea da;
    int renderCalled;
-   Surface background;
+   Surface background, pattern;
    ACBase skip;
    RGBA baseColor, altColor;
    Coord mPos;
-   bool isMoved, usingCD, cSetRealized, noGC, printFlag, nameWasSet;
+   bool isMoved, usingCD, cSetRealized, noGC, nameWasSet;
 
    int width, height;
    double hOff, vOff, lpX, lpY;
@@ -463,6 +486,30 @@ class ACBase : CSTarget     // Area Composition base class
    void setNameEntry(Entry e) { nameEntry = e; }
    void onCSCompass(int instance, double angle, bool coarse) {}
    void onCSSaveSelection() {}
+   void onCSPalette(PartColor[]) {}
+
+   bool isFillPattern() { return false; }
+   Surface getPattern() { return null; }
+   void renderHere(Context c) {}
+
+   final ACBase prevSibling()
+   {
+      if (parent.type != AC_CONTAINER)
+         return null;
+      Container ctr = cast(Container) parent;
+      if (ctr.children.length == 1)
+         return null;
+      if (ctr.children[0] is this)
+         return null;
+      ACBase prev;
+      foreach (ACBase child; ctr.children)
+      {
+         if (child is this)
+            return prev;
+         prev = child;
+      }
+      return null;
+   }
 
    void pushOp(CheckPoint cp)
    {
@@ -557,23 +604,7 @@ class ACBase : CSTarget     // Area Composition base class
 
    ACGroups getGroup()
    {
-      switch (type)
-      {
-      case AC_TEXT:
-      case AC_USPS:
-      case AC_RICHTEXT:
-      case AC_FANCYTEXT:
-      case AC_MORPHTEXT:
-         return ACGroups.TEXT;
-      case AC_PIXBUF:
-         return ACGroups.PICTURE;
-      case AC_BARCODE:
-         return ACGroups.BARCODE;
-      case AC_CONTAINER:
-         return ACGroups.CONTAINER;
-      default:
-         return ACGroups.GEOMETRIC;
-      }
+      return group;
    }
 
    void syncControls()
@@ -1004,12 +1035,13 @@ class ACBase : CSTarget     // Area Composition base class
       RGBA color = new RGBA();
       ColorSelectionDialog csd = new ColorSelectionDialog("Choose a Color");
       ColorSelection cs = csd.getColorSelection();
+      cs.setHasOpacityControl (1);
       cs.setCurrentRgba(baseColor);
       int response = csd.run();
       if (response != ResponseType.OK)
       {
          csd.destroy();
-         return false;;
+         return false;
       }
       cs.getCurrentRgba(color);
       csd.destroy();
@@ -1161,6 +1193,47 @@ class ACBase : CSTarget     // Area Composition base class
 
    void doZoom(Context c) {}
 
+   void strokeAndFill(Context c, double lw, bool solid, bool fill)
+   {
+      void doFill(bool preserve)
+      {
+         ACBase ps = prevSibling();
+         if (ps !is null && ps.isFillPattern())
+         {
+            c.setSourceSurface(ps.getPattern(), 0, 0);
+            if (preserve)
+               c.fillPreserve();
+            else
+               c.fill();
+            return;
+         }
+         else
+            c.fill();
+      }
+
+      if (solid)
+      {
+         //c.strokePreserve();
+         c.setSourceRgba(baseColor.red, baseColor.green, baseColor.blue, 1.0);
+         doFill(false);
+      }
+      else if (fill)
+      {
+         //c.strokePreserve();
+         c.setSourceRgba(altColor.red, altColor.green, altColor.blue, 1.0);
+         doFill(true);
+         c.setSourceRgb(baseColor.red, baseColor.green, baseColor.blue);
+         c.setLineWidth(lw);
+         c.stroke();
+      }
+      else
+      {
+         c.setSourceRgba(baseColor.red, baseColor.green, baseColor.blue, 1.0);
+         c.setLineWidth(lw);
+         c.stroke();
+      }
+   }
+
    void doFill(Context c, bool solid, bool fill)
    {
       c.strokePreserve();
@@ -1216,6 +1289,7 @@ class ACBase : CSTarget     // Area Composition base class
       }
       c.save();
       render(c);
+      if (!isMoved) cSet.setDisplay(0, reportPosition());
       c.restore();
 
       return true;

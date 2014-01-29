@@ -7,7 +7,7 @@
 // Written in the D programming language
 module pglayout;
 
-import main;
+import mainwin;
 import common;
 import types;
 import sheets;

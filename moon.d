@@ -7,7 +7,7 @@
 // Written in the D programming language
 module moon;
 
-import main;
+import mainwin;
 import constants;
 import acomp;
 import common;
@@ -39,9 +39,31 @@ import cairo.Context;
 import gtkc.cairotypes;
 import cairo.Matrix;
 
+enum
+{
+   ARCARC,
+   ARCARN,
+   ARNARC,
+   ARNARN,
+   ARCNON,
+   ARNNON
+}
+
+struct MoonData
+{
+   int day;
+   int sequence;
+   Coord c0;
+   double r0;
+   double sa0, ea0;
+   Coord c1;
+   double r1;
+   double sa1, ea1;
+}
 class Moon : LineSet
 {
    static int nextOid = 0;
+   MoonData[] mda;
    double radius, radius2, ha;
    int day;
    Label dl;
@@ -92,14 +114,17 @@ class Moon : LineSet
    {
       string s = "Moon "~to!string(++nextOid);
       super(w, parent, s, AC_MOON);
-      altColor = new RGBA(0,0,0,1);
+      group = ACGroups.SHAPES;
+      altColor = new RGBA(1,1,0.8,1);
       les = true;
       fill = solid = false;
 
-      center.x = lpX+0.5*width;
-      center.y = lpY+0.5*height;
-      tm = new Matrix(&tmData);
+      center.x = 0.5*width;
+      center.y = 0.5*height;
       radius = (width > height)? 0.4*height: 0.4*width;
+      constructTable();
+      day = 1;
+      tm = new Matrix(&tmData);
 
       setupControls(3);
       positionControls(true);
@@ -242,17 +267,106 @@ class Moon : LineSet
       ha = atan2(radius, radius2-d);
    }
 
-   override void render(Context c)
+   void constructTable()
    {
-      if (day == 0 || day == 28)
-         return;
-      c.setLineWidth(lineWidth/((tf.hScale+tf.vScale)/2));
-      c.setLineJoin(les? CairoLineJoin.MITER: CairoLineJoin.ROUND);
-      c.setSourceRgb(baseColor.red, baseColor.green, baseColor.blue);
-      c.translate(hOff+center.x, vOff+center.y);
-      if (compoundTransform())
-         c.transform(tm);
-      c.translate(-center.x, -center.y);
+      for (int i = 0; i < 28; i++)
+      {
+         MoonData md;
+         md.day = i;
+         if (i == 0)
+         {
+            mda ~= md;
+            continue;
+         }
+         if (i < 7)
+         {
+            md.sequence = ARCARN;
+            md.c0 = center;
+            md.r0 = radius;
+            md.sa0 = 3*PI/2;
+            md.ea0 = PI/2;
+            int td = i;
+            double d = radius-td*radius/7;
+            getAngle2(d);
+            md.c1 = Coord(center.x+d-radius2, center.y);
+            md.r1 = radius2;
+            md.sa1 = ha;
+            md.ea1 = -ha;
+         }
+         else if (i == 7)
+         {
+            md.sequence = ARCNON;
+            md.c0 = center;
+            md.r0 = radius;
+            md.sa0 = 3*PI/2;
+            md.ea0 = PI/2;
+         }
+         else if (i < 14)
+         {
+            md.sequence = ARCARC;
+            md.c0 = center;
+            md.r0 = radius;
+            md.sa0 = 3*PI/2;
+            md.ea0 = PI/2;
+            int td = i-7;
+            double d = td*radius/7;
+            getAngle2(d);
+            md.c1 = Coord(center.x-d+radius2, center.y);
+            md.r1 = radius2;
+            md.sa1 = PI-ha;
+            md.ea1 = PI+ha;
+         }
+         else if (i == 14)
+         {
+            md.sequence = ARCNON;
+            md.c0 = center;
+            md.r0 = radius;
+            md.sa0 = 0;
+            md.ea0 = 2*PI;
+         }
+         else if (i < 21)
+         {
+            md.sequence = ARNARN;
+            md.c0 = center;
+            md.r0 = radius;
+            md.sa0 = 3*PI/2;
+            md.ea0 = PI/2;
+            int td = i-14;
+            double d = radius-td*radius/7;
+            getAngle2(d);
+            md.c1 = Coord(center.x+d-radius2, center.y);
+            md.r1 = radius2;
+            md.sa1 = ha;
+            md.ea1 = -ha;
+
+         }
+         else if (i == 21)
+         {
+            md.sequence = ARNNON;
+            md.c0 = center;
+            md.r0 = radius;
+            md.sa0 = 3*PI/2;
+            md.ea0 = PI/2;
+         }
+         else
+         {
+            md.sequence = ARNARC;
+            md.c0 = center;
+            md.r0 = radius;
+            md.sa0 = 3*PI/2;
+            md.ea0 = PI/2;
+            double td = i-21;
+            double d = td*radius/7;
+            getAngle2(d);
+            md.c1 = Coord(center.x-d+radius2, center.y);
+            md.r1 = radius2;
+            md.sa1=PI-ha;
+            md.ea1 = PI+ha;
+         }
+         mda ~= md;
+      }
+   }
+/*
       if (day < 7)
       {
          c.arc(center.x, center.y, radius, 3*PI/2, PI/2);
@@ -292,13 +406,50 @@ class Moon : LineSet
          c.arc(center.x-d+radius2, center.y, radius2, PI-ha, PI+ha);
       }
       c.closePath();
-      c.setSourceRgba(baseColor.red, baseColor.green, baseColor.blue, 1.0);
-      if (!(solid || fill))
-         c.stroke();
-      else
-         doFill(c, solid, fill);
-      if (!isMoved) cSet.setDisplay(0, reportPosition());
+*/
+   override void render(Context c)
+   {
+      if (day == 0 || day == 28)
+         return;
+      c.setLineWidth(0);
+      c.setLineJoin(les? CairoLineJoin.MITER: CairoLineJoin.ROUND);
+      c.setSourceRgb(baseColor.red, baseColor.green, baseColor.blue);
+      c.translate(hOff+center.x, vOff+center.y);
+      if (compoundTransform())
+         c.transform(tm);
+      c.translate(-center.x, -center.y);
+
+      with (mda[day])
+      {
+         switch (sequence)
+         {
+            case ARCARC:
+               c.arc(c0.x, c0.y, r0, sa0, ea0);
+               c.arc(c1.x, c1.y, r1, sa1, ea1);
+               break;
+            case ARCARN:
+               c.arc(c0.x, c0.y, r0, sa0, ea0);
+               c.arcNegative(c1.x, c1.y, r1, sa1, ea1);
+               break;
+            case ARNARC:
+               c.arcNegative(c0.x, c0.y, r0, sa0, ea0);
+               c.arc(c1.x, c1.y, r1, sa1, ea1);
+               break;
+            case ARNARN:
+               c.arcNegative(c0.x, c0.y, r0, sa0, ea0);
+               c.arcNegative(c1.x, c1.y, r1, sa1, ea1);
+               break;
+            case ARCNON:
+               c.arc(c0.x, c0.y, r0, sa0, ea0);
+               break;
+            case ARNNON:
+               c.arcNegative(c0.x, c0.y, r0, sa0, ea0);
+               break;
+            default:
+               break;
+         }
+         c.closePath();
+      }
+      strokeAndFill(c, lineWidth, solid, fill);
    }
 }
-
-

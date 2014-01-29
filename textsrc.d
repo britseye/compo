@@ -12,7 +12,7 @@ import std.conv;
 import std.path;
 import std.stdio;
 import std.array;
-import main;
+import mainwin;
 import merger;
 
 class COMPOSrc: MergeSource

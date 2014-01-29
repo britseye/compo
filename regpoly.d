@@ -7,7 +7,7 @@
 // Written in the D programming language
 module regpoly;
 
-import main;
+import mainwin;
 import config;
 import constants;
 import acomp;
@@ -92,13 +92,14 @@ class RegularPolygon : LineSet
    {
       string s = "Regular Polygon "~to!string(++nextOid);
       super(w, parent, s, AC_REGPOLYGON);
-      altColor = new RGBA(0,0,0,1);
+      group = ACGroups.GEOMETRIC;
+      altColor = new RGBA(1,1,1,1);
       les  = true;
       radius = cast(double) height/2-20;
       starIndent = 0.3;
-      center.x = width/2;
-      center.y = height/2;
-      sides = w.config.polySides;;
+      center.x = 0.5*width;
+      center.y = 0.5*height;
+      sides = w.config.polySides;
       constructBase();
       tm = new Matrix(&tmData);
 
@@ -253,8 +254,8 @@ class RegularPolygon : LineSet
    {
       double theta = (PI*2)/sides;
       oPath.length = sides;
-      oPath[0].x = radius;
-      oPath[0].y = 0;
+      oPath[0].x = center.x+radius;
+      oPath[0].y = center.y;
       double a = 0;
       for (int i = 1; i < sides; i++)
       {
@@ -262,10 +263,9 @@ class RegularPolygon : LineSet
          double r = radius;
          if (isStar && !(sides & 1) && (i & 1))
             r = radius*starIndent;
-         oPath[i].x = r*cos(a);
-         oPath[i].y = r*sin(a);
+         oPath[i].x = center.x+r*cos(a);
+         oPath[i].y = center.y+r*sin(a);
       }
-      dirty = true;
    }
 
    override void render(Context c)
@@ -274,33 +274,19 @@ class RegularPolygon : LineSet
       double r = baseColor.red;
       double g = baseColor.green;
       double b = baseColor.blue;
-      c.setLineWidth(lineWidth);
+      c.setLineWidth(0);
       c.setLineJoin(les? CairoLineJoin.MITER: CairoLineJoin.ROUND);
-      if (dirty)
-      {
-         transformPath(compoundTransform());
-         dirty = false;
-      }
-      c.moveTo(hOff+rPath[0].x, vOff+rPath[0].y);
-      for (int i = 1; i < rPath.length; i++)
-         c.lineTo(hOff+rPath[i].x, vOff+rPath[i].y);
+
+      c.translate(hOff+center.x, vOff+center.y);
+      if (compoundTransform())
+         c.transform(tm);
+      c.translate(-center.x, -center.y);
+
+      c.moveTo(oPath[0].x, oPath[0].y);
+      for (int i = 1; i < oPath.length; i++)
+         c.lineTo(oPath[i].x, oPath[i].y);
       c.closePath();
-      if (solid)
-      {
-         c.setSourceRgba(r, g, b, 1.0);
-         c.fill();
-      }
-      else if (fill)
-      {
-         c.setSourceRgba(altColor.red, altColor.green, altColor.blue, 1.0);
-         c.fillPreserve();
-      }
-      if (!solid)
-      {
-         c.setSourceRgb(r, g, b);
-         c.stroke();
-      }
-      if (!isMoved) cSet.setDisplay(0, reportPosition());
+      strokeAndFill(c, lineWidth, solid, fill);
    }
 }
 

@@ -7,7 +7,7 @@
 // Written in the D programming language
 module pattern;
 
-import main;
+import mainwin;
 import acomp;
 import common;
 import constants;
@@ -56,6 +56,7 @@ class Pattern : LineSet
    {
       string s = "Pattern "~to!string(++nextOid);
       super(w, parent, s, AC_PATTERN);
+      group = ACGroups.EFFECTS;
       rows= 30;
       cols = 30;
       unit = 5;
@@ -214,6 +215,7 @@ class Pattern : LineSet
          c.lineTo(x+u/2, y+u);
          c.closePath();
          c.fill();
+         break;
       case 5:                                         // cross hatch
          c.setLineWidth(lineWidth);
          c.moveTo(x, y);

@@ -7,7 +7,7 @@
 // Written in the D programming language
 module common;
 
-import main;
+import mainwin;
 import acomp;
 import constants;
 import types;

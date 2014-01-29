@@ -5,7 +5,7 @@ import std.array;
 import std.format;
 
 import acomp;
-import main;
+import mainwin;
 import constants;
 import types;
 import common;
@@ -41,7 +41,7 @@ class LineSet : ACBase
       les = cairo_line_cap_t.BUTT;
    }
 
-   void setName(string newName)
+   override void setName(string newName)
    {
       aw.dirty = true;
       name = newName;
@@ -121,9 +121,9 @@ class LineSet : ACBase
    }
 
 
-   bool specificUndo(CheckPoint cp) { return false; }
+   override bool specificUndo(CheckPoint cp) { return false; }
 
-   void undo()
+   override void undo()
    {
       CheckPoint cp;
       cp = popOp();
@@ -180,118 +180,7 @@ class LineSet : ACBase
    {
       xform = cb.getActive();
    }
-/*
-   void modifyTransform(int tt, bool more, bool coarse)
-   {
-      // We rather arbitrarily do anisotropic scaling first, then transformations
-      // that change the shape - squash and skew, then rotation, then finally flip
-      // of the finished object
-      if (tt <= 2)        // Scale
-      {
-         double factor;
-         if (more)
-            factor = coarse? 1.1: 1.01;
-         else
-            factor = coarse? 0.9: 0.99;
-         switch (tt)
-         {
-            case 1:
-               lastOp = pushC!Transform(this, tf, OP_HSC);
-               tf.hScale *= factor;
-               break;
-            case 2:
-               lastOp = pushC!Transform(this, tf, OP_VSC);
-               tf.vScale *= factor;
-               break;
-            default:
-               lastOp = pushC!Transform(this, tf, OP_SCALE);
-               tf.hScale *= factor;
-               tf.vScale *= factor;
-               break;
-         }
-      }
-      else if (tt == 3 || tt == 4) // Skew/shear horizontal/vertical
-      {
-         double delta = coarse? 0.1: 0.01;
-         if (!more)
-            delta = -delta;
-         if (tt == 3)
-         {
-            lastOp = pushC!Transform(this, tf, OP_HSK);
-            tf.hSkew += delta;
-         }
-         else
-         {
-            lastOp = pushC!Transform(this, tf, OP_VSK);
-            tf.vSkew += delta;
-         }
-      }
-      else if (tt == 5) // Rotate
-      {
-         double ra = coarse? rads*5: rads/3;
-         if (more)
-            ra = -ra;
-         lastOp = pushC!Transform(this, tf, OP_ROT);
-         tf.ra -= ra;
-      }
-      else if (tt == 6)
-      {
-         lastOp = pushC!Transform(this, tf, OP_HFLIP);
-         tf.hFlip = !tf.hFlip;
-      }
-      else
-      {
-         lastOp = pushC!Transform(this, tf, OP_VFLIP);
-         tf.vFlip = !tf.vFlip;
-      }
-   }
 
-   bool compoundTransform()
-   {
-      Matrix tmp;
-      cairo_matrix_t tmpData;
-      tmp = new Matrix(&tmpData);
-      tm.initIdentity();
-      bool any = false;
-      if (tf.hScale != 1 || tf.vScale != 1)
-      {
-         any = true;
-         tmp.initScale(tf.hScale, tf.vScale);
-         tm.multiply(tm, tmp);
-      }
-      if (tf.hSkew != 0)
-      {
-         any = true;
-         tmp.init(1.0, 0.0, -tf.hSkew, 1.0, 0.0, 0.0);
-         tm.multiply(tm, tmp);
-      }
-      if (tf.vSkew != 0)
-      {
-         any = true;
-         tmp.init(1.0, -tf.vSkew, 0.0, 1.0, 0.0, 0.0);
-         tm.multiply(tm, tmp);
-      }
-      if (tf.ra != 0)
-      {
-         any = true;
-         tmp.initRotate(tf.ra);
-         tm.multiply(tm, tmp);
-      }
-      if (tf.hFlip)
-      {
-         any = true;
-         tmp.init(-1.0, 0.0, 0.0, 1.0, 0.0, 0.0);
-         tm.multiply(tm, tmp);
-      }
-      if (tf.vFlip)
-      {
-         any = true;
-         tmp.init(1.0, 0.0, 0.0, -1.0, 0.0, 0.0);
-         tm.multiply(tm, tmp);
-      }
-      return any;
-   }
-*/
    void centerPath()
    {
       for (int i = 0; i < oPath.length; i++)

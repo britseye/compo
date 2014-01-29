@@ -7,7 +7,7 @@
 // Written in the D programming language
 module svgimage;
 
-import main;
+import mainwin;
 import acomp;
 import common;
 import constants;
@@ -69,6 +69,7 @@ class SVGImage : ACBase
    {
       string s = "SVGImage "~to!string(++nextOid);
       super(w, parent, s, AC_SVGIMAGE);
+      group = ACGroups.SVG;
       scaleType = 0;
       scaleX = 1.0;
       useFile = false;
@@ -131,6 +132,7 @@ class SVGImage : ACBase
             scaleType = 2;
             return true;
          }
+         break;
       case Purpose.USEFILE:
          useFile = !useFile;
          break;
@@ -172,7 +174,7 @@ class SVGImage : ACBase
    }
 
 
-   void undo()
+   override void undo()
    {
       CheckPoint cp;
       cp = popOp();
@@ -189,6 +191,7 @@ class SVGImage : ACBase
          hOff = t.x;
          vOff = t.y;
          lastOp = OP_UNDEF;
+         break;
       default:
          break;
       }

@@ -7,7 +7,7 @@
 // Written in the D programming language
 module pixelimage;
 
-import main;
+import mainwin;
 import acomp;
 import common;
 import constants;
@@ -81,6 +81,7 @@ class PixelImage : ACBase
    {
       string s = "Picture "~to!string(++nextOid);
       super(w, parent, s, AC_PIXBUF);
+      group = ACGroups.PIXMAP;
       scaleType = 0;
       sadj = 1.0;
       scale4Printer = true;
@@ -189,7 +190,7 @@ class PixelImage : ACBase
    }
 
 
-   void undo()
+   override void undo()
    {
       CheckPoint cp;
       cp = popOp();
@@ -207,6 +208,7 @@ class PixelImage : ACBase
          hOff = t.x;
          vOff = t.y;
          lastOp = OP_UNDEF;
+         break;
       default:
          break;
       }
@@ -341,32 +343,37 @@ class PixelImage : ACBase
       double sx = scaleX*sadj, sy = scaleY*sadj;
       rpxb = pxb.scaleSimple(to!int(pw*sx), to!int(ph*sy), GdkInterpType.HYPER);
 
-      // If our picture is not filling the drawing area, we need to organize it onto a
-      // surface with a white transparent background, and then render that to our
-      // composition. Otherwise, when rendered to an SVG surface, the image will be
-      // used as a repeating pattern.
-      Surface mask = c.getTarget().createSimilar(cairo_content_t.COLOR_ALPHA, width, height);
-      Context mc = c.create(mask);
+      if (svgFlag)
+      {
+         // If our picture is not filling the drawing area, we need to organize it onto a
+         // surface with a white transparent background, and then render that to our
+         // composition. Otherwise, when rendered to an SVG surface, the image will be
+         // used as a repeating pattern.
+         Surface mask = c.getTarget().createSimilar(cairo_content_t.COLOR_ALPHA, width, height);
+         Context mc = c.create(mask);
 
-      mc.setSourceRgba(1,1,1,0);
-      mc.paint();
-      // GTK+3 essentially moved the previous Cairo method into gdk.Cairo
-      setSourcePixbuf(mc, rpxb, hOff, vOff);
-      mc.moveTo(lpX, lpY);
-      mc.lineTo(lpX, lpY+height);
-      mc.lineTo(lpX+width, lpY+height);
-      mc.lineTo(lpX+width, lpY);
-      mc.closePath();
-      mc.fill();
-      c.setSourceSurface(mask, 0, 0);
-      c.paint();
-      /*
-      c.moveTo(lpX, lpY);
-      c.lineTo(lpX, lpY+height);
-      c.lineTo(lpX+width, lpY+height);
-      c.lineTo(lpX+width, lpY);
-      c.closePath();
-      c.fill();
-      */
+         mc.setSourceRgba(1,1,1,0);
+         mc.paint();
+         // GTK+3 essentially moved the previous Cairo method into gdk.Cairo
+         setSourcePixbuf(mc, rpxb, hOff, vOff);
+         mc.moveTo(lpX, lpY);
+         mc.lineTo(lpX, lpY+height);
+         mc.lineTo(lpX+width, lpY+height);
+         mc.lineTo(lpX+width, lpY);
+         mc.closePath();
+         mc.fill();
+         c.setSourceSurface(mask, 0, 0);
+         c.paint();
+      }
+      else
+      {
+         setSourcePixbuf(c, rpxb, hOff, vOff);
+         c.moveTo(lpX, lpY);
+         c.lineTo(lpX, lpY+height);
+         c.lineTo(lpX+width, lpY+height);
+         c.lineTo(lpX+width, lpY);
+         c.closePath();
+         c.fill();
+      }
    }
 }

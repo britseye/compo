@@ -7,7 +7,7 @@
 // Written in the D programming language
 module printing;
 
-import main;
+import mainwin;
 import acomp;
 import container;
 import merger;

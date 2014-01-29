@@ -7,7 +7,7 @@
 // Written in the D programming language
 module rect;
 
-import main;
+import mainwin;
 import constants;
 import acomp;
 import common;
@@ -36,13 +36,13 @@ import cairo.Context;
 import gtkc.cairotypes;
 import cairo.Matrix;
 
-class Rect : LineSet
+class Rectangle : LineSet
 {
    static int nextOid = 0;
    double w, h, ar, size;
    bool rounded, square;
    double rr;
-   Coord xTopLeft;
+   Coord topLeft, bottomRight;
 
    override void syncControls()
    {
@@ -70,13 +70,13 @@ class Rect : LineSet
       cSet.setHostName(name);
    }
 
-   void afterDeserialize()
+   override void afterDeserialize()
    {
       figureWH();
       syncControls();
    }
 
-   this(Rect other)
+   this(Rectangle other)
    {
       this(other.aw, other.parent);
       hOff = other.hOff;
@@ -103,6 +103,7 @@ class Rect : LineSet
    {
       string s = "Rectangle "~to!string(++nextOid);
       super(appw, parent, s, AC_RECT);
+      group = ACGroups.SHAPES;
       hOff = vOff = 0;
       altColor = new RGBA(0,0,0,1);
       ar = 2;
@@ -184,6 +185,7 @@ class Rect : LineSet
          break;
       case Purpose.PIN:
          square = !square;
+         figureWH();
          break;
       default:
          return false;
@@ -217,11 +219,6 @@ class Rect : LineSet
       vOff *= vr;
    }
 
-   string reportPosition(int id = 0)
-   {
-      return formatCoord(Coord(hOff, vOff));
-   }
-
    void figureWH()
    {
       if (width > height)
@@ -234,6 +231,10 @@ class Rect : LineSet
          w = size;
          h = size*ar;
       }
+      topLeft = square? Coord(center.x-0.5*size, center.y-0.5*size):
+                        Coord(center.x-0.5*w, center.y-0.5*h);
+      bottomRight = square? Coord(center.x+0.5*size, center.y+0.5*size):
+                            Coord(center.x+0.5*w, center.y+0.5*h);
    }
 
    override void onCSMoreLess(int instance, bool more, bool coarse)
@@ -271,27 +272,22 @@ class Rect : LineSet
    {
       c.setLineWidth(lineWidth/((tf.hScale+tf.vScale)/2));
       c.setLineJoin(les? CairoLineJoin.MITER: CairoLineJoin.ROUND);
-      c.translate(hOff+width/2, vOff+height/2);
-      if (tf.hScale != 1.0 || tf.vScale != 1.0)
-         c.scale(tf.hScale, tf.vScale);
-      if (tf.ra != 0.0)
-         c.rotate(tf.ra);
-      c.translate(-(hOff+width/2), -(vOff+height/2));
-      Coord topLeft = square? Coord(hOff+center.x-0.5*size, vOff+center.y-0.5*size):
-                              Coord(hOff+center.x-0.5*w, vOff+center.y-0.5*h);
-      Coord bottomRight = square? Coord(hOff+center.x+0.5*size, vOff+center.y+0.5*size):
-                                  Coord(hOff+center.x+0.5*w, vOff+center.y+0.5*h);
+
+      c.translate(hOff+center.x, vOff+center.y);
+      if (compoundTransform())
+         c.transform(tm);
+      c.translate(-center.x, -center.y);  // lpX and lpY both zero at design time
+
       if (rounded)
       {
-         double delta = rr;
-         c.moveTo(topLeft.x, topLeft.y+delta);
-         c.arc(topLeft.x+delta, topLeft.y+delta, delta, PI, (3*PI)/2);
-         c.lineTo(bottomRight.x-delta, topLeft.y);
-         c.arc(bottomRight.x-delta, topLeft.y+delta, delta, (3*PI)/2, 2*PI);
-         c.lineTo(bottomRight.x, bottomRight.y-delta);
-         c.arc(bottomRight.x-delta, bottomRight.y-delta, delta, 0, PI/2);
-         c.lineTo(topLeft.x+delta, bottomRight.y);
-         c.arc(topLeft.x+delta, bottomRight.y-delta, delta, PI/2, PI);
+         c.moveTo(topLeft.x, topLeft.y+rr);
+         c.arc(topLeft.x+rr, topLeft.y+rr, rr, PI, (3*PI)/2);
+         c.lineTo(bottomRight.x-rr, topLeft.y);
+         c.arc(bottomRight.x-rr, topLeft.y+rr, rr, (3*PI)/2, 2*PI);
+         c.lineTo(bottomRight.x, bottomRight.y-rr);
+         c.arc(bottomRight.x-rr, bottomRight.y-rr, rr, 0, PI/2);
+         c.lineTo(topLeft.x+rr, bottomRight.y);
+         c.arc(topLeft.x+rr, bottomRight.y-rr, rr, PI/2, PI);
          c.closePath();
       }
       else
@@ -302,12 +298,7 @@ class Rect : LineSet
          c.lineTo(topLeft.x, bottomRight.y);
          c.closePath();
       }
-      c.setSourceRgb(baseColor.red,baseColor.green, baseColor.blue);
-      if (!(solid || fill))
-         c.stroke();
-      else
-         doFill(c, solid, fill);
-      if (!isMoved) cSet.setDisplay(0, reportPosition());
+      strokeAndFill(c, lineWidth, solid, fill);
    }
 }
 

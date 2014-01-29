@@ -7,7 +7,7 @@
 // Written in the D programming language
 module separator;
 
-import main;
+import mainwin;
 import constants;
 import acomp;
 import common;
@@ -71,6 +71,7 @@ class Separator : LineSet
    {
       string s = "Separator "~to!string(++nextOid);
       super(w, parent, s, AC_SEPARATOR);
+      group = ACGroups.EFFECTS;
       hOff = vOff = 0;
       horizontal = true;
       lineWidth = 1.0;

@@ -40,6 +40,8 @@ import gtk.Arrow;
 import gdk.RGBA;
 import cairo.Context;
 import pango.PgFontDescription;
+import gtk.ColorSelection;
+import gtk.ColorSelectionDialog;
 
 // The range of widgets used in control sets
 enum Purpose
@@ -77,14 +79,18 @@ enum Purpose
    SCALENON,
    HORIZONTAL,
    VERTICAL,
-   C00,
-   C01,
-   C10,
-   C11,
+   CP1,
+   CP2,
+   CPBOTH,
+   ACP1,
+   ACP2,
+   ACPBOTH,
 
-   R_CHECKBUTTONS = 2000,
-   HIDE,
+   R_TOGGLEBUTTONS = 2000,
    EDITMODE,
+
+   R_CHECKBUTTONS = 3000,
+   HIDE,
    CENTERTEXT,
    SHRINK2FIT,
    HRDATA,
@@ -103,17 +109,19 @@ enum Purpose
    ZOOMED,
    PROTECT,
    ANTI,
+   FORFILL,
+   FULLDATA,
 
-   R_SPINBUTTONS = 3000,
+   R_SPINBUTTONS = 4000,
 
-   R_COMBOBOX = 4000,
+   R_COMBOBOX = 5000,
    XFORMCB,
    MORPHCB,
    PATTERN,
    LOCALCTR,
    DCOLORS,
 
-   R_GP = 5000,
+   R_GP = 6000,
    ALIGNMENT,
    TEXTSTYLES,
    FONT,
@@ -138,6 +146,7 @@ enum Purpose
    MLABEL0,
    MLABEL1,
    MLABEL2,
+   PALETTE,
    // Put any new IDs before MAXWID
    MAXWID
 }
@@ -191,16 +200,21 @@ class ControlSet
    {
       w.setData("wid", cast(void*) id);
       if (!hasHandler)
-      if (id > Purpose.R_BUTTONS && id < Purpose.R_RADIOBUTTONS)
-         (cast(Button) w).addOnButtonPress(&bClick);
-      else if (id > Purpose.R_RADIOBUTTONS && id < Purpose.R_CHECKBUTTONS)
-         (cast(RadioButton) w).addOnToggled(&rbClick);
-      else if (id > Purpose.R_CHECKBUTTONS && id < Purpose.R_SPINBUTTONS)
-         (cast(CheckButton) w).addOnToggled(&cbClick);
-      else if (id > Purpose.R_SPINBUTTONS && id < Purpose.R_COMBOBOX)
-         (cast(SpinButton) w).addOnValueChanged(&sbChange);
-      else if (id > Purpose.R_COMBOBOX && id < Purpose.R_GP)
-         (cast(ComboBox) w).addOnChanged(&comboChange);
+      {
+		   if (id > Purpose.R_BUTTONS && id < Purpose.R_RADIOBUTTONS)
+		      (cast(Button) w).addOnButtonPress(&bClick);
+		   else if (id > Purpose.R_RADIOBUTTONS && id < Purpose.R_TOGGLEBUTTONS)
+		      (cast(RadioButton) w).addOnToggled(&rbClick);
+		   else if (id > Purpose.R_TOGGLEBUTTONS && id < Purpose.R_CHECKBUTTONS)
+		      (cast(ToggleButton) w).addOnToggled(&tbClick);
+		   else if (id > Purpose.R_CHECKBUTTONS && id < Purpose.R_SPINBUTTONS)
+		      (cast(CheckButton) w).addOnToggled(&cbClick);
+		   else if (id > Purpose.R_SPINBUTTONS && id < Purpose.R_COMBOBOX)
+		      (cast(SpinButton) w).addOnValueChanged(&sbChange);
+		   else if (id > Purpose.R_COMBOBOX && id < Purpose.R_GP)
+		      (cast(ComboBox) w).addOnChanged(&comboChange);
+		   else {}
+      }
       WidgetInfo ci = WidgetInfo(w, p, si, id);
       wia ~= ci;
       windex[id] = wia.length-1;
@@ -281,6 +295,13 @@ class ControlSet
       PseudoWidget p = pseudo(Purpose.TEXTPARAMS, 0);
       if (p !is null)
          p.csInstruction("setup", 0, fontName, alignment, 0.0);
+   }
+
+   void setPalette(PartColor* pca)
+   {
+      PseudoWidget p = pseudo(Purpose.PALETTE, 0);
+      if (p !is null)
+         p.csInstruction("colors", 0, "", cast(int) pca, 0.0);
    }
 
    void enable() {}
@@ -418,6 +439,14 @@ class ControlSet
    }
 
    void rbClick(ToggleButton b)
+   {
+      if (noToggle)
+         return;
+      Purpose id = cast(Purpose) b.getData("wid");
+      host.onCSNotify(b, id);
+   }
+
+   void tbClick(ToggleButton b)
    {
       if (noToggle)
          return;
@@ -570,7 +599,7 @@ class TextParams: PseudoWidget
       cs.cy = 30;
    }
 
-   void enable()
+   override void enable()
    {
       enabled = false;
       alignTool.queueDraw();
@@ -584,7 +613,7 @@ class TextParams: PseudoWidget
       lNormal.setMarkup("<span foreground=\"#aaaaaa\" font=\"Sans 14\">A</span>");
    }
 
-    void disable()
+   override void disable()
    {
       enabled = true;
       alignTool.queueDraw();
@@ -598,7 +627,7 @@ class TextParams: PseudoWidget
       lNormal.setMarkup("<span font=\"Sans 14\">A</span>");
    }
 
-   void csInstruction(string name, int type, string sval, int ival, double dval)
+   override void csInstruction(string name, int type, string sval, int ival, double dval)
    {
       if (name != "setup")
          return;
@@ -783,7 +812,7 @@ class InchTool: PseudoWidget
       cs.add(display, ICoord(cx+40, cy+8), Purpose.DISPLAY);
    }
 
-   void csInstruction(string name, int type, string sval, int ival, double dval)
+  override  void csInstruction(string name, int type, string sval, int ival, double dval)
    {
       if (name == "display")
          display.setText(sval);
@@ -826,13 +855,13 @@ class InchTool: PseudoWidget
       return true;
    }
 
-   void enable()
+   override void enable()
    {
       sensitive = true;
       da.queueDraw();
    }
 
-   void disable()
+   override void disable()
    {
       sensitive = false;
       da.queueDraw();
@@ -967,13 +996,13 @@ class Compass: PseudoWidget
       return true;
    }
 
-   void enable()
+   override void enable()
    {
       sensitive = true;
       da.queueDraw();
    }
 
-   void disable()
+   override void disable()
    {
       sensitive = false;
       da.queueDraw();
@@ -1106,13 +1135,13 @@ class MoreLess: PseudoWidget
       return true;
    }
 
-   void enable()
+   override void enable()
    {
       sensitive= true;
       da.queueDraw();
    }
 
-   void disable()
+   override void disable()
    {
       sensitive = false;
       da.queueDraw();
@@ -1200,7 +1229,7 @@ class MOLLineThick: PseudoWidget
       cs.add(txt, ICoord(cx+40, cy), Purpose.LINEWIDTH, initialState, true);
    }
 
-   void csInstruction(string name, int type, string sval, int ival, double dval)
+   override void csInstruction(string name, int type, string sval, int ival, double dval)
    {
       if (name == "linewidth")
       {
@@ -1231,13 +1260,13 @@ class MOLLineThick: PseudoWidget
       return true;
    }
 
-   void enable()
+   override void enable()
    {
       sensitive= true;
       da.queueDraw();
    }
 
-   void disable()
+   override void disable()
    {
       sensitive = false;
       da.queueDraw();
@@ -1376,13 +1405,13 @@ class TextOrient: PseudoWidget
       return true;
    }
 
-   void enable()
+   override void enable()
    {
       sensitive= true;
       da.queueDraw();
    }
 
-   void disable()
+   override void disable()
    {
       sensitive = false;
       da.queueDraw();
@@ -1416,6 +1445,139 @@ class TextOrient: PseudoWidget
    }
 }
 
+class Palette: PseudoWidget
+{
+   DrawingArea da;
+   PartColor[] pca;
+   bool sensitive;
+
+   this(ControlSet cs, ICoord position, bool initialState = false)
+   {
+      super(cs, 0, position);
+      cs.addPseudo(this, Purpose.PALETTE, 0);
+      pos = cs.pos;
+      cx = position.x;
+      cy = position.y;
+      sensitive = initialState;
+
+      da= new DrawingArea(320, 40);
+      da.addOnDraw(&drawIt);
+      da.addOnButtonPress(&onBD);
+      cs.add(da, ICoord(cx, cy), Purpose.MOL, initialState, true);
+
+      pca = [PartColor(0,0.6,0,1), PartColor(0,0.64,0,1), PartColor(0,0.68,0,1), PartColor(0,0.72,0,1),
+             PartColor(0,0.76,0,1), PartColor(0,0.8,0,1), PartColor(1,1,0,1), PartColor(1,0,0,1)];
+   }
+
+   override void csInstruction(string name, int type, string sval, int ival, double dval)
+   {
+      if (name == "color")
+      {
+         PartColor* pcp = cast(PartColor*) ival;
+         pca[] = pcp[0..8];
+      }
+   }
+
+   PartColor getPColor(PartColor c)
+   {
+      RGBA current = new RGBA(c.r, c.g, c.b, 1);
+      RGBA color = new RGBA();
+      ColorSelectionDialog csd = new ColorSelectionDialog("Choose a Color");
+      ColorSelection cs = csd.getColorSelection();
+      cs.setCurrentRgba(current);
+      int response = csd.run();
+      if (response != ResponseType.OK)
+      {
+         csd.destroy();
+         return c;
+      }
+      cs.getCurrentRgba(color);
+      csd.destroy();
+      PartColor pc = PartColor(color.red, color.green, color.blue, 1);
+      return pc;
+   }
+
+   bool drawIt(Context c, Widget w)
+   {
+      c.rectangle(0,0, 40,40);
+      c.setSourceRgb(pca[0].r, pca[0].g,pca[0].b);
+      c.fill();
+      c.rectangle(40,0, 40,40);
+      c.setSourceRgb(pca[1].r, pca[1].g,pca[1].b);
+      c.fill();
+      c.rectangle(80,0, 40,40);
+      c.setSourceRgb(pca[2].r, pca[2].g,pca[2].b);
+      c.fill();
+      c.rectangle(120,0, 40,40);
+      c.setSourceRgb(pca[3].r, pca[3].g,pca[3].b);
+      c.fill();
+      c.rectangle(160,0, 40,40);
+      c.setSourceRgb(pca[4].r, pca[4].g,pca[4].b);
+      c.fill();
+      c.rectangle(200,0, 40,40);
+      c.setSourceRgb(pca[5].r, pca[5].g,pca[5].b);
+      c.fill();
+      c.rectangle(240,0, 40,40);
+      c.setSourceRgb(pca[6].r, pca[6].g,pca[6].b);
+      c.fill();
+      c.rectangle(280,0, 40,40);
+      c.setSourceRgb(pca[7].r, pca[7].g,pca[7].b);
+      c.fill();
+
+      if (!sensitive)
+      {
+         c.rectangle(0,0, 320,40);
+         c.setSourceRgba(0.8,0.8,0.8, 0.5);
+         c.fill();
+      }
+
+      return true;
+   }
+
+   override void enable()
+   {
+      sensitive= true;
+      da.queueDraw();
+   }
+
+   override void disable()
+   {
+      sensitive = false;
+      da.queueDraw();
+   }
+
+   bool onBD(Event e, Widget w)
+   {
+      if (!(e.type == GdkEventType.BUTTON_PRESS  &&  e.button.button == 1))
+         return false;
+      if (!sensitive)
+         return true;
+      double x = e.button.x;
+      double y = e.button.y;
+      GdkModifierType state;
+      int which;
+      if (x < 40)
+         pca[0] = getPColor(pca[0]);
+      else if (x > 40 && x < 80)
+         pca[1] = getPColor(pca[1]);
+      else if (x > 80 && x < 120)
+         pca[2] = getPColor(pca[2]);
+      else if (x > 120 && x < 160)
+         pca[3] = getPColor(pca[3]);
+      else if (x > 160 && x < 200)
+         pca[4] = getPColor(pca[4]);
+      else if (x > 200 && x < 240)
+         pca[5] = getPColor(pca[5]);
+      else if (x > 240 && x < 280)
+         pca[6] = getPColor(pca[6]);
+      else
+         pca[7] = getPColor(pca[7]);
+      da.queueDraw();
+      target.onCSPalette(pca);
+      return true;
+   }
+}
+
 class RenameGadget: PseudoWidget
 {
    Entry entry;
@@ -1439,17 +1601,17 @@ class RenameGadget: PseudoWidget
       cs.add(entry, ICoord(cx+45, cy), Purpose.NAMEENTRY, initState);
    }
 
-   void enable()
+   override void enable()
    {
       ok.setSensitive(true);
    }
 
-   void disable()
+   override void disable()
    {
       ok.setSensitive(false);
    }
 
-   void csInstruction(string name, int type, string sval, int ival, double dval)
+   override void csInstruction(string name, int type, string sval, int ival, double dval)
    {
       if (name == "hostname")
          entry.setText(sval);

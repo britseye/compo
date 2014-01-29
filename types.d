@@ -15,6 +15,15 @@ struct Coord
    double y = 0.0;
 }
 
+union Coord2Integral
+{
+   Coord coord;
+   uint[4] uia;
+   int[4] sia;
+   byte[16] sba;
+   ubyte[16] uba;
+}
+
 struct ICoord
 {
    int x;
@@ -69,6 +78,12 @@ struct ShapeInfo
    double c1 = 0.0, c2 = 0.0, c3 = 0.0, c4 = 0.0, c5 = 0.0, c6 = 0.0;
 }
 
+struct RPCCP
+{
+   bool radial;
+   double d1, d2, d3, d4;
+}
+
 struct Transform
 {
    double hScale = 1;
@@ -91,10 +106,13 @@ struct PartColor
 struct Part
 {
    int type;
-   bool closed;
+   ubyte flags;
    string name;
+   Coord position;
    Coord center;
-   PartColor color;
+   Transform transform;
+   PartColor baseColor;
+   PartColor altColor;
    double lwf;
    int length;
    PathItemR[] ia;
@@ -102,13 +120,15 @@ struct Part
    void copy(Part other)
    {
       type = other.type;
-      closed = other.closed;
+      flags = other.flags;
       length = other.length;
       center = other.center;
-      color = other.color;
+      transform = other.transform;
+      baseColor = other.baseColor;
+      altColor = other.altColor;
       lwf = other.lwf;
       ia.length = other.ia.length;
-      ia[] = other.ia[];
+      ia = other.ia.dup;
    }
 }
 
@@ -123,6 +143,5 @@ struct PathItemR
 {
    int type;
    Coord start, cp1, cp2, end;
-   Coord cog;
 }
 

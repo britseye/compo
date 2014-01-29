@@ -7,7 +7,7 @@
 // Written in the D programming language
 module pointset;
 
-import main;
+import mainwin;
 import container;
 import constants;
 import acomp;
@@ -72,6 +72,7 @@ class PointSetEditDlg: Dialog, CSTarget
    void onCSSaveSelection() {}
    void onCSTextParam(Purpose p, string sval, int ival) {}
    void onCSNameChange(string s) {}
+   void onCSPalette(PartColor[]) {}
    void setNameEntry(Entry e) {}
 
    bool catchClose(Event e, Widget w)
@@ -266,14 +267,15 @@ class PointSet : LineSet
 {
    static int nextOid = 0;
    Coord[][] editStack;
+   Coord topLeft, bottomRight;
    int[] currentStack;
    double editOpacity;
    bool constructing, editing;
    int current, next, prev, lastCurrent, lastActive;
    PointSetEditDlg md;
    // For zoomed edting
-   double esf;
-   Coord zo, vo, zbr;
+   double esf, zw, zh;
+   Coord vo;
    bool zoomed, protect;
 
    override void syncControls()
@@ -301,6 +303,7 @@ class PointSet : LineSet
    {
       string s = "PointSet "~to!string(++nextOid);
       super(w, parent, s, AC_POINTSET);
+      group = ACGroups.GEOMETRIC;
       constructing = true;
       les = true;
       current = 0;
@@ -417,7 +420,6 @@ class PointSet : LineSet
    {
       constructing = false;
       figureCenter();
-      centerPath();
       cSet.enable(Purpose.REDRAW);
       cSet.setInfo("Click the Edit button to move, add, or delete points");
    }
@@ -425,15 +427,15 @@ class PointSet : LineSet
    double scaledDistance(Coord a, Coord b)
    {
 //writefln("w %f h %f zw %f zh %f", 1.0*width, 1.0*height, zbr.x-zo.x, zbr.y-zo.y);
-//writefln("%f - %f %f, %f %f",esf, zo.x,zo.y,vo.x,vo.y);
-//writefln("cog %f %f mouse %f %f", a.x, a.y, b.x,b.y);
+//writefln("%f - %f %f",esf, vo.x,vo.y);
+//writefln("cog %f %f mouse %f %f", a.x, a.y, b.x, b.y);
       Coord as = a, bs = b;
       if (zoomed)
       {
          as.x = a.x*esf;
          as.y = a.y*esf;
-         bs.x = vo.x-zo.x+b.x;
-         bs.y = vo.y-zo.y+b.y;
+         bs.x = vo.x+b.x;
+         bs.y = vo.y+b.y;
 //writefln("scog %f %f mouse %f %f", as.x, as.y, bs.x, bs.y);
       }
       double d = distance(as,bs);
@@ -569,16 +571,30 @@ class PointSet : LineSet
       dirty = true;
    }
 
-   void figureCenter()
+   void getBounding()
    {
-      double cx = 0, cy = 0;
-      for (int i = 0; i < oPath.length; i++)
+      Coord tl, br;
+      double left = width, right = 0, top = height, bottom = 0;
+      foreach (Coord point; oPath)
       {
-         cx += oPath[i].x;
-         cy += oPath[i].y;
+         if (point.x > right)
+            right = point.x;
+         if (point.x < left)
+            left = point.x;
+         if (point.y > bottom)
+            bottom = point.y;
+         if (point.y < top)
+            top = point.y;
       }
-      center.x = cx/oPath.length;
-      center.y = cy/oPath.length;
+      topLeft = Coord(left, top);
+      bottomRight = Coord(right, bottom);
+   }
+
+   Coord figureCenter()
+   {
+      getBounding();
+      Coord c = Coord(topLeft.x+0.5*(bottomRight.x-topLeft.x), topLeft.y+0.5*(bottomRight.y-topLeft.y));
+      return c;
    }
 
    void renderActual(Context c)
@@ -595,12 +611,17 @@ class PointSet : LineSet
          }
          return;
       }
-      transformPath(compoundTransform());
+
+      c.translate(hOff+center.x, vOff+center.y);
+      if (compoundTransform())
+         c.transform(tm);
+      c.translate(-center.x, -center.y);
+
       c.setLineWidth(0);
       c.setSourceRgb(baseColor.red, baseColor.green, baseColor.blue);
-      for (int i = 0; i < rPath.length; i++)
+      for (int i = 0; i < oPath.length; i++)
       {
-         c.arc(hOff+rPath[i].x, vOff+rPath[i].y, lineWidth, 0, PI*2);
+         c.arc(oPath[i].x, oPath[i].y, lineWidth, 0, PI*2);
          c.strokePreserve();
          c.fill();
       }
@@ -680,43 +701,44 @@ class PointSet : LineSet
    {
       if (dx > 0)
       {
-         if (vo.x-dx > zo.x)
+         if (vo.x-dx > 0)
             vo.x -= dx;
          else
-            vo.x = zo.x;
+            vo.x = 0;
       }
       else
       {
          dx = -dx;
-         if (vo.x+width+dx < zbr.x)
+         if (vo.x+width+dx < zw)
             vo.x += dx;
          else
-            vo.x = zbr.x-width;
+            vo.x = zw-width;
       }
       if (dy > 0)
       {
-         if (vo.y-dy > zo.y)
+         if (vo.y-dy > 0)
             vo.y -= dy;
          else
-            vo.y = zo.y;
+            vo.y = 0;
       }
       else
       {
          dy = -dy;
-         if (vo.y+height+dy < zbr.y)
+         if (vo.y+height+dy < zh)
             vo.y += dy;
          else
-            vo.y = zbr.y-height;
+            vo.y = zh-height;
       }
    }
 
    void adjustZoom(double by)
    {
+      double oldEsf = esf;
       esf += by;
-      double zw = width*esf;
-      double zh = height*esf;
-      zo = Coord(-zw/2,-zh/2);
-      zbr = Coord(zw/2, zh/2);
+      zw = width*esf;
+      zh = height*esf;
+      vo.x *= esf/oldEsf;
+      vo.y *= esf/oldEsf;
       reDraw();
    }
 
@@ -728,7 +750,7 @@ class PointSet : LineSet
          protect = true;
          if (esf == 1)
             adjustZoom(1);
-         vo = Coord(-0.5*width,-0.5*height);
+         vo=Coord(zw/2-0.5*width, zh/2-0.5*height);
          md.ignoreZoom = true;
          md.cbZoom.setActive(1);
          md.ignoreZoom = false;
@@ -759,11 +781,8 @@ class PointSet : LineSet
    {
       if (zoomed)
       {
-         double offsetX = vo.x+0.5*width;
-         double offsetY = vo.y+0.5*height;
-         c.translate(width/2-offsetX, height/2-offsetY);
          c.scale(esf,esf);
-         c.translate(-width/2, -height/2);
+         c.translate(-vo.x/esf, -vo.y/esf);
       }
    }
 }

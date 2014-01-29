@@ -7,7 +7,7 @@
 // Written in the D programming language
 module polygon;
 
-import main;
+import mainwin;
 import container;
 import constants;
 import acomp;
@@ -81,6 +81,7 @@ class PolyEditDlg: Dialog, CSTarget
    void onCSSaveSelection() {}
    void onCSTextParam(Purpose p, string sval, int ival) {}
    void onCSNameChange(string s) {}
+   void onCSPalette(PartColor[]) {}
    void setNameEntry(Entry e) {}
 
    bool catchClose(Event e, Widget w)
@@ -207,7 +208,7 @@ class PolyEditDlg: Dialog, CSTarget
                po.setupZoom(true);
             }
             else
-               po.adjustZoom(0.05);
+               po.adjustZoom(0.1);
             po.notifyContainer(true);
          }
          else
@@ -215,7 +216,7 @@ class PolyEditDlg: Dialog, CSTarget
             if (po.esf-0.05 < 1)
                po.setupZoom(false);
             else
-               po.adjustZoom(-0.05);
+               po.adjustZoom(-0.1);
             po.notifyContainer(false);
          }
       }
@@ -304,6 +305,7 @@ class Polygon : LineSet
 {
    static int nextOid = 0;
    Coord[][] editStack;
+   Coord topLeft, bottomRight;
    int[] currentStack;
    double editOpacity;
    bool constructing, editing;
@@ -311,8 +313,8 @@ class Polygon : LineSet
    PolyEditDlg md;
    int activeCoords;
    // For zoomed edting
-   double esf;
-   Coord zo, vo, zbr;
+   double esf, zw, zh;
+   Coord vo;
    bool zoomed, protect;
 
    override void syncControls()
@@ -361,10 +363,13 @@ class Polygon : LineSet
    {
       string s = "Polygon "~to!string(++nextOid);
       super(w, parent, s, AC_POLYGON);
+      group = ACGroups.GEOMETRIC;
       constructing = true;
       altColor = new RGBA(1,1,1,1);
       editOpacity = 0.5;
       esf = 1;
+      zw = 0;
+      zh = 0;
       les = true;
       md = new PolyEditDlg("Edit "~s, this);
       md.setSizeRequest(240, 200);
@@ -431,8 +436,7 @@ class Polygon : LineSet
 
    void setComplete()
    {
-      figureCenter();
-      centerPath();
+      center = figureCenter();
       constructing = false;
       cSet.enable(Purpose.REDRAW);
       cSet.setInfo("Click the Edit button to move, add, or delete edges");
@@ -521,15 +525,15 @@ class Polygon : LineSet
    double scaledDistance(Coord a, Coord b)
    {
 //writefln("w %f h %f zw %f zh %f", 1.0*width, 1.0*height, zbr.x-zo.x, zbr.y-zo.y);
-//writefln("%f - %f %f, %f %f",esf, zo.x,zo.y,vo.x,vo.y);
-//writefln("cog %f %f mouse %f %f", a.x, a.y, b.x,b.y);
+//writefln("%f - %f %f",esf, vo.x,vo.y);
+//writefln("cog %f %f mouse %f %f", a.x, a.y, b.x, b.y);
       Coord as = a, bs = b;
       if (zoomed)
       {
          as.x = a.x*esf;
          as.y = a.y*esf;
-         bs.x = vo.x-zo.x+b.x;
-         bs.y = vo.y-zo.y+b.y;
+         bs.x = vo.x+b.x;
+         bs.y = vo.y+b.y;
 //writefln("scog %f %f mouse %f %f", as.x, as.y, bs.x, bs.y);
       }
       double d = distance(as,bs);
@@ -599,8 +603,8 @@ class Polygon : LineSet
                else
                   nextv = oPath[i+1];
                Coord half;
-               half.x = center.x+c.x+(nextv.x-c.x)/2;
-               half.y = center.y+c.y+(nextv.y-c.y)/2;
+               half.x = c.x+(nextv.x-c.x)/2;
+               half.y = c.y+(nextv.y-c.y)/2;
 
                double d = scaledDistance(half, m);
                if (d < minsep)
@@ -688,59 +692,67 @@ class Polygon : LineSet
       dirty = true;
    }
 
-   void figureCenter()
+
+   void getBounding()
    {
-      double cx = 0, cy = 0;
-      for (int i = 0; i < oPath.length; i++)
+      Coord tl, br;
+      double left = width, right = 0, top = height, bottom = 0;
+      foreach (Coord point; oPath)
       {
-         cx += oPath[i].x;
-         cy += oPath[i].y;
+         if (point.x > right)
+            right = point.x;
+         if (point.x < left)
+            left = point.x;
+         if (point.y > bottom)
+            bottom = point.y;
+         if (point.y < top)
+            top = point.y;
       }
-      center.x = cx/oPath.length;
-      center.y = cy/oPath.length;
+      topLeft = Coord(left, top);
+      bottomRight = Coord(right, bottom);
+   }
+
+   Coord figureCenter()
+   {
+      getBounding();
+      Coord c = Coord(topLeft.x+0.5*(bottomRight.x-topLeft.x), topLeft.y+0.5*(bottomRight.y-topLeft.y));
+      return c;
    }
 
    void renderActual(Context c)
    {
       if (constructing)
       {
+         c.setSourceRgba(1,1,1,0.9);
+         c.paint();
          if (oPath.length < 2)
             return;
-         c.setSourceRgb(0.8, 0.8, 0.8);
+         c.setSourceRgb(1,0,0);
          c.moveTo(oPath[0].x, oPath[0].y);
          for (int i = 1; i < oPath.length; i++)
             c.lineTo(oPath[i].x, oPath[i].y);
-         c.setLineWidth(1.0);
          c.stroke();
          return;
       }
       if (oPath.length <  3)
          return;
 
-      transformPath(compoundTransform());
-      c.setLineWidth(lineWidth);
+      c.translate(hOff+center.x, vOff+center.y);
+      if (compoundTransform())
+         c.transform(tm);
+      c.translate(-center.x, -center.y);
+
+      c.setSourceRgb(baseColor.red, baseColor.green, baseColor.blue);
+      c.setLineWidth(0);
       c.setLineJoin(les? CairoLineJoin.MITER: CairoLineJoin.ROUND);
 
-      c.moveTo(hOff+rPath[0].x, vOff+rPath[0].y);
-      for (int i = 1; i < rPath.length; i++)
-         c.lineTo(hOff+rPath[i].x, vOff+rPath[i].y);
+      c.moveTo(oPath[0].x, oPath[0].y);
+      for (int i = 1; i < oPath.length; i++)
+      {
+         c.lineTo(oPath[i].x, oPath[i].y);
+      }
       c.closePath();
-      if (solid)
-      {
-         c.setSourceRgba(baseColor.red, baseColor.green, baseColor.blue, 1.0);
-         c.fill();
-      }
-      else if (fill)
-      {
-         c.setSourceRgba(altColor.red, altColor.green, altColor.blue, 1.0);
-         c.fillPreserve();
-      }
-      if (!solid)
-      {
-         c.setSourceRgb(baseColor.red, baseColor.green, baseColor.blue);
-         c.stroke();
-      }
-      if (!isMoved) cSet.setDisplay(0, reportPosition());
+      strokeAndFill(c, lineWidth, solid, fill);
    }
 
    void adjustPI(double dx, double dy)
@@ -820,24 +832,24 @@ class Polygon : LineSet
       c.setSourceRgba(1,1,1,editOpacity);
       c.paint();
       c.setSourceRgb(0,0,0);
-      double lw = 1;
-      if(zoomed) lw /= esf;
+      double lw = 0.5;
+      if (zoomed) lw /= esf;
       c.setLineWidth(lw);
-      c.moveTo(center.x+oPath[0].x, center.y+oPath[0].y);
+      c.moveTo(oPath[0].x, oPath[0].y);
       for (int i = 1; i < oPath.length; i++)
-         c.lineTo(center.x+oPath[i].x, center.y+oPath[i].y);
+         c.lineTo(oPath[i].x, oPath[i].y);
       if (oPath.length > 2)
          c.closePath();
       c.stroke();
       figureNextPrev();
       c.setSourceRgb(1,0,0);
-      c.setLineWidth(1);
-      c.moveTo(center.x+oPath[current].x, center.y+oPath[current].y);
-      c.lineTo(center.x+oPath[next].x, center.y+oPath[next].y);
+      c.setLineWidth(lw*2);
+      c.moveTo(oPath[current].x, oPath[current].y);
+      c.lineTo(oPath[next].x, oPath[next].y);
       c.stroke();
       c.setSourceRgb(0,1,0);
-      c.moveTo(center.x+oPath[prev].x, center.y+oPath[prev].y);
-      c.lineTo(center.x+oPath[current].x, center.y+oPath[current].y);
+      c.moveTo(oPath[prev].x, oPath[prev].y);
+      c.lineTo(oPath[current].x, oPath[current].y);
       c.stroke();
    }
 
@@ -857,43 +869,44 @@ class Polygon : LineSet
    {
       if (dx > 0)
       {
-         if (vo.x-dx > zo.x)
+         if (vo.x-dx > 0)
             vo.x -= dx;
          else
-            vo.x = zo.x;
+            vo.x = 0;
       }
       else
       {
          dx = -dx;
-         if (vo.x+width+dx < zbr.x)
+         if (vo.x+width+dx < zw)
             vo.x += dx;
          else
-            vo.x = zbr.x-width;
+            vo.x = zw-width;
       }
       if (dy > 0)
       {
-         if (vo.y-dy > zo.y)
+         if (vo.y-dy > 0)
             vo.y -= dy;
          else
-            vo.y = zo.y;
+            vo.y = 0;
       }
       else
       {
          dy = -dy;
-         if (vo.y+height+dy < zbr.y)
+         if (vo.y+height+dy < zh)
             vo.y += dy;
          else
-            vo.y = zbr.y-height;
+            vo.y = zh-height;
       }
    }
 
    void adjustZoom(double by)
    {
+      double oldEsf = esf;
       esf += by;
-      double zw = width*esf;
-      double zh = height*esf;
-      zo = Coord(-zw/2,-zh/2);
-      zbr = Coord(zw/2, zh/2);
+      zw = width*esf;
+      zh = height*esf;
+      vo.x *= esf/oldEsf;
+      vo.y *= esf/oldEsf;
       reDraw();
    }
 
@@ -905,7 +918,7 @@ class Polygon : LineSet
          protect = true;
          if (esf == 1)
             adjustZoom(1);
-         vo = Coord(-0.5*width,-0.5*height);
+         vo=Coord(zw/2-0.5*width, zh/2-0.5*height);
          md.ignoreZoom = true;
          md.cbZoom.setActive(1);
          md.ignoreZoom = false;
@@ -936,11 +949,8 @@ class Polygon : LineSet
    {
       if (zoomed)
       {
-         double offsetX = vo.x+0.5*width;
-         double offsetY = vo.y+0.5*height;
-         c.translate(width/2-offsetX, height/2-offsetY);
          c.scale(esf,esf);
-         c.translate(-width/2, -height/2);
+         c.translate(-vo.x/esf, -vo.y/esf);
       }
    }
 }

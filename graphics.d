@@ -8,7 +8,7 @@
 module graphics;
 
 import acomp;
-import main;
+import mainwin;
 
 import std.stdio;
 
@@ -76,7 +76,7 @@ void renderSVG(ACBase item)
    folder = fcd.getCurrentFolder();
    item.aw.recent.lastImageFolder = folder;
    fcd.destroy();
-   double w = item.width/item.aw.screenRes*2.83464567, h = item.height/item.aw.screenRes*2.83464567;
+   double w = item.width/item.aw.screenRes*2.83464567, h = item.height/item.aw.screenRes*2.83464567; // 0.352777778
    SvgSurface svgs = SvgSurface.create(fileName, w, h);
    Context svgc = Context.create(svgs);
    svgc.scale(w/item.width, h/item.height);
@@ -87,7 +87,9 @@ void renderSVG(ACBase item)
       svgc.setSourceRgba(1,1,1,0);
       svgc.fill();
    }
+   item.svgFlag = true;
    item.render(svgc);
+   item.svgFlag = false;
    svgs.finish();
 }
 

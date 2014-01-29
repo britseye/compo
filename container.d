@@ -11,7 +11,7 @@ import constants;
 import types;
 import controlset;
 import acomp;
-import main;
+import mainwin;
 import sheets;
 import graphics;
 
@@ -90,6 +90,7 @@ class Container: ACBase
    {
       string s= "Container "~ to!string(++nextOid);
       super(w, parent, s, AC_CONTAINER);
+      group = ACGroups.CONTAINER;
       baseColor = new RGBA(1,1,1,1);
       glShowing = false;
       glUseV = true;
@@ -173,7 +174,7 @@ class Container: ACBase
       reDraw();
    }
 
-   void setSelectedChild(ACBase acb)
+   override void setSelectedChild(ACBase acb)
    {
       selectedChild = acb;
    }
@@ -253,7 +254,7 @@ class Container: ACBase
       PixbufLoader pbl = cast(PixbufLoader) closure;
       char[] t;
       t.length = len;
-      t[] = cast(char[]) data[0..len];
+      t[] = (cast(char[]) data[0..len])[];
       int rv = pbl.write(t);
       return rv? cairo_status_t.SUCCESS: cairo_status_t.WRITE_ERROR;
    }

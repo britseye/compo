@@ -7,7 +7,7 @@
 // Written in the D programming language
 module tree;
 
-import main;
+import mainwin;
 import acomp;
 
 import std.stdio;

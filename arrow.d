@@ -7,7 +7,7 @@
 // Written in the D programming language
 module arrow;
 
-import main;
+import mainwin;
 import constants;
 import acomp;
 import common;
@@ -87,27 +87,26 @@ class Arrow : LineSet
       oPath = other.oPath.dup;
       xform = other.xform;
       tf = other.tf;
-      dirty = true;
       syncControls();
    }
 
    this(AppWindow w, ACBase parent)
    {
       string s = "Arrow "~to!string(++nextOid);
+      group = ACGroups.SHAPES;
       super(w, parent, s, AC_ARROW);
       altColor = new RGBA(0,0,0,1);
       les = true;
       fill = solid = false;
 
-      center.x = width/2;
-      center.y = height/2;
+      center.x = 0.5*width;
+      center.y = 0.5*height;
       hw = 0;  // medium head width
       constructBase();
       tm = new Matrix(&tmData);
 
       setupControls(3);
       positionControls(true);
-      dirty = true;
    }
 
    override void extendControls()
@@ -208,7 +207,13 @@ class Arrow : LineSet
       oPath[4] = Coord(18, 5+ho);
       oPath[5] = Coord(18, 5);
       oPath[6] = Coord(-30, 5);
-      dirty = true;
+      center.x = 0.5*width;
+      center.y = 0.5*height;
+      for (int i = 0; i < oPath.length; i++)
+      {
+         oPath[i].x += center.x;
+         oPath[i].y += center.y;
+      }
    }
 
    override void onCSMoreLess(int instance, bool more, bool coarse)
@@ -218,30 +223,23 @@ class Arrow : LineSet
          modifyTransform(xform, more, coarse);
       else
          return;
-      dirty = true;
       aw.dirty = true;
       reDraw();
    }
 
    override void render(Context c)
    {
-      if (dirty)
-      {
-         transformPath(compoundTransform());
+      c.translate(hOff+center.x, vOff+center.y);
+      if (compoundTransform())
+         c.transform(tm);
+      c.translate(-center.x, -center.y);  // lpX and lpY both zero at design time
 
-         dirty = false;
-      }
-      c.setLineWidth(lineWidth);
+      c.setLineWidth(0);
       c.setLineJoin(les? CairoLineJoin.MITER: CairoLineJoin.ROUND);
-      c.moveTo(hOff+rPath[0].x, vOff+rPath[0].y);
-      for (int i = 1; i < rPath.length; i++)
-         c.lineTo(hOff+rPath[i].x, vOff+rPath[i].y);
+      c.moveTo(oPath[0].x, oPath[0].y);
+      for (int i = 1; i < oPath.length; i++)
+         c.lineTo(oPath[i].x, oPath[i].y);
       c.closePath();
-      c.setSourceRgba(baseColor.red, baseColor.green, baseColor.blue, 1.0);
-      if (!(solid || fill))
-         c.stroke();
-      else
-         doFill(c, solid, fill);
-      if (!isMoved) cSet.setDisplay(0, reportPosition());
+      strokeAndFill(c, lineWidth, solid, fill);
    }
 }

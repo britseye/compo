@@ -7,7 +7,7 @@
 // Written in the D programming language
 module fader;
 
-import main;
+import mainwin;
 import constants;
 import acomp;
 import common;
@@ -66,6 +66,7 @@ class Fader: ACBase
    {
       string s = "Fader "~to!string(++nextOid);
       super(w, parent, s, AC_FADER);
+      group = ACGroups.EFFECTS;
       hOff = width/4;
       vOff = height/4;
       rw = width/2;
@@ -151,7 +152,7 @@ class Fader: ACBase
       return true;
    }
 
-   void undo()
+   override void undo()
    {
       CheckPoint cp;
       cp = popOp();
@@ -181,6 +182,7 @@ class Fader: ACBase
          hOff = t.x;
          vOff = t.y;
          lastOp = OP_UNDEF;
+         break;
       default:
          return;
       }
@@ -237,16 +239,6 @@ class Fader: ACBase
 
    override void render(Context c)
    {
-      // for testing
-      c.setSourceRgb(0.7,0.7,0.7);
-      c.setLineWidth(10);
-      c.moveTo(lpX, lpY+height/2);
-      c.lineTo(lpX+width, lpY+height/2);
-      c.moveTo(lpX+width/2, lpY);
-      c.lineTo(lpX+width/2, lpY+height);
-      c.stroke();
-      //c.restore();
-
       double r = baseColor.red();
       double g = baseColor.green();
       double b = baseColor.blue();

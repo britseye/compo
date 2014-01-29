@@ -7,7 +7,7 @@
 // Written in the D programming language
 module morphdlgs;
 
-import main;
+import mainwin;
 import interfaces;
 import constants;
 import common;
@@ -62,6 +62,7 @@ class MorphDlg: Dialog, CSTarget
    string onCSInch(int instance, int direction, bool coarse) { return ""; }
    void onCSMoreLess(int instance, bool more, bool coarse) {}
    void onCSCompass(int instance, double angle, bool coarse) {}
+   void onCSPalette(PartColor[]) {}
    void onCSLineWidth(double lw) {}
    void onCSSaveSelection() {}
    void onCSTextParam(Purpose p, string sval, int ival) {}
@@ -94,7 +95,7 @@ class FitAreaDlg: MorphDlg
       linPc = to!int(fb.nl*100);
    }
 
-   void addGadgets()
+   override void addGadgets()
    {
       int vp = 20;
       Label l = new Label("Adjust Linearity");
@@ -103,7 +104,7 @@ class FitAreaDlg: MorphDlg
       cs.realize(layout);
    }
 
-   void onCSMoreLess(int instance, bool more, bool coarse)
+   override void onCSMoreLess(int instance, bool more, bool coarse)
    {
       more = !more;  // Looks more intuitive that way
       int delta = coarse? 5: 2;
@@ -137,7 +138,8 @@ class TaperDlg: MorphDlg
       t = cast(Taper) morph;
       h = po.height;
    }
-   void addGadgets()
+
+   override void addGadgets()
    {
       int vp = 20;
       Label l = new Label("Adjust the taper");
@@ -146,7 +148,7 @@ class TaperDlg: MorphDlg
       cs.realize(layout);
    }
 
-   void onCSMoreLess(int instance, bool more, bool coarse)
+   override void onCSMoreLess(int instance, bool more, bool coarse)
    {
       more = !more;  // Looks more intuitive that way
       int delta = coarse? 5: 2;
@@ -183,7 +185,7 @@ class ArchUpDlg: MorphDlg
       addGadgets();
    }
 
-   void addGadgets()
+   override void addGadgets()
    {
       int vp = 20;
       Label l = new Label("Start Angle");
@@ -203,7 +205,7 @@ class ArchUpDlg: MorphDlg
       cs.realize(layout);
    }
 
-   void onCSMoreLess(int instance, bool more, bool coarse)
+   override void onCSMoreLess(int instance, bool more, bool coarse)
    {
       double factor = more? 1.05: 0.95;
       if (instance == 2)
@@ -257,7 +259,7 @@ class CircularDlg: MorphDlg
       addGadgets();
    }
 
-   void addGadgets()
+   override void addGadgets()
    {
       int vp = 20;
       Label l = new Label("Start Angle");
@@ -281,7 +283,7 @@ class CircularDlg: MorphDlg
       cs.realize(layout);
    }
 
-   void onCSNotify(Widget w, Purpose p)
+   override void onCSNotify(Widget w, Purpose p)
    {
       if (p == Purpose.ANTI)
       {
@@ -290,7 +292,7 @@ class CircularDlg: MorphDlg
       }
    }
 
-   void onCSMoreLess(int instance, bool more, bool coarse)
+   override void onCSMoreLess(int instance, bool more, bool coarse)
    {
       double factor = more? 1.05: 0.95;
       if (instance == 2)
@@ -343,7 +345,7 @@ class SineWaveDlg: MorphDlg
       sw = cast(SineWave) m;
    }
 
-   void addGadgets()
+   override void addGadgets()
    {
       int vp = 20;
       Label l = new Label("Starting point");
@@ -363,7 +365,7 @@ class SineWaveDlg: MorphDlg
       cs.realize(layout);
    }
 
-   void onCSMoreLess(int instance, bool more, bool coarse)
+   override void onCSMoreLess(int instance, bool more, bool coarse)
    {
       double factor = more? 1.05: 0.95;
       if (instance == 2)
@@ -402,7 +404,7 @@ class FlareDlg: MorphDlg
       f = cast(Flare) m;
    }
 
-   void addGadgets()
+   override void addGadgets()
    {
       int vp = 20;
       Label l = new Label("Top Flare Width");
@@ -427,7 +429,7 @@ class FlareDlg: MorphDlg
       cs.realize(layout);
    }
 
-   void onCSMoreLess(int instance, bool more, bool coarse)
+   override void onCSMoreLess(int instance, bool more, bool coarse)
    {
       double delta = more? -0.05: 0.05;
       if (instance == 0)
@@ -461,7 +463,7 @@ class RFlareDlg: MorphDlg
       f = cast(RFlare) m;
    }
 
-   void addGadgets()
+   override void addGadgets()
    {
       int vp = 20;
       Label l = new Label("Top Flare Width");
@@ -486,7 +488,7 @@ class RFlareDlg: MorphDlg
       cs.realize(layout);
    }
 
-   void onCSMoreLess(int instance, bool more, bool coarse)
+   override void onCSMoreLess(int instance, bool more, bool coarse)
    {
       double delta = more? 0.05: -0.05;
       if (instance == 0)
@@ -520,7 +522,7 @@ class CatenaryDlg: MorphDlg
       cat = cast(Catenary) m;
    }
 
-   void addGadgets()
+   override void addGadgets()
    {
       int vp = 20;
       CheckButton cb = new CheckButton("Inverted");
@@ -539,13 +541,13 @@ class CatenaryDlg: MorphDlg
       cs.realize(layout);
    }
 
-   void onCSNotify(Widget w, Purpose p)
+   override void onCSNotify(Widget w, Purpose p)
    {
       cat.invert();
       po.refreshMorph();
    }
 
-   void onCSMoreLess(int instance, bool more, bool coarse)
+   override void onCSMoreLess(int instance, bool more, bool coarse)
    {
       if (instance == 1)
       {
@@ -572,7 +574,7 @@ class ConvexDlg: MorphDlg
       cv = cast(Convex) m;
    }
 
-   void addGadgets()
+   override void addGadgets()
    {
       int vp = 20;
       Label l = new Label("Curvature");
@@ -582,7 +584,7 @@ class ConvexDlg: MorphDlg
       cs.realize(layout);
    }
 
-   void onCSMoreLess(int instance, bool more, bool coarse)
+   override void onCSMoreLess(int instance, bool more, bool coarse)
    {
       double delta = cv.height*0.05;
       if (!more)
@@ -603,7 +605,7 @@ class ConcaveDlg: MorphDlg
       cc = cast(Concave) m;
    }
 
-   void addGadgets()
+   override void addGadgets()
    {
       int vp = 20;
       Label l = new Label("Curvature");
@@ -613,7 +615,7 @@ class ConcaveDlg: MorphDlg
       cs.realize(layout);
    }
 
-   void onCSMoreLess(int instance, bool more, bool coarse)
+   override void onCSMoreLess(int instance, bool more, bool coarse)
    {
       double delta = cc.height*0.05;
       if (!more)
@@ -717,7 +719,7 @@ class BezierDlg: MorphDlg
       po.refreshMorph();
    }
 
-   void onCSNotify(Widget w, Purpose p)
+   override void onCSNotify(Widget w, Purpose p)
    {
       if (p == Purpose.REVERT)
       {
@@ -730,7 +732,7 @@ class BezierDlg: MorphDlg
          active = p;
    }
 
-   void addGadgets()
+   override void addGadgets()
    {
       int vi = 18;
       int vp = 5;

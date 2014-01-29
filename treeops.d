@@ -8,7 +8,7 @@
 module treeops;
 
 import tree;
-import main;
+import mainwin;
 import treeops;
 import acomp;
 import sheets;
@@ -115,7 +115,7 @@ class TreeOps
             if (t is acb)
             {
                tp.appendIndex(i);
-               break;;
+               break;
             }
          }
       }
@@ -207,7 +207,7 @@ renderer.setPadding(2, 0);
       }
 
 
-      tv.addOnCursorChanged(&aw.onCursorChanged);;
+      tv.addOnCursorChanged(&aw.onCursorChanged);
       tv.addOnButtonPress(&aw.onTreeClick);
 
 

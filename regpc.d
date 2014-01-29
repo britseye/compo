@@ -7,7 +7,7 @@
 // Written in the D programming language
 module regpc;
 
-import main;
+import mainwin;
 import config;
 import constants;
 import acomp;
@@ -27,7 +27,7 @@ import gtk.Layout;
 import gtk.Frame;
 import gdk.RGBA;
 import gtk.ComboBoxText;
-import gtk.SpinButton;
+import gtk.ToggleButton;
 import gtk.RadioButton;
 import gtk.CheckButton;
 import gtk.Label;
@@ -35,22 +35,39 @@ import cairo.Context;
 import gtkc.cairotypes;
 import cairo.Matrix;
 
+enum
+{
+   P1 = Purpose.R_RADIOBUTTONS-100,
+   P2,
+   BOTH,
+   AP1,
+   AP2,
+   ABOTH
+}
+
+enum
+{
+   SS,
+   SA,
+   DS,
+   DA
+}
+
 class RegularPolycurve : LineSet
 {
    static int nextOid = 0;
-   PathItem[] pcPath, pcRPath;
-   int sides;
-   bool alternating;
-   double target, maxTarget, inner, outer, cangle, laglead, prop;
-   Purpose cpos;
+   PathItemR[] pcPath;
+   int sides, activeCP, symmetry;
+   bool editMode;
+   double target, maxTarget, joinRadius, joinAngle;
+   double cp1Radius, cp1Angle, cp2Radius, cp2Angle, cp1ARadius, cp1AAngle, cp2ARadius, cp2AAngle;
    Label numSides;
 
    override void syncControls()
    {
       cSet.setLineParams(lineWidth);
       cSet.toggling(false);
-      cSet.setToggle(cpos, true);
-      cSet.setToggle(Purpose.ASSTAR, alternating);
+
       if (les)
          cSet.setToggle(Purpose.LESSHARP, true);
       else
@@ -63,7 +80,36 @@ class RegularPolycurve : LineSet
       }
       else if (fill)
          cSet.setToggle(Purpose.FILL, true);
+      if (symmetry == SS)
+      {
+         cSet.disable(Purpose.CP1);
+         cSet.disable(Purpose.CP2);
+         cSet.disable(Purpose.CPBOTH);
+         cSet.disable(Purpose.ACP1);
+         cSet.disable(Purpose.ACP2);
+         cSet.disable(Purpose.ACPBOTH);
+      }
+      else if (symmetry == SA || symmetry == DS)
+      {
+         cSet.enable(Purpose.CP1);
+         cSet.enable(Purpose.CP2);
+         cSet.enable(Purpose.CPBOTH);
+         cSet.disable(Purpose.ACP1);
+         cSet.disable(Purpose.ACP2);
+         cSet.disable(Purpose.ACPBOTH);
+      }
+      else
+      {
+         cSet.enable(Purpose.CP1);
+         cSet.enable(Purpose.CP2);
+         cSet.enable(Purpose.CPBOTH);
+         cSet.enable(Purpose.ACP1);
+         cSet.enable(Purpose.ACP2);
+         cSet.enable(Purpose.ACPBOTH);
+      }
+      cSet.setToggle(activeCP-Purpose.CP1, true);
       cSet.setComboIndex(Purpose.XFORMCB, xform);
+      cSet.setComboIndex(Purpose.PATTERN, symmetry);
       cSet.setLabel(Purpose.LINEWIDTH, formatLT(lineWidth));
       cSet.toggling(true);
       cSet.setHostName(name);
@@ -78,14 +124,20 @@ class RegularPolycurve : LineSet
       altColor = other.altColor.copy();
       lineWidth = other.lineWidth;
       sides = other.sides;
+      symmetry = other.symmetry;
+      activeCP = other.activeCP;
       target = other.target;
       maxTarget = other.maxTarget;
-      inner = other.inner;
-      outer = other.outer;
-      cangle = other.cangle;
-      laglead= other.laglead;
-      prop = other.prop;
-      alternating = other.alternating;
+      joinRadius = other.joinRadius;
+      joinAngle = other.joinAngle;
+      cp1Radius = other.cp1Radius;
+      cp2Radius = other.cp2Radius;
+      cp1Angle = other.cp1Angle;
+      cp2Angle = other.cp2Angle;
+      cp1ARadius = other.cp1ARadius;
+      cp2ARadius = other.cp2ARadius;
+      cp1AAngle = other.cp1AAngle;
+      cp2AAngle = other.cp2AAngle;
       constructBase();
       les = other.les;
       fill = other.fill;
@@ -102,27 +154,31 @@ class RegularPolycurve : LineSet
    {
       string s = "Regular Polycurve "~to!string(++nextOid);
       super(w, parent, s, AC_REGPOLYCURVE);
-      altColor = new RGBA(0,0,0,1);
+      group = ACGroups.GEOMETRIC;
+      altColor = new RGBA(1,1,1,1);
       les  = true;
       if (width > height)
       {
-         target = 0.1*height;
+         target = 0.25*height;
          maxTarget = height;
       }
       else
       {
-         target = 0.1*width;
+         target = 0.25*width;
          maxTarget = width;
       }
-      inner = 0;
-      outer = target*10;
-      cangle = 0;
-      laglead = 0;
-      cpos = Purpose.C11;
-      alternating = false;
-      prop = 0.2;
-      center.x = width/2;
-      center.y = height/2;
+      joinRadius = 2*target;
+      joinAngle = 0;
+      cp1Radius = 2*target;
+      cp1ARadius = 2*target;
+      cp1Angle = 0;
+      cp1AAngle = 0;
+      cp2Radius = 2*target;
+      cp2ARadius = 2*target;
+      cp2Angle = 0;
+      cp2AAngle = 0;
+      center.x = 0.5*width;
+      center.y = 0.5*height;
       sides = w.config.polySides;
       lineWidth = 0.5;
       constructBase();
@@ -137,48 +193,28 @@ class RegularPolycurve : LineSet
       int vp = cSet.cy;
 
       Label l = new Label("Lobes:");
-      cSet.add(l, ICoord(165, vp-38), Purpose.LABEL);
-      new MoreLess(cSet, 0, ICoord(275, vp-38), true);
+      l.setTooltipText("Equivalent to the sides of a plain-old\npolygon.");
+      cSet.add(l, ICoord(204, vp-38), Purpose.LABEL);
+      new MoreLess(cSet, 0, ICoord(305, vp-38), true);
       numSides = new Label("6");
       cSet.add(numSides, ICoord(310, vp-38), Purpose.LABEL);
 
-      l = new Label("Target Radius");
-      cSet.add(l, ICoord(165, vp-18), Purpose.LABEL);
-      new MoreLess(cSet, 1, ICoord(275, vp-18), true);
+      l = new Label("Base Radius");
+      l.setTooltipText("The 'radius' of a corresponding polygon.");
+      cSet.add(l, ICoord(204, vp-18), Purpose.LABEL);
+      new MoreLess(cSet, 1, ICoord(305, vp-18), true);
 
-      l = new Label("Outer Control");
-      cSet.add(l, ICoord(165, vp+2), Purpose.LABEL);
-      new MoreLess(cSet, 2, ICoord(275, vp+2), true);
-
-      l = new Label("Inner Control");
-      cSet.add(l, ICoord(165, vp+22), Purpose.LABEL);
-      new MoreLess(cSet, 3, ICoord(275, vp+22), true);
-
-      l = new Label("Control Spread");
-      cSet.add(l, ICoord(165, vp+42), Purpose.LABEL);
-      new MoreLess(cSet, 4, ICoord(275, vp+42), true);
-
-      l = new Label("Lag/Lead Angle");
-      cSet.add(l, ICoord(165, vp+62), Purpose.LABEL);
-      new MoreLess(cSet, 5, ICoord(275, vp+62), true);
-
-      new InchTool(cSet, 0, ICoord(0, vp+5), true);
-
-
-      l = new Label("Control Points");
-      cSet.add(l, ICoord(0, vp+82), Purpose.LABEL);
-      RadioButton cpg = new RadioButton("00");
-      cSet.add(cpg, ICoord(160, vp+82), Purpose.C00);
-      RadioButton gm = new RadioButton(cpg, "01");
-      cSet.add(gm, ICoord(200, vp+82), Purpose.C01);
-      gm = new RadioButton(cpg, "10");
-      cSet.add(gm, ICoord(240, vp+82), Purpose.C10);
-      gm = new RadioButton(cpg, "11");
-      cSet.add(gm, ICoord(280, vp+82), Purpose.C11);
-
-
-      vp += 105;
       ComboBoxText cbb = new ComboBoxText(false);
+      cbb.setTooltipText("Select the form of the 'edges'");
+      cbb.setSizeRequest(100, -1);
+      cbb.appendText("Single Symmetric Curve");
+      cbb.appendText("Single Asymmetric Curve");
+      cbb.appendText("Two Symmetric Curves");
+      cbb.appendText("Two Asymmetric Curves");
+      cbb.setActive(0);
+      cSet.add(cbb, ICoord(0, vp), Purpose.PATTERN);
+
+      cbb = new ComboBoxText(false);
       cbb.setTooltipText("Select transformation to apply");
       cbb.setSizeRequest(100, -1);
       cbb.appendText("Scale");
@@ -190,17 +226,64 @@ class RegularPolycurve : LineSet
       cbb.appendText("Flip-H");
       cbb.appendText("Flip-V");
       cbb.setActive(0);
-      cSet.add(cbb, ICoord(165, vp), Purpose.XFORMCB);
-      new MoreLess(cSet, 6, ICoord(275, vp+5), true);
+      cSet.add(cbb, ICoord(204, vp), Purpose.XFORMCB);
+      new MoreLess(cSet, 2, ICoord(305, vp+5), true);
 
-      vp += 33;
-      CheckButton check = new CheckButton("Alternating");
-      cSet.add(check, ICoord(0, vp), Purpose.ASSTAR);
-      l = new Label("Indent");
+      vp += 45;
+      l = new Label("Control Points");
+      l.setTooltipText("These selections determine which control\npoint(s) will currently be moved by\n'Radius' and 'Angle'.");
+      cSet.add(l, ICoord(0, vp), Purpose.LABEL);
+      RadioButton cpg = new RadioButton("Cp1");
+      cpg.setSensitive(0);
+      cSet.add(cpg, ICoord(165, vp), Purpose.CP1);
+      RadioButton gm = new RadioButton(cpg, "Cp2");
+      gm.setSensitive(0);
+      cSet.add(gm, ICoord(215, vp), Purpose.CP2);
+      gm = new RadioButton(cpg, "Both");
+      gm.setSensitive(0);
+      cSet.add(gm, ICoord(275, vp), Purpose.CPBOTH);
+
+      vp += 20;
+      l = new Label("Alt Control Points");
+      l.setTooltipText("These selections are only used where\nthe curve(s) used are asymmetric.");
+      cSet.add(l, ICoord(0, vp), Purpose.LABEL);
+      gm = new RadioButton(cpg, "Cp1");
+      gm.setSensitive(0);
+      cSet.add(gm, ICoord(165, vp), Purpose.ACP1);
+      gm = new RadioButton(cpg, "Cp2");
+      gm.setSensitive(0);
+      cSet.add(gm, ICoord(215, vp), Purpose.ACP2);
+      gm = new RadioButton(cpg, "Both");
+      gm.setSensitive(0);
+      cSet.add(gm, ICoord(275, vp), Purpose.ACPBOTH);
+
+      vp += 20;
+      l = new Label("Radius");
+      cSet.add(l, ICoord(0, vp), Purpose.LABEL);
+      l.setTooltipText("This tool determines the radial position\nof the selected control point(s).");
+      new MoreLess(cSet, 3, ICoord(45, vp), true);
+      l = new Label("Angle");
+      l.setTooltipText("This tool determines the angular position\nof the selected control point(s).");
+      cSet.add(l, ICoord(78, vp), Purpose.LABEL);
+      new MoreLess(cSet, 4, ICoord(118, vp), true);
+
+      CheckButton check = new CheckButton("Edit mode");
+      check.setTooltipText("Click here to see a simplified view\nof the curve(s) over a the first\n'edge' of the polycurve.");
+      cSet.add(check, ICoord(0, vp+20), Purpose.REDRAW);
+
+      l = new Label("Alt Angle");
+      l.setTooltipText("This angle determines the end point\nof the first Bezier curve when 2 are used.");
       cSet.add(l, ICoord(165, vp), Purpose.LABEL);
-      new MoreLess(cSet, 7, ICoord(275, vp), true);
+      new MoreLess(cSet, 5, ICoord(275, vp), true);
+      l = new Label("Alt Radius");
+      l.setTooltipText("This radius determines the end point\nof the first Bezier curve when 2 are used.");
+      cSet.add(l, ICoord(165, vp+20), Purpose.LABEL);
+      new MoreLess(cSet, 6, ICoord(275, vp+20), true);
 
-      vp += 25;
+      vp += 35;
+      new InchTool(cSet, 0, ICoord(0, vp+5), true);
+
+      vp += 38;
       check = new CheckButton("Fill with color");
       cSet.add(check, ICoord(0, vp), Purpose.FILL);
 
@@ -210,7 +293,7 @@ class RegularPolycurve : LineSet
       Button b = new Button("Fill Color");
       cSet.add(b, ICoord(240, vp-5), Purpose.FILLCOLOR);
 
-      cSet.cy = vp+30;
+      cSet.cy = vp+20;
    }
 
    override void afterDeserialize()
@@ -219,70 +302,90 @@ class RegularPolycurve : LineSet
       dirty = true;
    }
 
-   override bool specificNotify(Widget w, Purpose wid)
+   override bool specificNotify(Widget w, Purpose p)
    {
       focusLayout();
-      switch (wid)
+      if (p >= Purpose.CP1 && p <= Purpose.ACPBOTH)
       {
-      case Purpose.C00:
-         lastOp = pushC!int(this, cpos, OP_C00);
-         break;
-      case Purpose.C01:
-         lastOp = pushC!int(this, cpos, OP_C01);
-         break;
-      case Purpose.C10:
-         lastOp = pushC!int(this, cpos, OP_C10);
-         break;
-      case Purpose.C11:
-         lastOp = pushC!int(this, cpos, OP_C11);
-         break;
-      case Purpose.ASSTAR:
-         lastOp = push!bool(this, alternating, OP_ALIGN);
-         alternating = !alternating;
+         if ((cast(ToggleButton) w).getActive())
+         {
+            if (activeCP == p-Purpose.CP1)
+               return true;
+            lastOp = push!int(this, activeCP, OP_IV0);
+            activeCP = p-Purpose.CP1;
+         }
          return true;
-      default:
-         return false;
       }
-      cpos = wid;
-      constructBase();
-      return true;
+      if (p == Purpose.REDRAW)
+      {
+         editMode = !editMode;
+         return true;
+      }
+      if (p == Purpose.PATTERN)
+      {
+         lastOp = push!int(this, symmetry, OP_ALIGN);
+         symmetry = (cast(ComboBoxText) w).getActive();
+         if (symmetry == SS)
+         {
+            cSet.disable(Purpose.CP1);
+            cSet.disable(Purpose.CP2);
+            cSet.disable(Purpose.CPBOTH);
+            cSet.disable(Purpose.ACP1);
+            cSet.disable(Purpose.ACP2);
+            cSet.disable(Purpose.ACPBOTH);
+         }
+         else if (symmetry == SA || symmetry == DS)
+         {
+            cSet.enable(Purpose.CP1);
+            cSet.enable(Purpose.CP2);
+            cSet.enable(Purpose.CPBOTH);
+            cSet.disable(Purpose.ACP1);
+            cSet.disable(Purpose.ACP2);
+            cSet.disable(Purpose.ACPBOTH);
+         }
+         else
+         {
+            cSet.enable(Purpose.CP1);
+            cSet.enable(Purpose.CP2);
+            cSet.enable(Purpose.CPBOTH);
+            cSet.enable(Purpose.ACP1);
+            cSet.enable(Purpose.ACP2);
+            cSet.enable(Purpose.ACPBOTH);
+         }
+         constructBase();
+         return true;
+      }
+      else
+         return false;
    }
 
    override bool specificUndo(CheckPoint cp)
    {
       switch (cp.type)
       {
+      case OP_IV1:
+         sides = cp.iVal;
+         break;
       case OP_TARGET:
-         inner = cp.dVal;
-         break;
-      case OP_INNER:
-         inner = cp.dVal;
-         break;
-      case OP_OUTER:
-         outer = cp.dVal;
-         break;
-      case OP_CANGLE:
-         cangle = cp.dVal;
+         target = cp.dVal;
          break;
       case OP_LAGLEAD:
-         laglead = cp.dVal;
+         joinAngle = cp.dVal;
          break;
-      case OP_PROP:
-         prop = cp.dVal;
+      case OP_ALTRADIUS:
+         joinRadius = cp.dVal;
+         break;
+      case OP_RPCCP:
+         restoreCPState(cp.rpccp);
          break;
       case OP_ALIGN:
-         alternating = cp.boolVal;
-         cSet.toggling(false);
-         cSet.setToggle(Purpose.ASSTAR, alternating);
-         cSet.toggling(false);
+         symmetry = cp.iVal;
+         cSet.setComboIndex(Purpose.PATTERN, symmetry);
          break;
-      case OP_C00:
-      case OP_C01:
-      case OP_C10:
-      case OP_C11:
-         cpos = cast(Purpose) cp.iVal;
+      case OP_IV0:
+         activeCP = cp.iVal;
          cSet.toggling(false);
-         cSet.setToggle(cpos, true);
+         cSet.setToggle(Purpose.CP1+activeCP, true);
          cSet.toggling(false);
          break;
       default:
@@ -291,7 +394,189 @@ class RegularPolycurve : LineSet
       lastOp = OP_UNDEF;
       constructBase();
       dirty = true;
-      return true;;
+      return true;
+   }
+
+   void restoreCPState(RPCCP rpccp)
+   {
+      if (rpccp.radial)
+      {
+         cp1Radius = rpccp.d1;
+         cp2Radius = rpccp.d2;
+         cp1ARadius = rpccp.d3;
+         cp2ARadius = rpccp.d4;
+      }
+      else
+      {
+         cp1Angle = rpccp.d1;
+         cp2Angle = rpccp.d2;
+         cp1AAngle = rpccp.d3;
+         cp2AAngle = rpccp.d4;
+      }
+   }
+
+   void modifyRadius(double d)
+   {
+      if (symmetry == SS)
+      {
+         cp1Radius += d;
+         cp2Radius += d;
+      }
+      else if (symmetry == SA)
+      {
+         switch (activeCP)
+         {
+            case 0:
+               cp1Radius += d;
+               break;
+            case 1:
+               cp2Radius += d;
+               break;
+            case 2:
+               cp1Radius += d;
+               cp2Radius += d;
+               break;
+            default:
+               break;
+         }
+      }
+      else if (symmetry == DS)
+      {
+         switch (activeCP)
+         {
+            case 0:
+               cp1Radius += d;
+               cp2ARadius += d;
+               break;
+            case 1:
+               cp2Radius += d;
+               cp1ARadius += d;
+               break;
+            case 2:
+               cp1Radius += d;
+               cp2ARadius += d;
+               cp1ARadius += d;
+               cp2Radius += d;
+               break;
+            default:
+               break;
+         }
+      }
+      else
+      {
+         switch (activeCP)
+         {
+            case 0:
+               cp1Radius += d;
+               break;
+            case 1:
+               cp2Radius += d;
+               break;
+            case 2:
+               cp1Radius += d;
+               cp2Radius += d;
+               break;
+            case 3:
+               cp1ARadius += d;
+               break;
+            case 4:
+               cp2ARadius += d;
+               break;
+            case 5:
+               cp1ARadius += d;
+               cp2ARadius += d;
+               break;
+            default:
+               break;
+         }
+      }
+   }
+
+   void modifyAngle(double d)
+   {
+      if (symmetry == SS)
+      {
+         cp1Angle += d;
+         cp2Angle -= d;
+      }
+      else if (symmetry == SA)
+      {
+         switch (activeCP)
+         {
+            case 0:
+               cp1Angle += d;
+               break;
+            case 1:
+               cp2Angle += d;
+               break;
+            case 2:
+               cp1Angle += d;
+               cp2Angle += d;
+               break;
+            case 3:
+               cp1AAngle += d;
+               break;
+            case 4:
+               cp2AAngle += d;
+               break;
+            case 5:
+               cp1AAngle += d;
+               cp2AAngle += d;
+               break;
+            default:
+               break;
+         }
+      }
+      else if (symmetry == DS)
+      {
+         switch (activeCP)
+         {
+            case 0:
+               cp1Angle += d;
+               cp2AAngle -= d;
+               break;
+            case 1:
+               cp2Angle += d;
+               cp1AAngle -= d;
+               break;
+            case 2:
+               cp1Angle += d;
+               cp2AAngle -= d;
+               cp2Angle += d;
+               cp1AAngle -= d;
+               break;
+            default:
+               break;
+         }
+      }
+      else
+      {
+         switch (activeCP)
+         {
+            case 0:
+               cp1Angle += d;
+               break;
+            case 1:
+               cp2Angle += d;
+               break;
+            case 2:
+               cp1Angle += d;
+               cp2Angle += d;
+               break;
+            case 3:
+               cp1AAngle += d;
+               break;
+            case 4:
+               cp2AAngle += d;
+               break;
+            case 5:
+               cp1AAngle += d;
+               cp2AAngle += d;
+               break;
+            default:
+               break;
+         }
+      }
    }
 
    override void onCSMoreLess(int instance, bool more, bool much)
@@ -301,7 +586,6 @@ class RegularPolycurve : LineSet
 
       void doSides()
       {
-         lastOp = pushC!int(this, sides, OP_IV1);
          if (more)
             sides++;
          else
@@ -315,7 +599,6 @@ class RegularPolycurve : LineSet
 
       void doTarget()
       {
-         lastOp = pushC!double(this, inner, OP_TARGET);
          double delta = 1;
          if (much) delta *= 5;
          if (more)
@@ -335,137 +618,100 @@ class RegularPolycurve : LineSet
          constructBase();
       }
 
-      void doOuter()
+      void doCpRadius()
       {
-         lastOp = pushC!double(this, outer, OP_OUTER);
-         double delta = 1;
-         if (much) delta *= 5;
-         if (more)
-            outer += delta;
-         else
-         {
-            if (outer-delta < target)
-               outer = target;
-            else
-               outer -= delta;
-         }
-         constructBase();
-      }
-
-      void doInner()
-      {
-         lastOp = pushC!double(this, inner, OP_INNER);
          double delta = 1;
          if (much) delta *= 5;
          if (more)
          {
-            if (inner+delta > target)
-               inner = target;
-            else
-               inner += delta;
+            modifyRadius(delta);
          }
          else
          {
-            if (inner-delta < 0)
-               inner = 0;
+            if (target-delta < 0)
+               modifyRadius(0);
             else
-               inner -= delta;
+               modifyRadius(-delta);
          }
          constructBase();
       }
 
-      void doCangle()
+      void doCpAngle()
       {
-         lastOp = pushC!double(this, cangle, OP_CANGLE);
-         double delta = 0.01;
+         double delta = rads;  // One degree
          if (much) delta *= 5;
          if (more)
          {
-            if (cangle+delta > 1)
-               cangle = 1;
-            else
-               cangle += delta;
+            modifyAngle(delta);
          }
          else
          {
-            if (cangle-delta < -1)
-               cangle = -1;
-            else
-               cangle -= delta;
+            modifyAngle(-delta);
          }
          constructBase();
       }
 
-      void doLagLead()
+      void doJoinAngle()
       {
-         lastOp = pushC!double(this, laglead, OP_LAGLEAD);
-         double delta = 0.01;
+         double delta = rads;  // One degree
+         if (much) delta *= 5;
+         if (more)
+            joinAngle += delta;
+         else
+            joinAngle -= delta;
+         constructBase();
+      }
+
+      void doJoinRadius()
+      {
+         double delta = 1;
          if (much) delta *= 5;
          if (more)
          {
-            if (laglead+delta > 1)
-               laglead = 1;
-            else
-               laglead += delta;
+               joinRadius += delta;
          }
          else
          {
-            if (laglead-delta < -1)
-               laglead = -1;
+            if (joinRadius-delta < 0.1)
+               joinRadius = 0.1;
             else
-               laglead -= delta;
+               joinRadius -= delta;
          }
          constructBase();
       }
 
-      void doProp()
-      {
-         lastOp = pushC!double(this, prop, OP_PROP);
-         double delta = 0.01;
-         if (much) delta *= 5;
-         if (more)
-         {
-            if (prop+delta > 1)
-               prop = 1;
-            else
-               prop += delta;
-         }
-         else
-         {
-            if (prop-delta < 0.05)
-               prop = 0.05;
-            else
-               prop -= delta;
-         }
-         constructBase();
-      }
 
       switch (instance)
       {
          case 0:
+            lastOp = pushC!int(this, sides, OP_IV1);
             doSides();
             break;
          case 1:
+            lastOp = pushC!double(this, target, OP_TARGET);
             doTarget();
             break;
          case 2:
-            doOuter();
-            break;
-         case 3:
-            doInner();
-            break;
-         case 4:
-            doCangle();
-            break;
-         case 5:
-            doLagLead();
-            break;
-         case 6:
             modifyTransform(xform, more, much);
             dirty = true;
             break;
-         case 7:
-            doProp();
+         case 3:
+            RPCCP rpccp = RPCCP(true, cp1Radius, cp2Radius, cp1ARadius, cp2ARadius);
+            lastOp = pushC!(RPCCP)(this, rpccp, OP_RPCCP);
+            doCpRadius();
+            break;
+         case 4:
+            RPCCP rpccp = RPCCP(false, cp1Angle, cp2Angle, cp1AAngle, cp2AAngle);
+            lastOp = pushC!(RPCCP)(this, rpccp, OP_RPCCP);
+            doCpAngle();
+            break;
+         case 5:
+            lastOp = pushC!double(this, joinAngle, OP_LAGLEAD);
+            doJoinAngle();
+            break;
+         case 6:
+            lastOp = pushC!double(this, joinRadius, OP_ALTRADIUS);
+            doJoinRadius();
             break;
          default:
             return;
@@ -475,6 +721,12 @@ class RegularPolycurve : LineSet
       reDraw();
    }
 
+   static void moveCoord(ref Coord p, double distance, double angle)
+   {
+      p.x += cos(angle)*distance;
+      p.y -= sin(angle)*distance;
+   }
+
    override void preResize(int oldW, int oldH)
    {
       center.x = width/2;
@@ -482,136 +734,233 @@ class RegularPolycurve : LineSet
       double hr = cast(double) width/oldW;
       double vr = cast(double) height/oldH;
       tm.initScale(hr, vr);
-      for (int i = 0; i < oPath.length; i++)
-      {
-         tm.transformPoint(oPath[i].x, oPath[i].y);
-      }
       hOff *= hr;
       vOff *= vr;
    }
 
    void constructBase()
    {
-      int side = 0;
       double theta = (PI*2)/sides;
+      double ha = theta/2;
       double a = 0;
-      double ra = cangle*theta;
-      double ll = laglead*theta;
-      bool c1out = (cpos == Purpose.C10 || cpos == Purpose.C11);
-      bool c2out = (cpos == Purpose.C01 || cpos == Purpose.C11);
-      double p = alternating? prop: 1;
 
-      bool alt()
+      if (symmetry == SS || symmetry == SA)
       {
-         if (!alternating)
-            return false;
-         return (!(sides & 1) && !(side & 1));
-      }
-
-      pcPath.length = sides;
-      pcPath[0].start.x = (alt? 1: p)*target*cos(a);
-      pcPath[0].start.y = (alt? 1: p)*target*sin(a);
-      if (c1out)
-      {
-         pcPath[0].cp1.x = outer*cos(a+ra+ll);
-         pcPath[0].cp1.y = outer*sin(a+ra+ll);
+         pcPath.length = sides;
+         for (int i = 0; i < sides; i++)
+         {
+            pcPath[i].start.x = target*cos(a);
+            pcPath[i].start.y = target*sin(a);
+            pcPath[i].cp1.x = cp1Radius*cos(a+cp1Angle);
+            pcPath[i].cp1.y = cp1Radius*sin(a+cp1Angle);
+            a += theta;
+            pcPath[i].cp2.x = cp2Radius*cos(a+cp2Angle);
+            pcPath[i].cp2.y = cp2Radius*sin(a+cp2Angle);
+            pcPath[i].end.x = target*cos(a);
+            pcPath[i].end.y = target*sin(a);
+         }
       }
       else
       {
-         pcPath[0].cp1.x = inner*cos(a+ra+ll);
-         pcPath[0].cp1.y = inner*sin(a+ra+ll);
+         pcPath.length = sides*2;
+         int j = 0;
+         for (int i = 0; i < sides; i++)
+         {
+            pcPath[j].start.x = target*cos(a);
+            pcPath[j].start.y = target*sin(a);
+            pcPath[j].cp1.x = cp1Radius*cos(a+cp1Angle);
+            pcPath[j].cp1.y = cp1Radius*sin(a+cp1Angle);
+            a += ha;
+            pcPath[j].cp2.x = cp2Radius*cos(a+cp2Angle);
+            pcPath[j].cp2.y = cp2Radius*sin(a+cp2Angle);
+            pcPath[j].end.x = joinRadius*cos(a+joinAngle);
+            pcPath[j].end.y = joinRadius*sin(a+joinAngle);
+            j++;
+            pcPath[j].start.x = joinRadius*cos(a+joinAngle);
+            pcPath[j].start.y = joinRadius*sin(a+joinAngle);
+            pcPath[j].cp1.x = cp1ARadius*cos(a+joinAngle+cp1AAngle);
+            pcPath[j].cp1.y = cp1ARadius*sin(a+joinAngle+cp1AAngle);
+            a += ha;
+            pcPath[j].cp2.x = cp2ARadius*cos(a+cp2AAngle);
+            pcPath[j].cp2.y = cp2ARadius*sin(a+cp2AAngle);
+            pcPath[j].end.x = target*cos(a);
+            pcPath[j].end.y = target*sin(a);
+            j++;
+         }
       }
+      for (int i = 0; i < pcPath.length; i++)
+      {
+         pcPath[i].start.x += center.x;
+         pcPath[i].start.y += center.y;
+         pcPath[i].cp1.x += center.x;
+         pcPath[i].cp1.y += center.y;
+         pcPath[i].cp2.x += center.x;
+         pcPath[i].cp2.y += center.y;
+         pcPath[i].end.x += center.x;
+         pcPath[i].end.y += center.y;
+      }
+   }
+
+   void renderActual(Context c)
+   {
+      c.setAntialias(cairo_antialias_t.SUBPIXEL);
+      c.setLineWidth(0);
+      c.setLineJoin(les? CairoLineJoin.MITER: CairoLineJoin.ROUND);
+
+      c.translate(hOff+center.x, vOff+center.y);
+      if (compoundTransform())
+         c.transform(tm);
+      c.translate(-center.x, -center.y);
+/*
+      double theta = (PI*2)/sides;
+      double a = 0;
+      c.moveTo(center.x+target*cos(a), center.y+target*sin(a));
       for (int i = 1; i < sides; i++)
       {
          a += theta;
-         if (c2out)
-         {
-            pcPath[i-1].cp2.x = outer*cos(a-ra+ll);
-            pcPath[i-1].cp2.y = outer*sin(a-ra+ll);
-         }
-         else
-         {
-            pcPath[i-1].cp2.x = inner*cos(a-ra+ll);
-            pcPath[i-1].cp2.y = inner*sin(a-ra+ll);
-         }
-         side++;
-         pcPath[i-1].end.x = (alt? 1: p)*target*cos(a);
-         pcPath[i-1].end.y = (alt? 1: p)*target*sin(a);
-         pcPath[i].start.x = (alt? 1: p)*target*cos(a);
-         pcPath[i].start.y = (alt? 1: p)*target*sin(a);
-         if (c1out)
-         {
-            pcPath[i].cp1.x = outer*cos(a+ra+ll);
-            pcPath[i].cp1.y = outer*sin(a+ra+ll);
-         }
-         else
-         {
-            pcPath[i].cp1.x = inner*cos(a+ra+ll);
-            pcPath[i].cp1.y = inner*sin(a+ra+ll);
-         }
+         c.lineTo(center.x+target*cos(a), center.y+target*sin(a));
       }
-      a += theta;
-      int n = pcPath.length-1;
-      if (c2out)
-      {
-         pcPath[n].cp2.x = outer*cos(a-ra+ll);
-         pcPath[n].cp2.y = outer*sin(a-ra+ll);
-      }
-      else
-      {
-         pcPath[n].cp2.x = inner*cos(a-ra+ll);
-         pcPath[n].cp2.y = inner*sin(a-ra+ll);
-      }
-      side++;
-      pcPath[n].end.x = (alt? 1: p)*target*cos(a);
-      pcPath[n].end.y = (alt? 1: p)*target*sin(a);
-      dirty = true;
+      c.closePath();
+      c.stroke();
+*/
+      c.moveTo(pcPath[0].start.x, pcPath[0].start.y);
+      for (int i = 0; i < pcPath.length; i++)
+         c.curveTo(pcPath[i].cp1.x, pcPath[i].cp1.y, pcPath[i].cp2.x, pcPath[i].cp2.y, pcPath[i].end.x, pcPath[i].end.y);
+      c.closePath();
+      strokeAndFill(c, lineWidth, solid, fill);
+
    }
 
-   override void transformPath(bool mValid)
+   void renderEditS(Context c)
    {
-      pcRPath = pcPath.dup;
-      for (int i = 0; i < pcRPath.length; i++)
-      {
-         if (mValid)
-         {
-            tm.transformPoint(pcRPath[i].start.x, pcRPath[i].start.y);
-            tm.transformPoint(pcRPath[i].cp1.x, pcRPath[i].cp1.y);
-            tm.transformPoint(pcRPath[i].cp2.x, pcRPath[i].cp2.y);
-            tm.transformPoint(pcRPath[i].end.x, pcRPath[i].end.y);
-         }
-         pcRPath[i].start.x += center.x;
-         pcRPath[i].start.y += center.y;
-         pcRPath[i].cp1.x += center.x;
-         pcRPath[i].cp1.y += center.y;
-         pcRPath[i].cp2.x += center.x;
-         pcRPath[i].cp2.y += center.y;
-         pcRPath[i].end.x += center.x;
-         pcRPath[i].end.y += center.y;
-      }
+      double u = 0.25*height;
+      double w = width, h = height;
+      double hw = w/2, hh = h/2;
+      double a0 = 0;
+      double theta=2*PI/6;
+      c.setLineWidth(0.5);
+
+      Coord start = Coord(target*cos(0), target*sin(0));
+      Coord end = Coord(target*cos(theta), target*sin(theta));
+      Coord cp1 = Coord(cp1Radius*cos(cp1Angle), cp1Radius*sin(cp1Angle));
+      Coord cp2 = Coord(cp2Radius*cos(theta+cp2Angle), cp2Radius*sin(theta+cp2Angle));
+      start.y += u;
+      cp1.y += u;
+      cp2.y += u;
+      end.y += u;
+
+
+      c.moveTo(0, u);
+      c.lineTo(start.x, start.y);
+      c.lineTo(end.x, end.y);
+      c.closePath();
+      c.stroke();
+
+      c.moveTo(cp1.x-3, cp1.y+3);
+      c.lineTo(cp1.x+3, cp1.y+3);
+      c.lineTo(cp1.x, cp1.y-3);
+      c.closePath();
+      c.setSourceRgb(0,0,0);
+      c.strokePreserve();
+      c.fill();
+
+      c.moveTo(cp2.x-3, cp2.y+3);
+      c.lineTo(cp2.x+3, cp2.y+3);
+      c.lineTo(cp2.x, cp2.y-3);
+      c.closePath();
+      c.setSourceRgb(0,0,1);
+      c.strokePreserve();
+      c.fill();
+
+      c.moveTo(start.x, start.y);
+      c.curveTo(cp1.x, cp1.y, cp2.x, cp2.y, end.x, end.y);
+      c.setSourceRgb(1,0,0);
+      c.stroke();
+   }
+
+   void renderEditD(Context c)
+   {
+      double u = 0.25*height;
+      double w = width, h = height;
+      double hw = w/2, hh = h/2;
+      double theta = 2*PI/6;
+      double ha = theta/2;
+      c.setLineWidth(0.5);
+
+      Coord start = Coord(target*cos(0), target*sin(0));
+      Coord cp1 = Coord(cp1Radius*cos(cp1Angle), cp1Radius*sin(cp1Angle));
+      Coord cp2 = Coord(cp2Radius*cos(theta/2+cp2Angle), cp2Radius*sin(theta/2+cp2Angle));
+      Coord join = Coord(joinRadius*cos(theta/2+joinAngle), joinRadius*sin(theta/2+joinAngle));
+      Coord cp1A = Coord(cp1ARadius*cos(theta/2+joinAngle+cp1AAngle), cp1ARadius*sin(theta/2+joinAngle+cp1AAngle));
+      Coord cp2A = Coord(cp2ARadius*cos(theta+cp2AAngle), cp2ARadius*sin(theta+cp2AAngle));
+      Coord end = Coord(target*cos(theta), target*sin(theta));
+      start.y += u;
+      cp1.y += u;
+      cp2.y += u;
+      join.y += u;
+      cp1A.y += u;
+      cp2A.y += u;
+      end.y += u;
+
+
+      c.moveTo(0, u);
+      c.lineTo(start.x, start.y);
+      c.lineTo(end.x, end.y);
+      c.closePath();
+      c.stroke();
+
+      c.moveTo(cp1.x-3, cp1.y+3);
+      c.lineTo(cp1.x+3, cp1.y+3);
+      c.lineTo(cp1.x, cp1.y-3);
+      c.closePath();
+      c.setSourceRgb(0,0,0);
+      c.strokePreserve();
+      c.fill();
+
+      c.moveTo(cp2.x-3, cp2.y+3);
+      c.lineTo(cp2.x+3, cp2.y+3);
+      c.lineTo(cp2.x, cp2.y-3);
+      c.closePath();
+      c.setSourceRgb(0,0,1);
+      c.strokePreserve();
+      c.fill();
+
+      c.moveTo(cp1A.x-3, cp1A.y+3);
+      c.lineTo(cp1A.x+3, cp1A.y+3);
+      c.lineTo(cp1A.x, cp1A.y-3);
+      c.closePath();
+      c.setSourceRgb(1,1,0);
+      c.strokePreserve();
+      c.fill();
+
+      c.moveTo(cp2A.x-3, cp2A.y+3);
+      c.lineTo(cp2A.x+3, cp2A.y+3);
+      c.lineTo(cp2A.x, cp2A.y-3);
+      c.closePath();
+      c.setSourceRgb(0,1,1);
+      c.strokePreserve();
+      c.fill();
+
+      c.moveTo(start.x, start.y);
+      c.curveTo(cp1.x, cp1.y, cp2.x, cp2.y, join.x, join.y);
+      c.setSourceRgb(0,1,0);
+      c.stroke();
+      c.moveTo(join.x, join.y);
+      c.curveTo(cp1A.x, cp1A.y, cp2A.x, cp2A.y, end.x, end.y);
+      c.setSourceRgb(1,0,0);
+      c.stroke();
    }
 
    override void render(Context c)
    {
-      c.setAntialias(cairo_antialias_t.SUBPIXEL);
-      c.setLineWidth(lineWidth);
-      c.setLineJoin(les? CairoLineJoin.MITER: CairoLineJoin.ROUND);
-      if (dirty)
+      if (editMode && !printFlag)
       {
-         transformPath(compoundTransform());
-         dirty = false;
+         if (symmetry == SS || symmetry == SA)
+            renderEditS(c);
+         else
+            renderEditD(c);
       }
-      c.moveTo(hOff+pcRPath[0].start.x, vOff+pcRPath[0].start.y);
-      for (int i = 0; i < pcRPath.length; i++)
-      {
-         c.curveTo(hOff+pcRPath[i].cp1.x, vOff+pcRPath[i].cp1.y, hOff+pcRPath[i].cp2.x, vOff+pcRPath[i].cp2.y, hOff+pcRPath[i].end.x, vOff+pcRPath[i].end.y);
-      }
-      c.closePath();
-      c.setSourceRgb(baseColor.red, baseColor.green, baseColor.blue);
-      if (!(solid || fill))
-         c.stroke();
       else
-         doFill(c, solid, fill);
-      if (!isMoved) cSet.setDisplay(0, reportPosition());
+         renderActual(c);
    }
 }

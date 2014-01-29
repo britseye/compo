@@ -7,7 +7,7 @@
 // Written in the D programming language
 module text;
 
-import main;
+import mainwin;
 import acomp;
 import tvitem;
 import common;
@@ -98,7 +98,7 @@ class PlainText : TextViewItem
    {
       int vp = cSet.cy;
 
-      new InchTool(cSet, 0, ICoord(0, vp), false);
+      new InchTool(cSet, 0, ICoord(0, vp+6), false);
 
       CheckButton cb = new CheckButton("Center Text");
       cb.setSensitive(0);
@@ -140,12 +140,12 @@ class PlainText : TextViewItem
          shrink2Fit = !shrink2Fit;
          break;
       default:
-         return false;;
+         return false;
       }
       return true;
    }
 
-   void toggleView()
+   override void toggleView()
    {
       if (editMode)
       {
@@ -167,6 +167,13 @@ class PlainText : TextViewItem
          cSet.enable(Purpose.SHRINK2FIT);
          cSet.enable(Purpose.INCH, 0);
          dframe.show();
+         string txt=tb.getText();
+         if (txt.length)
+         {
+            if (txt.length > 20)
+               txt = txt[0..20];
+            setName(txt);
+         }
          da.show();
       }
       aw.dirty = true;

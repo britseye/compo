@@ -7,7 +7,7 @@
 // Written in the D programming language
 module triangle;
 
-import main;
+import mainwin;
 import constants;
 import acomp;
 import common;
@@ -64,7 +64,7 @@ class Triangle : LineSet
       cSet.setHostName(name);
    }
 
-   void afterDeserialize()
+   override void afterDeserialize()
    {
       figurePath();
       syncControls();
@@ -95,8 +95,9 @@ class Triangle : LineSet
    {
       string s = "Triangle "~to!string(++nextOid);
       super(appw, parent, s, AC_TRIANGLE);
+      group = ACGroups.SHAPES;
       hOff = vOff = 0;
-      altColor = new RGBA(0,0,0,1);
+      altColor = new RGBA(1,1,1,1);
       h = 0.75*height;
       w = 0.75*width;
       center = Coord(0.5*width, 0.5*height);
@@ -181,11 +182,6 @@ class Triangle : LineSet
       vOff *= vr;
    }
 
-   string reportPosition(int id = 0)
-   {
-      return formatCoord(Coord(hOff, vOff));
-   }
-
    void figurePath()
    {
       oPath.length = 3;
@@ -249,6 +245,7 @@ class Triangle : LineSet
       }
       c.setLineWidth(lineWidth/((tf.hScale+tf.vScale)/2));
       c.setLineJoin(les? CairoLineJoin.MITER: CairoLineJoin.ROUND);
+
       c.translate(hOff+center.x, vOff+center.y);
       if (compoundTransform())
          c.transform(tm);
@@ -258,13 +255,7 @@ class Triangle : LineSet
       c.lineTo(oPath[1].x, oPath[1].y);
       c.lineTo(oPath[2].x, oPath[2].y);
       c.closePath();
-
-      c.setSourceRgb(baseColor.red,baseColor.green, baseColor.blue);
-      if (!(solid || fill))
-         c.stroke();
-      else
-         doFill(c, solid, fill);
-      if (!isMoved) cSet.setDisplay(0, reportPosition());
+      strokeAndFill(c, lineWidth, solid, fill);
    }
 }
 

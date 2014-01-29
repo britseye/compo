@@ -19,7 +19,7 @@ import std.datetime;
 
 import acomp;
 import tvitem;
-import main;
+import mainwin;
 import csv;
 import textsrc;
 import text;

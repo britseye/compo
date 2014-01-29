@@ -7,7 +7,7 @@
 // Written in the D programming language
 module random;
 
-import main;
+import mainwin;
 import constants;
 import acomp;
 import common;
@@ -77,6 +77,7 @@ class Random: LineSet
    {
       string s = "Random "~to!string(++nextOid);
       super(w, parent, s, AC_RANDOM);
+      group = ACGroups.EFFECTS;
       hOff = vOff = 0;
       lowerPc = 10;
       upperPc = 40;
@@ -296,7 +297,7 @@ class Random: LineSet
          foreach (ShapeInfo s; si)
          {
             Coord[7] t;
-            t[] = crd;
+            t[] = (crd)[];
             for (int i = 0; i < 7; i++)
             {
                t[i].x *= s.c1*height;

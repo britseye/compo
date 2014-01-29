@@ -17,7 +17,7 @@ import common;
 import types;
 import acomp;
 import container;
-import main;
+import mainwin;
 import treeops;
 import text;
 import uspsib;
@@ -50,6 +50,9 @@ import pointset;
 import strokeset;
 import regpc;
 import crescent;
+import moon;
+import triangle;
+import brushdabs;
 
 import gtk.FileChooserDialog;
 import gtk.FileFilter;
@@ -96,6 +99,18 @@ class Serializer
       return s;
    }
 
+   private string partColorArray2S(PartColor[] a)
+   {
+      string s="";
+      foreach (int i, PartColor c; a)
+      {
+         if (i > 0)
+            s ~= ",";
+         s ~= to!string(c.r)~";"~to!string(c.g)~";"~to!string(c.b)~";"~to!string(c.a);
+      }
+      return s;
+   }
+
    private string transform2S(Transform tf)
    {
       string s = to!string(tf.hScale);
@@ -111,12 +126,12 @@ class Serializer
    this(AppWindow w)
    {
       aw = w;
-      root = w.treeOps.tm.root;
+      root = w.tm.root;
    }
 
    void refresh(AppWindow w)
    {
-      root = w.treeOps.tm.root;
+      root = w.tm.root;
    }
 
    bool serialize(bool saveas)
@@ -168,11 +183,13 @@ class Serializer
       else
          id = aw.currentSheet.id;
       os.writeString(mfr~": "~id~"\n\n");
-
       os.writeString("dWidth=" ~ to!string(root.children[0].width) ~ "\n");
-      os.writeString("dHeight=" ~ to!string(root.children[0].height) ~ "\n");
+writefln("dHeight %d", root.children[0].height);
+      //os.writeString("dHeight=" ~ to!string(root.children[0].height) ~ "\n");
+      os.writeString("Any old thing\n");
+writefln("root children %s", to!string(root.children.length));
       os.writeString("rootItems=" ~ to!string(root.children.length) ~ "\n\n");
-
+      /*
       foreach (ACBase acb; root.children)
       {
          switch (acb.type)
@@ -187,6 +204,7 @@ class Serializer
       }
       os.close();
       aw.setFileName(fileName);
+      */
       return true;
    }
 
@@ -219,100 +237,74 @@ class Serializer
       {
       case AC_TEXT:
          return serializeText(acb);
-         break;
       case AC_USPS:
          return serializeUSPS(acb);
-         break;
       case AC_SERIAL:
          return serializeSerial(acb);
-         break;
       case AC_RICHTEXT:
          return serializeRichText(acb);
-         break;
       case AC_ARROW:
          return serializeArrow(acb);
-         break;
       case AC_BEVEL:
          return serializeBevel(acb);
-         break;
+      case AC_BRUSHDABS:
+         return serializeBrushDabs(acb);
       case AC_CIRCLE:
          return serializeCircle(acb);
-         break;
       case AC_CORNER:
          return serializeCorner(acb);
-         break;
       case AC_CRESCENT:
          return serializeCrescent(acb);
-         break;
       case AC_CROSS:
          return serializeCross(acb);
-         break;
       case AC_FANCYTEXT:
          return serializeFancyText(acb);
-         break;
       case AC_FADER:
          return serializeFader(acb);
-         break;
       case AC_HEART:
          return serializeHeart(acb);
-         break;
       case AC_LINE:
          return serializeLine(acb);
-         break;
       case AC_LGRADIENT:
          return serializeLGradient(acb);
-         break;
+      case AC_MOON:
+         return serializeMoon(acb);
       case AC_MORPHTEXT:
          return serializeMorphText(acb);
-         break;
       case AC_PATTERN:
          return serializePattern(acb);
-         break;
       case AC_PIXBUF:
          return serializePixelImage(acb);
-         break;
       case AC_SVGIMAGE:
          return serializeSVGImage(acb);
-         break;
       case AC_POINTSET:
          return serializePointSet(acb);
-         break;
       case AC_POLYGON:
          return serializePolygon(acb);
-         break;
       case AC_POLYCURVE:
          return serializePolycurve(acb);
-         break;
       case AC_RANDOM:
          return serializeRandom(acb);
-         break;
       case AC_RECT:
-         return serializeRect(acb);
-         break;
+         return serializeRectangle(acb);
       case AC_RGRADIENT:
          return serializeRGradient(acb);
-         break;
       case AC_REGPOLYGON:
          return serializeRegularPolygon(acb);
-         break;
       case AC_REGPOLYCURVE:
          return serializeRegularPolycurve(acb);
-         break;
       case AC_SEPARATOR:
          return serializeSeparator(acb);
-         break;
       case AC_STROKESET:
          return serializeStrokeSet(acb);
-         break;
+      case AC_TRIANGLE:
+         return serializeTriangle(acb);
       case AC_REFERENCE:
          return serializeReference(acb);
-         break;
       case AC_DRAWING:
          return serializeDrawing(acb);
-         break;
       default:
          assert(false);
-         break;
       }
    }
 
@@ -485,6 +477,23 @@ class Serializer
       os.writeString(s);
    }
 
+   void serializeBrushDabs(ACBase acb)
+   {
+      BrushDabs o = cast(BrushDabs) acb;
+      string s = basics(acb);
+      s ~= "baseColor=" ~ o.colorString(false) ~ "\n";
+      s ~= "w=" ~ to!string(o.w) ~ "\n";
+      s ~= "tcp=" ~ to!string(o.tcp) ~ "\n";
+      s ~= "bcp=" ~ to!string(o.bcp) ~ "\n";
+      s ~= "nDabs" ~ to!string(o.nDabs) ~ "\n";
+      s ~= "angle=" ~ to!string(o.angle) ~ "\n";
+      s ~= "pointed=" ~ to!string(o.pointed) ~ "\n";
+      s ~= "dontRender=" ~ to!string(o.dontRender) ~ "\n";
+      s ~= "pca=" ~ partColorArray2S(o.pca) ~ "\n";
+      s ~= "\n";
+      os.writeString(s);
+   }
+
    void serializeCircle(ACBase acb)
    {
       Circle o = cast(Circle) acb;
@@ -492,9 +501,7 @@ class Serializer
       s ~= "baseColor=" ~ o.colorString(false) ~ "\n";
       s ~= "altColor=" ~ o.colorString(true) ~ "\n";
       s ~= "lineWidth=" ~ to!string(o.lineWidth) ~ "\n";
-      double sf = (o.tf.hScale+o.tf.vScale)/2;
-      double r = o.radius*sf;
-      s ~= "radius=" ~ to!string(r) ~"\n";
+      s ~= "radius=" ~ to!string(o.radius) ~"\n";
       s ~= "tf=" ~ transform2S(o.tf) ~ "\n";
       s ~= "fill=" ~ to!string(o.fill) ~ "\n";
       s ~= "solid=" ~ to!string(o.solid) ~"\n";
@@ -615,6 +622,22 @@ class Serializer
       s ~= "nStops=" ~ to!string(o.nStops) ~ "\n";
       s ~= "revfade=" ~ to!string(o.revfade) ~ "\n";
       s ~= "orient=" ~ to!string(o.orient) ~ "\n";
+      s ~= "\n";
+      os.writeString(s);
+   }
+
+   void serializeMoon(ACBase acb)
+   {
+      Moon o = cast(Moon) acb;
+      string s = basics(acb);
+      s ~= "baseColor=" ~ o.colorString(false) ~ "\n";
+      s ~= "altColor=" ~ o.colorString(true) ~ "\n";
+      s ~= "lineWidth=" ~ to!string(o.lineWidth) ~ "\n";
+      s ~= "radius=" ~ to!string(o.radius) ~"\n";
+      s ~= "tf=" ~ transform2S(o.tf) ~ "\n";
+      s ~= "fill=" ~ to!string(o.fill) ~ "\n";
+      s ~= "solid=" ~ to!string(o.solid) ~"\n";
+      s ~= "day=" ~ to!string(o.day) ~"\n";
       s ~= "\n";
       os.writeString(s);
    }
@@ -780,9 +803,9 @@ class Serializer
       os.writeString(s);
    }
 
-   void serializeRect(ACBase acb)
+   void serializeRectangle(ACBase acb)
    {
-      rect.Rect o = cast(rect.Rect) acb;
+      rect.Rectangle o = cast(rect.Rectangle) acb;
       string s = basics(acb);
       s ~= "baseColor=" ~ o.colorString(false) ~ "\n";
       s ~= "altColor=" ~ o.colorString(true) ~ "\n";
@@ -832,13 +855,15 @@ class Serializer
       s ~= "fill=" ~ to!string(o.fill) ~ "\n";
       s ~= "solid=" ~ to!string(o.solid) ~ "\n";
       s ~= "target=" ~ to!string(o.target) ~ "\n";
+      /*
       s ~= "inner=" ~ to!string(o.inner) ~ "\n";
       s ~= "outer=" ~ to!string(o.outer) ~ "\n";
       s ~= "cangle=" ~ to!string(o.cangle) ~ "\n";
       s ~= "laglead=" ~ to!string(o.laglead) ~ "\n";
       s ~= "cpos=" ~ to!string(cast(int) o.cpos) ~ "\n";
-      s ~= "alternating=" ~ to!string(o.alternating) ~ "\n";
-      s ~= "prop=" ~ to!string(o.prop) ~ "\n";
+      */
+      //s ~= "alternating=" ~ to!string(o.alternating) ~ "\n";
+      //s ~= "prop=" ~ to!string(o.prop) ~ "\n";
       s ~= "center=" ~ coord2S(o.center) ~ "\n";
       s ~= "tf=" ~ transform2S(o.tf) ~ "\n";
       s ~= "\n";
@@ -873,6 +898,26 @@ class Serializer
       s ~= "vEnd=" ~ coord2S(o.vEnd) ~ "\n";
       s ~= "les=" ~ to!string(o.les) ~ "\n";
       s ~= "horizontal=" ~ to!string(o.horizontal) ~ "\n";
+      s ~= "\n";
+      os.writeString(s);
+   }
+
+   void serializeTriangle(ACBase acb)
+   {
+      Triangle o = cast(Triangle) acb;
+      string s = basics(acb);
+      s ~= "baseColor=" ~ o.colorString(false) ~ "\n";
+      s ~= "altColor=" ~ o.colorString(true) ~ "\n";
+      s ~= "lineWidth=" ~ to!string(o.lineWidth) ~ "\n";
+      s ~= "les=" ~ to!string(o.les) ~ "\n";
+      s ~= "fill=" ~ to!string(o.fill) ~ "\n";
+      s ~= "solid=" ~ to!string(o.solid) ~"\n";
+      s ~= "center=" ~ coord2S(o.center) ~ "\n";
+      s ~= "oPath=" ~ path2S(o.oPath) ~ "\n";
+      s ~= "tf=" ~ transform2S(o.tf) ~ "\n";
+      s ~= "w=" ~ to!string(o.w) ~ "\n";
+      s ~= "h=" ~ to!string(o.h) ~ "\n";
+      s ~= "ttype=" ~ to!string(o.ttype) ~ "\n";
       s ~= "\n";
       os.writeString(s);
    }

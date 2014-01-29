@@ -7,7 +7,7 @@
 // Written in the D programming language
 module partition;
 
-import main;
+import mainwin;
 import constants;
 import acomp;
 import common;
@@ -72,6 +72,7 @@ class Partition: ACBase
    {
       string s = "Partition "~to!string(++nextOid);
       super(w, parent, s, AC_PARTITION);
+      group = ACGroups.EFFECTS;
       hOff = vOff = 0;
       bt = 10.0;
       lineWidth = 0.5;
@@ -194,7 +195,7 @@ class Partition: ACBase
       reDraw();
    }
 
-   void undo()
+   override void undo()
    {
       CheckPoint cp;
       cp = popOp();

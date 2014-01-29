@@ -258,7 +258,6 @@ COMPOConfig readConfig(string cp)
       case 4:
          cfg.height = to!int(sa[1]);
          break;
-         break;
       case 5:
          cfg.defaultSAItemType = to!int(sa[1]);
          break;
@@ -312,7 +311,6 @@ COMPOConfig readConfig(string cp)
          break;
       default:
          throw new Exception("Config file broken - too many entries");
-         break;
       }
       i++;
    }

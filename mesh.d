@@ -7,7 +7,7 @@
 // Written in the D programming language
 module mesh;
 
-import main;
+import mainwin;
 import constants;
 import acomp;
 import common;
@@ -74,7 +74,7 @@ class Mesh : ACBase
       return pca;
    }
 
-   void syncControls()
+   override void syncControls()
    {
       cSet.toggling(false);
       cSet.toggling(true);
@@ -107,6 +107,7 @@ class Mesh : ACBase
    {
       string s = "Mesh "~to!string(++nextOid);
       super(w, parent, s, AC_MESH);
+      group = ACGroups.EFFECTS;
       hOff = vOff = 0;
       tm = new Matrix(&tmData);
       pca = predefPC(0);

@@ -7,7 +7,7 @@
 // Written in the D programming language
 module heart;
 
-import main;
+import mainwin;
 import constants;
 import acomp;
 import common;
@@ -27,6 +27,7 @@ import gtk.CheckButton;
 import gdk.RGBA;
 import cairo.Context;
 import cairo.Matrix;
+import cairo.Surface;
 
 class Heart: LineSet
 {
@@ -59,6 +60,7 @@ class Heart: LineSet
       vOff = other.vOff;
       baseColor = other.baseColor.copy();
       altColor = other.altColor.copy();
+      center = other.center;
       lineWidth = other.lineWidth;
       unit = other.unit;
       tf = other.tf;
@@ -71,9 +73,13 @@ class Heart: LineSet
    {
       string s = "Heart "~to!string(++nextOid);
       super(w, parent, s, AC_HEART);
+      group = ACGroups.SHAPES;
       hOff = vOff = 0;
+      altColor = new RGBA(1,0,0,1);
+      center = Coord(0.5*width, 0.5*height);
       lineWidth = 0.5;
-      unit = width > height? height*0.75: width*0.75;
+      unit = width > height? height*0.6666: width*0.6666;
+      constructBase();
       xform = 0;
       tm = new Matrix(&tmData);
 
@@ -116,9 +122,21 @@ class Heart: LineSet
    {
       double hr = cast(double) width/oldW;
       double vr = cast(double) height/oldH;
-      unit = width>height? 0.75*height: 0.75*width;
+      unit = width>height? 0.6666*height: 0.6666*width;
       hOff *= hr;
       vOff *= vr;
+   }
+
+   void constructBase()
+   {
+      oPath = crd.dup;
+      for (int i = 0; i < oPath.length; i++)
+      {
+         oPath[i].x *= unit;
+         oPath[i].y *= unit;
+         oPath[i].x += center.x;
+         oPath[i].y += center.y;
+      }
    }
 
    override void onCSMoreLess(int instance, bool more, bool coarse)
@@ -135,68 +153,19 @@ class Heart: LineSet
    override void render(Context c)
    {
       c.save();
-      c.setLineWidth(lineWidth);
+      c.setLineWidth(0);
       c.setSourceRgb(baseColor.red, baseColor.green, baseColor.blue);
-      double unit = 0.6666*height;
-      double xpos = 0.5*width;
 
-      Coord[7] t;
-      t[] = crd;
-      for (int i = 0; i < 7; i++)
-      {
-         t[i].x *= unit;
-         t[i].y *= unit;
-      }
-      if (tf.hScale != 1.0)
-      {
-         tm.initScale(tf.hScale, tf.vScale);
-         for (int i = 0; i < 7; i++)
-            tm.transformPoint(t[i].x, t[i].y);
-      }
-      if (tf.ra != 0)
-      {
-         tm.initRotate(tf.ra);
-         for (int i = 0; i < 7; i++)
-            tm.transformPoint(t[i].x, t[i].y);
-      }
-      if (tf.hFlip != 0)
-      {
-         tm.init(-1.0, 0.0, 0.0, 1.0, 0.0, 0.0);
-         for (int i = 0; i < 7; i++)
-            tm.transformPoint(t[i].x, t[i].y);
-      }
-      if (tf.vFlip != 0)
-      {
-         tm.init(1.0, 0.0, 0.0, -1.0, 0.0, 0.0);
-         for (int i = 0; i < 7; i++)
-            tm.transformPoint(t[i].x, t[i].y);
-      }
-      for (int i = 0; i < 7; i++)
-      {
-         t[i].x += 0.5*width;
-         t[i].y += 0.5*height;
-      }
+      c.translate(hOff+center.x, vOff+center.y);
+      if (compoundTransform())
+         c.transform(tm);
+      c.translate(-center.x, -center.y);
 
-      c.moveTo(hOff+t[0].x, vOff+t[0].y);
-      c.curveTo(hOff+t[1].x, vOff+t[1].y,     hOff+t[2].x, vOff+t[2].y,     hOff+t[3].x, vOff+t[3].y);
-      c.curveTo(hOff+t[4].x, vOff+t[4].y,    hOff+t[5].x, vOff+t[5].y,     hOff+t[6].x, vOff+t[6].y);
+      c.moveTo(oPath[0].x, oPath[0].y);
+      c.curveTo(oPath[1].x, oPath[1].y, oPath[2].x, oPath[2].y, oPath[3].x, oPath[3].y);
+      c.curveTo(oPath[4].x, oPath[4].y, oPath[5].x, oPath[5].y, oPath[6].x, oPath[6].y);
       c.closePath();
-      if (solid)
-      {
-         c.setSourceRgba(baseColor.red, baseColor.green, baseColor.blue, 1.0);
-         c.fill();
-      }
-      else if (fill)
-      {
-         c.setSourceRgba(altColor.red, altColor.green, altColor.blue, 1.0);
-         c.fillPreserve();
-      }
-      if (!solid)
-      {
-         c.setSourceRgb(baseColor.red, baseColor.green, baseColor.blue);
-         c.stroke();
-      }
-      if (!isMoved) cSet.setDisplay(0, reportPosition());
+      strokeAndFill(c, lineWidth, solid, fill);
    }
 }
 

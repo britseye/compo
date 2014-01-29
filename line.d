@@ -7,7 +7,7 @@
 // Written in the D programming language
 module line;
 
-import main;
+import mainwin;
 import constants;
 import acomp;
 import lineset;
@@ -69,7 +69,7 @@ class Line : LineSet
       center = other.center;
       oPath = other.oPath.dup;
       xform = other.xform;
-      tf=other.tf;
+      tf = other.tf;
       syncControls();
    }
 
@@ -78,9 +78,11 @@ class Line : LineSet
       string s = "Line "~to!string(++nextOid);
       super(w, parent, s, AC_LINE);
       aw = w;
+      group = ACGroups.GEOMETRIC;
+      tm = new Matrix(&tmData);
 
-      center.x = width/2;
-      center.y = height/2;
+      center.x = 0.5*width;
+      center.y = 0.5*height;
       les = true;
       oPath.length = 2;
       oPath[0].x = 0.25*width;
@@ -206,8 +208,14 @@ class Line : LineSet
       c.setLineWidth(lineWidth);
       c.setAntialias(CairoAntialias.SUBPIXEL);
       c.setLineCap(les? CairoLineCap.BUTT: CairoLineCap.ROUND);
-      c.moveTo(lpX+oPath[0].x, lpY+oPath[0].y);
-      c.lineTo(lpX+oPath[1].x, lpY+oPath[1].y);
+
+      c.translate(hOff+center.x, vOff+center.y);
+      if (compoundTransform())
+         c.transform(tm);
+      c.translate(-center.x, -center.y);  // lpX and lpY both zero at design time
+
+      c.moveTo(oPath[0].x, oPath[0].y);
+      c.lineTo(oPath[1].x, oPath[1].y);
       c.stroke();
       if (showSe && !printFlag)
       {

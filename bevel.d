@@ -7,7 +7,7 @@
 // Written in the D programming language
 module bevel;
 
-import main;
+import mainwin;
 import constants;
 import acomp;
 import common;
@@ -69,6 +69,7 @@ class Bevel: ACBase
    {
       string s = "Bevel "~to!string(++nextOid);
       super(w, parent, s, AC_BEVEL);
+      group = ACGroups.EFFECTS;
       hOff = vOff = 0;
       bt = 10.0;
       lineWidth = 0.5;
@@ -113,7 +114,7 @@ class Bevel: ACBase
       reDraw();
    }
 
-   void undo()
+   override void undo()
    {
       CheckPoint cp;
       cp = popOp();
@@ -136,7 +137,7 @@ class Bevel: ACBase
       reDraw();
    }
 
-   string onCSInch(int id, int direction, bool coarse)
+   override string onCSInch(int id, int direction, bool coarse)
    {
       return "";
    }

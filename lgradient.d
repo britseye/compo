@@ -7,7 +7,7 @@
 // Written in the D programming language
 module lgradient;
 
-import main;
+import mainwin;
 import constants;
 import acomp;
 import common;
@@ -62,6 +62,7 @@ class LGradient: ACBase
    {
       string s = "LGradient "~to!string(++nextOid);
       super(w, parent, s, AC_LGRADIENT);
+      group = ACGroups.EFFECTS;
       fw = 0.3333333;
       fp = 0.3333333;
       angle = atan2(-1.0*height, 1.0*width);
@@ -342,7 +343,7 @@ class LGradient: ACBase
       reDraw();
    }
 
-   void undo()
+   override void undo()
    {
       CheckPoint cp;
       cp = popOp();
@@ -372,6 +373,7 @@ class LGradient: ACBase
          hOff = t.x;
          vOff = t.y;
          lastOp = OP_UNDEF;
+         break;
       default:
          return;
       }
@@ -468,7 +470,6 @@ class LGradient: ACBase
       {
          case 0:
             gamma(2.2);
-            break;
             break;
          case 1:
             gamma(1.5);

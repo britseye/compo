@@ -7,7 +7,7 @@
 // Written in the D programming language
 module cross;
 
-import main;
+import mainwin;
 import constants;
 import acomp;
 import common;
@@ -83,7 +83,6 @@ class Cross : LineSet
       oPath = other.oPath.dup;
       xform = other.xform;
       tf = other.tf;
-      dirty = true;
 
       ar = other.ar;
       cbOff = other.cbOff;
@@ -97,6 +96,7 @@ class Cross : LineSet
    {
       string s = "Cross "~to!string(++nextOid);
       super(w, parent, s, AC_CROSS);
+      group = ACGroups.SHAPES;
       altColor = new RGBA(0,0,0,1);
       les = true;
       fill = solid = false;
@@ -114,7 +114,6 @@ class Cross : LineSet
 
       setupControls(3);
       positionControls(true);
-      dirty = true;
    }
 
    override void extendControls()
@@ -180,7 +179,6 @@ class Cross : LineSet
       tf.vScale *= vr;
       hOff *= hr;
       vOff *= vr;
-      dirty = true;
    }
 
    void constructBase()
@@ -199,6 +197,13 @@ class Cross : LineSet
       ho = uw*0.5;
       vo = cw*0.5;
       makeCoords();
+      center.x = 0.5*width;
+      center.y = 0.5*height;
+      for (int i = 0; i < oPath.length; i++)
+      {
+         oPath[i].x += center.x;
+         oPath[i].y += center.y;
+      }
    }
 
    void makeCoords()
@@ -215,7 +220,6 @@ class Cross : LineSet
       oPath[9] = Coord(-ho, cbPos-vo);
       oPath[10] = Coord(-ho, rise);
       oPath[11] = Coord(ho, rise);
-      dirty = true;
    }
 
    override void onCSMoreLess(int instance, bool more, bool coarse)
@@ -269,7 +273,7 @@ class Cross : LineSet
                cbPos = cbPos+0.05*h;
          }
          cbOff = (cbPos-h/2)/-h;
-         makeCoords();
+         constructBase();
       }
       else if (instance == 3)
       {
@@ -292,31 +296,24 @@ class Cross : LineSet
       else
          return;
       focusLayout();
-      dirty = true;
       aw.dirty = true;
       reDraw();
    }
 
    override void render(Context c)
    {
-      if (dirty)
-      {
-         transformPath(compoundTransform());
+      c.translate(hOff+center.x, vOff+center.y);
+      if (compoundTransform())
+         c.transform(tm);
+      c.translate(-center.x, -center.y);  // lpX and lpY both zero at design time
 
-         dirty = false;
-      }
-      c.setLineWidth(lineWidth);
+      c.setLineWidth(0);
       c.setLineJoin(les? CairoLineJoin.MITER: CairoLineJoin.ROUND);
-      c.moveTo(hOff+rPath[0].x, vOff+rPath[0].y);
-      for (int i = 1; i < rPath.length; i++)
-         c.lineTo(hOff+rPath[i].x, vOff+rPath[i].y);
+      c.moveTo(oPath[0].x, oPath[0].y);
+      for (int i = 1; i < oPath.length; i++)
+         c.lineTo(oPath[i].x, oPath[i].y);
       c.closePath();
-      c.setSourceRgba(baseColor.red, baseColor.green, baseColor.blue, 1.0);
-      if (!(solid || fill))
-         c.stroke();
-      else
-         doFill(c, solid, fill);
-      if (!isMoved) cSet.setDisplay(0, reportPosition());
+      strokeAndFill(c, lineWidth, solid, fill);
    }
 }
 

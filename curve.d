@@ -7,7 +7,7 @@
 // Written in the D programming language
 module curve;
 
-import main;
+import mainwin;
 import constants;
 import acomp;
 import lineset;
@@ -44,7 +44,7 @@ class Curve : LineSet
    }
 
    static int nextOid = 0;
-   PathItem curve;
+   PathItemR curve;
    int active;
    bool showCp;
 
@@ -69,6 +69,7 @@ class Curve : LineSet
    {
       this(other.aw, other.parent);
       baseColor = other.baseColor.copy();
+      center = other.center;
       lineWidth = other.lineWidth;
       les = other.les;
       curve = other.curve;
@@ -81,10 +82,11 @@ class Curve : LineSet
    {
       string s = "Curve "~to!string(++nextOid);
       super(w, parent, s, AC_CURVE);
+      group = ACGroups.GEOMETRIC;
       aw = w;
 
-      center.x = width/2;
-      center.y = height/2;
+      center.x = 0.5*width;
+      center.y = 0.5*height;
       les = true;
       curve.start.x = 0.2*width;
       curve.start.y = 0.5*height;
@@ -237,6 +239,12 @@ class Curve : LineSet
       c.setLineWidth(lineWidth);
       c.setAntialias(CairoAntialias.SUBPIXEL);
       c.setLineCap(les? CairoLineCap.BUTT: CairoLineCap.ROUND);
+
+      c.translate(hOff+center.x, vOff+center.y);
+      if (compoundTransform())
+         c.transform(tm);
+      c.translate(-center.x, -center.y);
+
       c.moveTo(curve.start.x, curve.start.y);
       c.curveTo(curve.cp1.x, curve.cp1.y, curve.cp2.x, curve.cp2.y, curve.end.x, curve.end.y);
       c.stroke();

@@ -7,7 +7,7 @@
 // Written in the D programming language
 module uspsib;
 
-import main;
+import mainwin;
 import config;
 import acomp;
 import tvitem;
@@ -140,7 +140,7 @@ class USPS : TextViewItem
          showData = !showData;
          break;
       default:
-         return false;;
+         return false;
       }
       return true;
    }
@@ -188,7 +188,7 @@ class USPS : TextViewItem
       lims.length = lines;
       TextIter cp = new TextIter();
       TextIter end = new TextIter();
-      TextIter follower = new TextIter();;
+      TextIter follower = new TextIter();
       tb.getBounds(cp, end);
       // Get an array of offsets marking the lines of text
       loffs[0] = 0;

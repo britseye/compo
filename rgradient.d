@@ -7,7 +7,7 @@
 // Written in the D programming language
 module rgradient;
 
-import main;
+import mainwin;
 import constants;
 import acomp;
 import common;
@@ -73,6 +73,7 @@ class RGradient: ACBase
    {
       string s = "RGradient "~to!string(++nextOid);
       super(w, parent, s, AC_RGRADIENT);
+      group = ACGroups.EFFECTS;
       hOff = vOff = 0;
       baseColor = new RGBA(1,1,1);
       maxOpacity = 1.0;
@@ -156,7 +157,7 @@ class RGradient: ACBase
       cSet.cy = vp+30;
    }
 
-   void preResize(int oldW, int oldH)
+   override void preResize(int oldW, int oldH)
    {
       if (width > height)
          outrad = height;
@@ -238,7 +239,7 @@ class RGradient: ACBase
       reDraw();
    }
 
-   void undo()
+   override void undo()
    {
       CheckPoint cp;
       cp = popOp();
@@ -260,6 +261,7 @@ class RGradient: ACBase
          hOff = t.x;
          vOff = t.y;
          lastOp = OP_UNDEF;
+         break;
       default:
          return;
       }
@@ -356,7 +358,6 @@ class RGradient: ACBase
       {
          case 0:
             gamma(2.2);
-            break;
             break;
          case 1:
             gamma(1.5);

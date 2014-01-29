@@ -8,7 +8,7 @@
 module tvitem;
 
 import acomp;
-import main;
+import mainwin;
 import config;
 import constants;
 import types;
@@ -76,12 +76,13 @@ class TextViewItem : ACBase
    this(AppWindow _aw, ACBase _parent, string _name, uint _type)
    {
       super(_aw, _parent, _name, _type);
+      group = ACGroups.TEXT;
       editMode = true;
 
       te = new TextView();
       tb = te.getBuffer();
       tb.addOnChanged(&bufferChanged);
-      tb.addOnInsertText(&textInsertion);;
+      tb.addOnInsertText(&textInsertion);
       tb.addOnDeleteRange(&textDeletion);
       te.setSizeRequest(width, height);
       textBlock = new TextBlock("");
@@ -108,11 +109,11 @@ class TextViewItem : ACBase
       int vp = cSet.cy;
       tp = new TextParams(cSet, ICoord(0, vp), true, hasAlign, hasStyle);
       vp += 10;
-      CheckButton cb = new CheckButton("Edit the Text");
-      cb.setTooltipText("Check or Uncheck this to switch\nbetween text editing and\ndesign modes");
-      cb.setActive(1);
+      ToggleButton tb = new ToggleButton("Edit/Design");
+      tb.setTooltipText("Click this to switch\nbetween text editing and\ndesign modes. Edit is button down.");
+      tb.setActive(1);
       vp += 20;
-      cSet.add(cb, ICoord(0, vp), Purpose.EDITMODE);
+      cSet.add(tb, ICoord(0, vp), Purpose.EDITMODE);
 
       if (type != AC_MORPHTEXT)
       {
@@ -126,13 +127,13 @@ class TextViewItem : ACBase
       extendControls();
       RenameGadget rg = new RenameGadget(cSet, ICoord(2, cSet.cy), name, true);
       rg.setName(name);
-      cSet.addInfo("Enter the required text in the drawing area,\nand then uncheck the \"Edit the Text\"\ncheckbutton to continue.");
+      cSet.addInfo("Enter the required text in the drawing area,\nand then click the \"Edit/Design\"\nbutton to continue.");
    }
 
    void dgToggleView(ToggleButton rb) {}
    void toggleView() {}
 
-   void onCSNotify(Widget w, Purpose wid)
+   override void onCSNotify(Widget w, Purpose wid)
    {
       switch (wid)
       {
@@ -160,7 +161,7 @@ class TextViewItem : ACBase
 
    override void afterDeserialize() { dirty = true; }
 
-   void resize(int oldW, int oldH)
+   override void resize(int oldW, int oldH)
    {
       te.setSizeRequest(width, height);
       eframe.setSizeRequest(width+4, height+4);
@@ -170,7 +171,7 @@ class TextViewItem : ACBase
       commonResize(oldW, oldH);
    }
 
-   void undo()
+   override void undo()
    {
       CheckPoint cp;
       cp = popOp();
@@ -202,6 +203,7 @@ class TextViewItem : ACBase
          hOff = t.x;
          vOff = t.y;
          lastOp = OP_UNDEF;
+         break;
       default:
          break;
       }
@@ -252,7 +254,7 @@ class TextViewItem : ACBase
       dirty = true;
    }
 
-   void focus()
+   override void focus()
    {
       if (editMode) te.grabFocus();
    }
@@ -302,7 +304,7 @@ class TextViewItem : ACBase
    bool setSelectionAttribute(string property, string value, int type = 0) { return false; }
    void setOrientation(int o) {};
 
-   void onCSSaveSelection()
+   override void onCSSaveSelection()
    {
       TextIter start, end;
       start = new TextIter();

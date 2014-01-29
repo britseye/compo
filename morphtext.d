@@ -7,7 +7,7 @@
 // Written in the D programming language
 module morphtext;
 
-import main;
+import mainwin;
 import acomp;
 import tvitem;
 import types;
@@ -271,7 +271,7 @@ class MorphText : TextViewItem
       return true;
    }
 
-   void undo()
+   override void undo()
    {
       CheckPoint cp;
       cp = popOp();
@@ -313,6 +313,7 @@ class MorphText : TextViewItem
       case OP_PARAMS:
          mp = cp.paramBlock;
          lastOp = OP_UNDEF;
+         break;
       case OP_MOVE:
          Coord t = cp.coord;
          hOff = t.x;
@@ -334,7 +335,7 @@ class MorphText : TextViewItem
       reDraw();
    }
 
-   void toggleView()
+   override void toggleView()
    {
       if (editMode)
       {
@@ -366,12 +367,19 @@ class MorphText : TextViewItem
          cSet.enable(Purpose.MOL, 0);
          cSet.enable(Purpose.INCH, 0);
          dframe.show();
+         string txt=tb.getText();
+         if (txt.length)
+         {
+            if (txt.length > 20)
+               txt = txt[0..20];
+            setName(txt);
+         }
          da.show();
       }
       aw.dirty = true;
    }
 
-   void bufferChanged(TextBuffer b)
+   override void bufferChanged(TextBuffer b)
    {
       aw.dirty = true;
       dirty = true;
@@ -570,7 +578,7 @@ class MorphText : TextViewItem
       }
       return n;
    }
-
+/*
    string parseParams(string s)
    {
       Coord[] ca;
@@ -612,7 +620,7 @@ class MorphText : TextViewItem
       }
       return a[0];
    }
-
+*/
    void onFontChange()
    {
       morphed = null;

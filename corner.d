@@ -7,7 +7,7 @@
 // Written in the D programming language
 module corner;
 
-import main;
+import mainwin;
 import constants;
 import acomp;
 import common;
@@ -93,6 +93,7 @@ class Corner : LineSet
    {
       string s = "Corner "~to!string(++nextOid);
       super(w, parent, s, AC_CORNER);
+      group = ACGroups.EFFECTS;
       hOff = vOff = 0;
       cw = 0.2*width;
       ch = 0.2*height;
@@ -112,7 +113,7 @@ class Corner : LineSet
 
    override void extendControls()
    {
-      int vp = cSet.cy;;
+      int vp = cSet.cy;
 
       Label l = new Label("Width");
       l.setTooltipText("Adjust width - hold down <Ctrl> for faster action");
@@ -199,7 +200,7 @@ class Corner : LineSet
       {
          lastOp = pushC!double(this, inset, OP_DV1);
          n = more? 1: -1;
-         inset += n;;
+         inset += n;
       }
       aw.dirty = true;
       reDraw();
@@ -228,7 +229,7 @@ class Corner : LineSet
          which = cp.iVal;
          break;
       default:
-         return false;;
+         return false;
       }
       return true;
    }

@@ -7,7 +7,7 @@
 // Written in the D programming language
 module richtext;
 
-import main;
+import mainwin;
 import acomp;
 import tvitem;
 import common;
@@ -144,7 +144,7 @@ class RichText : TextViewItem
       lastOp = push!(ubyte[])(this, buf, OP_TEXT);
    }
 
-   void tagApplied(TextTag tt, TextIter  ti1, TextIter ti2, TextBuffer b)
+   override void tagApplied(TextTag tt, TextIter  ti1, TextIter ti2, TextBuffer b)
    {
       //pushCheckpoint();
    }
@@ -160,7 +160,7 @@ class RichText : TextViewItem
       return true;
    }
 
-   void undo()
+   override void undo()
    {
       CheckPoint cp;
       cp = popOp();
@@ -192,6 +192,7 @@ class RichText : TextViewItem
          hOff = t.x;
          vOff = t.y;
          lastOp = OP_UNDEF;
+         break;
       default:
          break;
       }
@@ -200,7 +201,7 @@ class RichText : TextViewItem
       reDraw();
    }
 
-   void toggleView()
+   override void toggleView()
    {
       if (editMode)
       {

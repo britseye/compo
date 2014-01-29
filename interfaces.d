@@ -45,4 +45,7 @@ interface CSTarget
 
    // Tells the target to change some string
    void onCSNameChange(string s);
+
+   // Notifies a change in the limited palette
+   void onCSPalette(PartColor[]);
 }

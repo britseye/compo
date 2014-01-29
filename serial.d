@@ -7,7 +7,7 @@
 // Written in the D programming language
 module serial;
 
-import main;
+import mainwin;
 import config;
 import acomp;
 import tvitem;
@@ -170,7 +170,7 @@ class Serial : TextViewItem
       reDraw();
    }
 
-   void toggleView()
+   override void toggleView()
    {
       if (editMode)
       {

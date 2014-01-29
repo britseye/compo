@@ -7,7 +7,7 @@
 // Written in the D programming language
 module reference;
 
-import main;
+import mainwin;
 import acomp;
 import common;
 import constants;
@@ -61,6 +61,7 @@ class Reference : ACBase
    {
       string s = "Reference "~to!string(++nextOid);
       super(w, parent, s, AC_REFERENCE);
+      group = ACGroups.REFERENCE;
       tm = new Matrix(&tmData)      ;
 
       setupControls();
@@ -172,7 +173,7 @@ class Reference : ACBase
       return true;
    }
 
-   void undo()
+   override void undo()
    {
       CheckPoint cp;
       cp = popOp();
@@ -185,6 +186,7 @@ class Reference : ACBase
          hOff = t.x;
          vOff = t.y;
          lastOp = OP_UNDEF;
+         break;
       default:
          return;
       }
@@ -219,7 +221,7 @@ class Reference : ACBase
       reDraw();
    }
 
-   void modifyTransform(int tt, bool more, bool coarse)
+   override void modifyTransform(int tt, bool more, bool coarse)
    {
       // We rather arbitrarily do anisotropic scaling first, then transformations
       // that change the shape - squash and skew, then rotation, then finally flip
@@ -284,7 +286,7 @@ class Reference : ACBase
       }
    }
 
-   bool compoundTransform()
+   override bool compoundTransform()
    {
       Matrix tmp;
       cairo_matrix_t tmpData;

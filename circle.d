@@ -7,7 +7,7 @@
 // Written in the D programming language
 module circle;
 
-import main;
+import mainwin;
 import constants;
 import acomp;
 import common;
@@ -67,6 +67,7 @@ class Circle : LineSet
       baseColor = other.baseColor.copy();
       altColor = other.altColor.copy();
       lineWidth = other.lineWidth;
+      center = other.center;
       radius = other.radius;
       fill = other.fill;
       solid = other.solid;
@@ -80,6 +81,7 @@ class Circle : LineSet
    {
       string s = "Circle "~to!string(++nextOid);
       super(w, parent, s, AC_CIRCLE);
+      group = ACGroups.SHAPES;
       hOff = vOff = 0;
       altColor = new RGBA(0,0,0,1);
       center = Coord(0.5*width, 0.5*height);
@@ -140,27 +142,23 @@ class Circle : LineSet
       vOff *= vr;
    }
 
-   string reportPosition(int id = 0)
+   override string reportPosition(int id = 0)
    {
       return formatCoord(Coord(center.x+hOff, center.y+vOff));
    }
 
    override void render(Context c)
    {
-      c.translate(hOff+width/2, vOff+height/2);
+      c.translate(hOff+center.x, vOff+center.y);
       if (compoundTransform())
          c.transform(tm);
-      c.translate(-lpX-(width/2), -lpY-(height/2));
-      c.setLineWidth(lineWidth/((tf.hScale+tf.vScale)/2));
+      c.translate(-center.x, -center.y);
+      c.setLineWidth(0);
       c.setLineJoin(les? CairoLineJoin.MITER: CairoLineJoin.ROUND);
       c.setSourceRgb(baseColor.red, baseColor.green, baseColor.blue);
       c.newSubPath();
-      c.arc(width/2, height/2, radius, 0, PI*2);
-      if (!(solid || fill))
-         c.stroke();
-      else
-         doFill(c, solid, fill);
-      if (!isMoved) cSet.setDisplay(0, reportPosition());
+      c.arc(center.x, center.y, radius, 0, PI*2);
+      strokeAndFill(c, lineWidth, solid, fill);
    }
 }
 

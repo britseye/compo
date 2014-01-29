@@ -7,7 +7,7 @@
 // Written in the D programming language
 module strokeset;
 
-import main;
+import mainwin;
 import container;
 import constants;
 import acomp;
@@ -87,6 +87,7 @@ class StrokesDlg: Dialog, CSTarget
    void onCSSaveSelection() {}
    void onCSTextParam(Purpose p, string sval, int ival) {}
    void onCSNameChange(string s) {}
+   void onCSPalette(PartColor[]) {}
    void setNameEntry(Entry e) {}
 
    bool catchClose(Event e, Widget w)
@@ -358,6 +359,7 @@ class StrokeSet : LineSet
    static int nextOid = 0;
    PathItem[] pcPath, pcRPath;
    PathItem[][] editStack;
+   Coord topLeft, bottomRight;
    int[] currentStack;
    double editOpacity;
    bool constructing, editing;
@@ -365,8 +367,8 @@ class StrokeSet : LineSet
    StrokesDlg md;
    int activeCoords;
    // For zoomed edting
-   double esf;
-   Coord zo, vo, zbr;
+   double esf, zw, zh;
+   Coord vo;
    bool zoomed, protect;
 
    override void syncControls()
@@ -408,6 +410,7 @@ class StrokeSet : LineSet
    {
       string s = "StrokeSet "~to!string(++nextOid);
       super(w, parent, s, AC_STROKESET);
+      group = ACGroups.GEOMETRIC;
       center.x = width/2;
       center.y = height/2;
       constructing = true;
@@ -550,8 +553,8 @@ class StrokeSet : LineSet
       {
          as.x = a.x*esf;
          as.y = a.y*esf;
-         bs.x = vo.x-zo.x+b.x;
-         bs.y = vo.y-zo.y+b.y;
+         bs.x = vo.x+b.x;
+         bs.y = vo.y+b.y;
 //writefln("scog %f %f mouse %f %f", as.x, as.y, bs.x, bs.y);
       }
       double d = distance(as,bs);
@@ -576,7 +579,6 @@ class StrokeSet : LineSet
    {
       constructing = false;
       figureCenter();
-      centerPath();
       cSet.enable(Purpose.REDRAW);
       cSet.setInfo("Click the Edit button to move, add, or delete curves");
    }
@@ -642,7 +644,7 @@ class StrokeSet : LineSet
             int best = 0;
             foreach (int i, PathItem pi; pcPath)
             {
-               Coord ccog = Coord(center.x+pi.cog.x, center.y+pi.cog.y);
+               Coord ccog = Coord(pi.cog.x, pi.cog.y);
                double d = scaledDistance(ccog, m);
                if (d < minsep)
                {
@@ -697,24 +699,6 @@ class StrokeSet : LineSet
       pcPath[current].cog = Coord(tx/4, ty/4);
    }
 
-   void centerPath()
-   {
-      for (int i = 0; i < pcPath.length; i++)
-      {
-         pcPath[i].start.x -= center.x;
-         pcPath[i].start.y -= center.y;
-         pcPath[i].cp1.x -= center.x;
-         pcPath[i].cp1.y -= center.y;
-         pcPath[i].cp2.x -= center.x;
-         pcPath[i].cp2.y -= center.y;
-         pcPath[i].end.x -= center.x;
-         pcPath[i].end.y -= center.y;
-
-         pcPath[i].cog.x -= center.x;
-         pcPath[i].cog.y -= center.y;
-      }
-   }
-
    override void onCSMoreLess(int instance, bool more, bool coarse)
    {
       focusLayout();
@@ -756,7 +740,6 @@ class StrokeSet : LineSet
       dirty = true;
    }
 
-
    void deleteStroke()
    {
       if (pcPath.length == 1)
@@ -779,54 +762,57 @@ class StrokeSet : LineSet
       dirty = true;
    }
 
-   Coord figureCenter()
+   void getBounding()
    {
-      int points = 0;
-      double cx = 0, cy = 0;
-      for (int i = 0; i < pcPath.length; i++)
+      Coord tl, br;
+      double left = width, right = 0, top = height, bottom = 0;
+      foreach (PathItem pi; pcPath)
       {
-         with (pcPath[i])
+         if (pi.start.x > right)
+            right = pi.start.x;
+         if (pi.start.x < left)
+            left = pi.start.x;
+         if (pi.start.y > bottom)
+            bottom = pi.start.y;
+         if (pi.start.y < top)
+            top = pi.start.y;
+         if (pi.end.x > right)
+            right = pi.cp1.x;
+         if (pi.end.x < left)
+            left = pi.end.x;
+         if (pi.end.y > bottom)
+            bottom = pi.end.y;
+         if (pi.end.y < top)
+            top = pi.end.y;
+         if (pi.type == 1)
          {
-            cx += start.x;
-            cy += start.y;
-            cx += end.x;
-            cy += end.y;
-            points += 2;
-            if (type == 1)
-            {
-               cx += cp1.x;
-               cy += cp1.y;
-               cx += cp2.x;
-               cy += cp2.y;
-               points += 2;
-            }
+            if (pi.cp1.x > right)
+               right = pi.cp1.x;
+            if (pi.cp1.x < left)
+               left = pi.cp1.x;
+            if (pi.cp1.y > bottom)
+               bottom = pi.cp1.y;
+            if (pi.cp1.y < top)
+               top = pi.cp1.y;
+            if (pi.cp2.x > right)
+               right = pi.cp2.x;
+            if (pi.cp2.x < left)
+               left = pi.cp2.x;
+            if (pi.cp2.y > bottom)
+               bottom = pi.cp2.y;
+            if (pi.cp2.y < top)
+               top = pi.cp2.y;
          }
       }
-      center = Coord(cx/points, cy/points);
-      return center;
+      topLeft = Coord(left, top);
+      bottomRight = Coord(right, bottom);
    }
 
-   override void transformPath(bool mValid)
+   Coord figureCenter()
    {
-      pcRPath = pcPath.dup;
-      for (int i = 0; i < pcRPath.length; i++)
-      {
-         if (mValid)
-         {
-            tm.transformPoint(pcRPath[i].start.x, pcRPath[i].start.y);
-            tm.transformPoint(pcRPath[i].cp1.x, pcRPath[i].cp1.y);
-            tm.transformPoint(pcRPath[i].cp2.x, pcRPath[i].cp2.y);
-            tm.transformPoint(pcRPath[i].end.x, pcRPath[i].end.y);
-         }
-         pcRPath[i].start.x += center.x+hOff;
-         pcRPath[i].start.y += center.y+vOff;
-         pcRPath[i].cp1.x += center.x+hOff;
-         pcRPath[i].cp1.y += center.y+vOff;
-         pcRPath[i].cp2.x += center.x+hOff;
-         pcRPath[i].cp2.y += center.y+vOff;
-         pcRPath[i].end.x += center.x+hOff;
-         pcRPath[i].end.y += center.y+vOff;
-      }
+      getBounding();
+      Coord c = Coord(topLeft.x+0.5*(bottomRight.x-topLeft.x), topLeft.y+0.5*(bottomRight.y-topLeft.y));
+      return c;
    }
 
    void rSegTo(Context c, PathItem pi)
@@ -853,18 +839,22 @@ class StrokeSet : LineSet
          c.stroke();
          return;
       }
-      transformPath(compoundTransform());
+
+      c.translate(hOff+center.x, vOff+center.y);
+      if (compoundTransform())
+         c.transform(tm);
+      c.translate(-center.x, -center.y);
+
       c.setLineWidth(lineWidth);
       c.setLineJoin(les? CairoLineJoin.MITER: CairoLineJoin.ROUND);
       c.setSourceRgb(baseColor.red, baseColor.green, baseColor.blue);
 
-      for (int i = 0; i < pcRPath.length; i++)
+      for (int i = 0; i < pcPath.length; i++)
       {
-         c.moveTo(pcRPath[i].start.x, pcRPath[i].start.y);
-         rSegTo(c, pcRPath[i]);
+         c.moveTo(pcPath[i].start.x, pcPath[i].start.y);
+         rSegTo(c, pcPath[i]);
          c.stroke();
       }
-      if (!isMoved) cSet.setDisplay(0, reportPosition());
    }
 
    void adjustPI(double dx, double dy)
@@ -956,9 +946,9 @@ class StrokeSet : LineSet
    void eSegTo(Context c, PathItem pi)
    {
       if (pi.type == 1)
-         c.curveTo(center.x+pi.cp1.x, center.y+pi.cp1.y, center.x+pi.cp2.x, center.y+pi.cp2.y, center.x+pi.end.x, center.y+pi.end.y);
+         c.curveTo(pi.cp1.x, pi.cp1.y, pi.cp2.x, pi.cp2.y, pi.end.x, pi.end.y);
       else
-         c.lineTo(center.x+pi.end.x, center.y+pi.end.y);
+         c.lineTo(pi.end.x, pi.end.y);
    }
 
    void colorEdge(Context c, double r, double g, double b, PathItem pi)
@@ -967,11 +957,11 @@ class StrokeSet : LineSet
       double lw = 1;
       if (zoomed) lw /= esf;
       c.setLineWidth(lw);
-      c.moveTo(center.x+pi.start.x, center.y+pi.start.y);
+      c.moveTo(pi.start.x, pi.start.y);
       if (pi.type == 1)
-         c.curveTo(center.x+pi.cp1.x, center.y+pi.cp1.y, center.x+pi.cp2.x, center.y+pi.cp2.y, center.x+pi.end.x, center.y+pi.end.y);
+         c.curveTo(pi.cp1.x, pi.cp1.y, pi.cp2.x, pi.cp2.y, pi.end.x, pi.end.y);
       else
-         c.lineTo(center.x+pi.end.x, center.y+pi.end.y);
+         c.lineTo(pi.end.x, pi.end.y);
       c.stroke();
    }
 
@@ -986,7 +976,7 @@ class StrokeSet : LineSet
       c.setLineWidth(lw);
       for (int i = 0; i < pcPath.length; i++)
       {
-         c.moveTo(center.x+pcPath[i].start.x, center.y+pcPath[i].start.y);
+         c.moveTo(pcPath[i].start.x, pcPath[i].start.y);
          eSegTo(c, pcPath[i]);
          c.stroke();
       }
@@ -1000,15 +990,15 @@ class StrokeSet : LineSet
          if (zoomed) cpd /= esf;
          // Render the current control points
          c.setSourceRgb(0,0,0);
-         c.moveTo(center.x+pcPath[current].cp1.x, center.y+pcPath[current].cp1.y-cpd);
-         c.lineTo(center.x+pcPath[current].cp1.x+cpd, center.y+pcPath[current].cp1.y+cpd);
-         c.lineTo(center.x+pcPath[current].cp1.x-cpd, center.y+pcPath[current].cp1.y+cpd);
+         c.moveTo(pcPath[current].cp1.x, pcPath[current].cp1.y-cpd);
+         c.lineTo(pcPath[current].cp1.x+cpd, pcPath[current].cp1.y+cpd);
+         c.lineTo(pcPath[current].cp1.x-cpd, pcPath[current].cp1.y+cpd);
          c.closePath();
          c.fill();
          c.setSourceRgb(0,0,1);
-         c.moveTo(center.x+pcPath[current].cp2.x, center.y+pcPath[current].cp2.y+cpd);
-         c.lineTo(center.x+pcPath[current].cp2.x+cpd, center.y+pcPath[current].cp2.y-cpd);
-         c.lineTo(center.x+pcPath[current].cp2.x-cpd, center.y+pcPath[current].cp2.y-cpd);
+         c.moveTo(pcPath[current].cp2.x, pcPath[current].cp2.y+cpd);
+         c.lineTo(pcPath[current].cp2.x+cpd, pcPath[current].cp2.y-cpd);
+         c.lineTo(pcPath[current].cp2.x-cpd, pcPath[current].cp2.y-cpd);
          c.closePath();
          c.fill();
       }
@@ -1030,43 +1020,44 @@ class StrokeSet : LineSet
    {
       if (dx > 0)
       {
-         if (vo.x-dx > zo.x)
+         if (vo.x-dx > 0)
             vo.x -= dx;
          else
-            vo.x = zo.x;
+            vo.x = 0;
       }
       else
       {
          dx = -dx;
-         if (vo.x+width+dx < zbr.x)
+         if (vo.x+width+dx < zw)
             vo.x += dx;
          else
-            vo.x = zbr.x-width;
+            vo.x = zw-width;
       }
       if (dy > 0)
       {
-         if (vo.y-dy > zo.y)
+         if (vo.y-dy > 0)
             vo.y -= dy;
          else
-            vo.y = zo.y;
+            vo.y = 0;
       }
       else
       {
          dy = -dy;
-         if (vo.y+height+dy < zbr.y)
+         if (vo.y+height+dy < zh)
             vo.y += dy;
          else
-            vo.y = zbr.y-height;
+            vo.y = zh-height;
       }
    }
 
    void adjustZoom(double by)
    {
+      double oldEsf = esf;
       esf += by;
-      double zw = width*esf;
-      double zh = height*esf;
-      zo = Coord(-zw/2,-zh/2);
-      zbr = Coord(zw/2, zh/2);
+      zw = width*esf;
+      zh = height*esf;
+      vo.x *= esf/oldEsf;
+      vo.y *= esf/oldEsf;
       reDraw();
    }
 
@@ -1078,7 +1069,7 @@ class StrokeSet : LineSet
          protect = true;
          if (esf == 1)
             adjustZoom(1);
-         vo = Coord(-0.5*width,-0.5*height);
+         vo=Coord(zw/2-0.5*width, zh/2-0.5*height);
          md.ignoreZoom = true;
          md.cbZoom.setActive(1);
          md.ignoreZoom = false;
@@ -1109,13 +1100,8 @@ class StrokeSet : LineSet
    {
       if (zoomed)
       {
-         double offsetX = vo.x+0.5*width;
-         double offsetY = vo.y+0.5*height;
-         c.translate(width/2-offsetX, height/2-offsetY);
          c.scale(esf,esf);
-         c.translate(-width/2, -height/2);
+         c.translate(-vo.x/esf, -vo.y/esf);
       }
    }
 }
-
-

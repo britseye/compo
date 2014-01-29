@@ -1426,17 +1426,17 @@
 	<cairo/Context.d>
 	<cairo/Matrix.d>
 
-1386068024 source:/home/steve/COMPO/about.d
+1390984075 source:/home/steve/COMPO/about.d
 	<std/conv.d>
 	<gtk/Dialog.d>
 	<gtk/AboutDialog.d>
 	<gtk/Version.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gtk/Dialog.d
+1384813905 /usr/local/include/d/gtkd-2/gtk/Dialog.d
 	<gtkc/gtktypes.d>
 	<gtkc/gdktypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gtkc/gtktypes.d
+1384813905 /usr/local/include/d/gtkd-2/gtkc/gtktypes.d
 	<gtkc/cairotypes.d>
 	<gtkc/glibtypes.d>
 	<gtkc/gobjecttypes.d>
@@ -1446,47 +1446,47 @@
 	<gtkc/gdkpixbuftypes.d>
 	<gtkc/gdktypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gtkc/cairotypes.d
+1384813905 /usr/local/include/d/gtkd-2/gtkc/cairotypes.d
 	<gtkc/glibtypes.d>
 	<std/c/windows/windows.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gtkc/glibtypes.d
+1384813905 /usr/local/include/d/gtkd-2/gtkc/glibtypes.d
 
-1381177161 /usr/local/include/d/gtkd-2/gtkc/gobjecttypes.d
+1384813905 /usr/local/include/d/gtkd-2/gtkc/gobjecttypes.d
 	<gtkc/glibtypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gtkc/giotypes.d
+1384813905 /usr/local/include/d/gtkd-2/gtkc/giotypes.d
 	<gtkc/glibtypes.d>
 	<gtkc/gobjecttypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gtkc/pangotypes.d
+1384813905 /usr/local/include/d/gtkd-2/gtkc/pangotypes.d
 	<gtkc/cairotypes.d>
 	<gtkc/glibtypes.d>
 	<gtkc/gobjecttypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gtkc/atktypes.d
+1384813905 /usr/local/include/d/gtkd-2/gtkc/atktypes.d
 	<gtkc/glibtypes.d>
 	<gtkc/gobjecttypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gtkc/gdkpixbuftypes.d
+1384813905 /usr/local/include/d/gtkd-2/gtkc/gdkpixbuftypes.d
 	<gtkc/glibtypes.d>
 	<gtkc/gobjecttypes.d>
 	<gtkc/gdktypes.d>
 	<gtkc/atktypes.d>
 
-1384146610 /usr/local/include/d/gtkd-2/gtkc/gdktypes.d
+1384813905 /usr/local/include/d/gtkd-2/gtkc/gdktypes.d
 	<gtkc/glibtypes.d>
 	<gtkc/gobjecttypes.d>
 	<gtkc/giotypes.d>
 	<gtkc/pangotypes.d>
 	<gtkc/gdkpixbuftypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gtk/AboutDialog.d
+1384813905 /usr/local/include/d/gtkd-2/gtk/AboutDialog.d
 	<gtkc/gtktypes.d>
 	<gtkc/gdktypes.d>
 
-1389807241 source:/home/steve/COMPO/acomp.d
-	<main.d>
+1390928309 source:/home/steve/COMPO/acomp.d
+	<mainwin.d>
 	<constants.d>
 	<types.d>
 	<common.d>
@@ -1535,110 +1535,110 @@
 	<gtk/ColorSelection.d>
 	<gtk/ColorSelectionDialog.d>
 
-1389857064 /home/steve/COMPO//main.d
+1390802671 /home/steve/COMPO//main.d
 
 1316267666 /home/steve/COMPO//constants.d
 
-1388901321 /home/steve/COMPO//types.d
+1390645827 /home/steve/COMPO//types.d
 
-1384269582 /home/steve/COMPO//common.d
+1390804297 /home/steve/COMPO//common.d
 
-1389426332 /home/steve/COMPO//controlset.d
+1390903892 /home/steve/COMPO//controlset.d
 
-1389789199 /home/steve/COMPO//container.d
+1390804297 /home/steve/COMPO//container.d
 
-1389343954 /home/steve/COMPO//controlsdlg.d
+1390804298 /home/steve/COMPO//controlsdlg.d
 
-1387808378 /home/steve/COMPO//sheets.d
+1390804324 /home/steve/COMPO//sheets.d
 
-1381177161 /usr/local/include/d/gtkd-2/gtk/Widget.d
+1384813905 /usr/local/include/d/gtkd-2/gtk/Widget.d
 	<gtkc/gtktypes.d>
 	<gtkc/gdktypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gtk/Entry.d
+1384813905 /usr/local/include/d/gtkd-2/gtk/Entry.d
 	<gtkc/gtktypes.d>
 	<gtkc/gdktypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gtk/TextView.d
+1384813905 /usr/local/include/d/gtkd-2/gtk/TextView.d
 	<gtkc/gtktypes.d>
 	<gtkc/gdktypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gtk/TextBuffer.d
+1384813905 /usr/local/include/d/gtkd-2/gtk/TextBuffer.d
 	<gtkc/gtktypes.d>
 	<gtkc/gdktypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gtk/ToggleButton.d
+1384813905 /usr/local/include/d/gtkd-2/gtk/ToggleButton.d
 	<gtkc/gtktypes.d>
 	<gtkc/gdktypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gtk/RadioButton.d
+1384813905 /usr/local/include/d/gtkd-2/gtk/RadioButton.d
 	<gtkc/gtktypes.d>
 	<gtkc/gdktypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gtk/Button.d
+1384813905 /usr/local/include/d/gtkd-2/gtk/Button.d
 	<gtkc/gtktypes.d>
 	<gtkc/gdktypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gtk/ComboBox.d
+1384813905 /usr/local/include/d/gtkd-2/gtk/ComboBox.d
 	<gtkc/gtktypes.d>
 	<gtkc/gdktypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gdk/Event.d
+1384813905 /usr/local/include/d/gtkd-2/gdk/Event.d
 	<gtkc/gdktypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gdk/Color.d
+1384813905 /usr/local/include/d/gtkd-2/gdk/Color.d
 	<gtkc/gdktypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gtk/Layout.d
+1384813905 /usr/local/include/d/gtkd-2/gtk/Layout.d
 	<gtkc/gtktypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gtk/DrawingArea.d
+1384813905 /usr/local/include/d/gtkd-2/gtk/DrawingArea.d
 	<gtkc/gtktypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gtk/Frame.d
+1384813905 /usr/local/include/d/gtkd-2/gtk/Frame.d
 	<gtkc/gtktypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gtk/Range.d
-	<gtkc/gtktypes.d>
-	<gtkc/gdktypes.d>
-
-1381177161 /usr/local/include/d/gtkd-2/gtk/HScale.d
-	<gtkc/gtktypes.d>
-
-1381177161 /usr/local/include/d/gtkd-2/gtk/VScale.d
-	<gtkc/gtktypes.d>
-
-1381177161 /usr/local/include/d/gtkd-2/gtk/TreeModel.d
-	<gtkc/gtktypes.d>
-
-1381177161 /usr/local/include/d/gtkd-2/gtk/TreeIter.d
+1384813905 /usr/local/include/d/gtkd-2/gtk/Range.d
 	<gtkc/gtktypes.d>
 	<gtkc/gdktypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gtk/TreePath.d
+1384813905 /usr/local/include/d/gtkd-2/gtk/HScale.d
+	<gtkc/gtktypes.d>
+
+1384813905 /usr/local/include/d/gtkd-2/gtk/VScale.d
+	<gtkc/gtktypes.d>
+
+1384813905 /usr/local/include/d/gtkd-2/gtk/TreeModel.d
+	<gtkc/gtktypes.d>
+
+1384813905 /usr/local/include/d/gtkd-2/gtk/TreeIter.d
 	<gtkc/gtktypes.d>
 	<gtkc/gdktypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gdk/Screen.d
+1384813905 /usr/local/include/d/gtkd-2/gtk/TreePath.d
+	<gtkc/gtktypes.d>
+	<gtkc/gdktypes.d>
+
+1384813905 /usr/local/include/d/gtkd-2/gdk/Screen.d
 	<gtkc/gdktypes.d>
 	<gtkc/gdktypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/pango/PgFontDescription.d
+1384813905 /usr/local/include/d/gtkd-2/pango/PgFontDescription.d
 	<gtkc/pangotypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/cairo/Surface.d
+1384813905 /usr/local/include/d/gtkd-2/cairo/Surface.d
 	<gtkc/cairotypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/cairo/ImageSurface.d
+1384813905 /usr/local/include/d/gtkd-2/cairo/ImageSurface.d
 	<gtkc/cairotypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/cairo/Context.d
+1384813905 /usr/local/include/d/gtkd-2/cairo/Context.d
 	<gtkc/cairotypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/cairo/Matrix.d
+1384813905 /usr/local/include/d/gtkd-2/cairo/Matrix.d
 	<gtkc/cairotypes.d>
 
-1386852897 source:/home/steve/COMPO/config.d
+1390729677 source:/home/steve/COMPO/config.d
 	<std/stdio.d>
 	<std/conv.d>
 	<std/path.d>
@@ -1654,17 +1654,17 @@
 	<gtk/Label.d>
 	<gtk/Dialog.d>
 
-1389807241 /home/steve/COMPO//acomp.d
+1390990420 /home/steve/COMPO//acomp.d
 
-1381177161 /usr/local/include/d/gtkd-2/gtk/VBox.d
+1384813905 /usr/local/include/d/gtkd-2/gtk/VBox.d
 	<gtkc/gtktypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gtk/Label.d
+1384813905 /usr/local/include/d/gtkd-2/gtk/Label.d
 	<gtkc/gtktypes.d>
 	<gtkc/gdktypes.d>
 
-1389428159 source:/home/steve/COMPO/arrow.d
-	<main.d>
+1390804295 source:/home/steve/COMPO/arrow.d
+	<mainwin.d>
 	<constants.d>
 	<acomp.d>
 	<common.d>
@@ -1694,22 +1694,22 @@
 	<gtkc/cairotypes.d>
 	<cairo/Matrix.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gtk/ComboBoxText.d
+1384813905 /usr/local/include/d/gtkd-2/gtk/ComboBoxText.d
 	<gtkc/gtktypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gtk/SpinButton.d
+1384813905 /usr/local/include/d/gtkd-2/gtk/SpinButton.d
 	<gtkc/gtktypes.d>
 	<gtkc/gdktypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gtk/CheckButton.d
+1384813905 /usr/local/include/d/gtkd-2/gtk/CheckButton.d
 	<gtkc/gtktypes.d>
 
 1316267349 source:/home/steve/COMPO/avery.d
 	<std/stdio.d>
 	<sheets.d>
 
-1389340968 source:/home/steve/COMPO/bevel.d
-	<main.d>
+1390804295 source:/home/steve/COMPO/bevel.d
+	<mainwin.d>
 	<constants.d>
 	<acomp.d>
 	<common.d>
@@ -1754,8 +1754,8 @@
 	<cairo/Context.d>
 	<cairo/Matrix.d>
 
-1384269582 source:/home/steve/COMPO/common.d
-	<main.d>
+1390804297 source:/home/steve/COMPO/common.d
+	<mainwin.d>
 	<acomp.d>
 	<constants.d>
 	<types.d>
@@ -1792,12 +1792,12 @@
 
 1316267666 source:/home/steve/COMPO/constants.d
 
-1389789199 source:/home/steve/COMPO/container.d
+1390804297 source:/home/steve/COMPO/container.d
 	<constants.d>
 	<types.d>
 	<controlset.d>
 	<acomp.d>
-	<main.d>
+	<mainwin.d>
 	<sheets.d>
 	<graphics.d>
 	<std/stdio.d>
@@ -1820,17 +1820,17 @@
 	<cairo/Context.d>
 	<gtkc/cairotypes.d>
 
-1389860067 /home/steve/COMPO//graphics.d
+1390804305 /home/steve/COMPO//graphics.d
 
-1381177161 /usr/local/include/d/gtkd-2/gdk/Pixbuf.d
+1384813905 /usr/local/include/d/gtkd-2/gdk/Pixbuf.d
 	<gtkc/gdktypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gdkpixbuf/PixbufLoader.d
+1384813905 /usr/local/include/d/gtkd-2/gdkpixbuf/PixbufLoader.d
 	<gtkc/gdkpixbuftypes.d>
 	<gtkc/gdktypes.d>
 
-1389343954 source:/home/steve/COMPO/controlsdlg.d
-	<main.d>
+1390804298 source:/home/steve/COMPO/controlsdlg.d
+	<mainwin.d>
 	<controlset.d>
 	<acomp.d>
 	<menus.d>
@@ -1846,21 +1846,21 @@
 	<glib/Idle.d>
 	<gobject/Value.d>
 
-1389855188 /home/steve/COMPO//menus.d
+1390809434 /home/steve/COMPO//menus.d
 
-1389343530 /home/steve/COMPO//tvitem.d
+1390804329 /home/steve/COMPO//tvitem.d
 
-1381177161 /usr/local/include/d/gtkd-2/gtk/Window.d
+1384813905 /usr/local/include/d/gtkd-2/gtk/Window.d
 	<gtkc/gtktypes.d>
 	<gtkc/gdktypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/glib/Idle.d
+1384813905 /usr/local/include/d/gtkd-2/glib/Idle.d
 	<gtkc/glibtypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gobject/Value.d
+1384813905 /usr/local/include/d/gtkd-2/gobject/Value.d
 	<gtkc/gobjecttypes.d>
 
-1389426332 source:/home/steve/COMPO/controlset.d
+1390903892 source:/home/steve/COMPO/controlset.d
 	<types.d>
 	<interfaces.d>
 	<tvitem.d>
@@ -1892,12 +1892,14 @@
 	<gdk/RGBA.d>
 	<cairo/Context.d>
 	<pango/PgFontDescription.d>
+	<gtk/ColorSelection.d>
+	<gtk/ColorSelectionDialog.d>
 
-1381177161 /usr/local/include/d/gtkd-2/glib/Timeout.d
+1384813905 /usr/local/include/d/gtkd-2/glib/Timeout.d
 	<gtkc/glibtypes.d>
 
-1389341446 source:/home/steve/COMPO/corner.d
-	<main.d>
+1390804299 source:/home/steve/COMPO/corner.d
+	<mainwin.d>
 	<constants.d>
 	<acomp.d>
 	<common.d>
@@ -1921,23 +1923,23 @@
 	<gtkc/cairotypes.d>
 	<cairo/Matrix.d>
 
-1316267796 source:/home/steve/COMPO/csv.d
+1390804301 source:/home/steve/COMPO/csv.d
 	<std/stream.d>
 	<std/conv.d>
 	<std/path.d>
 	<std/stdio.d>
 	<std/array.d>
-	<main.d>
+	<mainwin.d>
 	<merger.d>
 	<gtkc/gtktypes.d>
 
-1385921470 /home/steve/COMPO//merger.d
+1390804309 /home/steve/COMPO//merger.d
 
-1389616507 source:/home/steve/COMPO/deserialize.d
+1390975625 source:/home/steve/COMPO/deserialize.d
 	<types.d>
 	<common.d>
 	<acomp.d>
-	<main.d>
+	<mainwin.d>
 	<container.d>
 	<treeops.d>
 	<text.d>
@@ -1973,6 +1975,9 @@
 	<regpc.d>
 	<controlset.d>
 	<crescent.d>
+	<moon.d>
+	<triangle.d>
+	<brushdabs.d>
 	<std/stdio.d>
 	<std/conv.d>
 	<std/array.d>
@@ -1987,65 +1992,65 @@
 	<gtk/FileChooserDialog.d>
 	<gtk/FileFilter.d>
 
-1387359605 /home/steve/COMPO//treeops.d
+1390804328 /home/steve/COMPO//treeops.d
 
-1389788357 /home/steve/COMPO//text.d
+1390804326 /home/steve/COMPO//text.d
 
-1389788385 /home/steve/COMPO//uspsib.d
+1390804330 /home/steve/COMPO//uspsib.d
 
-1389788361 /home/steve/COMPO//serial.d
+1390804322 /home/steve/COMPO//serial.d
 
-1388498227 /home/steve/COMPO//richtext.d
+1390804321 /home/steve/COMPO//richtext.d
 
-1389428159 /home/steve/COMPO//arrow.d
+1390804295 /home/steve/COMPO//arrow.d
 
-1389340968 /home/steve/COMPO//bevel.d
+1390804295 /home/steve/COMPO//bevel.d
 
 1388312000 /home/steve/COMPO//box.d
 
-1389429471 /home/steve/COMPO//circle.d
+1390804296 /home/steve/COMPO//circle.d
 
 1386742097 /home/steve/COMPO//connector.d
 
-1389341446 /home/steve/COMPO//corner.d
+1390804299 /home/steve/COMPO//corner.d
 
-1389788412 /home/steve/COMPO//fancytext.d
+1390804304 /home/steve/COMPO//fancytext.d
 
-1389341577 /home/steve/COMPO//fader.d
+1390826379 /home/steve/COMPO//fader.d
 
-1389341590 /home/steve/COMPO//heart.d
+1390900950 /home/steve/COMPO//heart.d
 
-1388563262 /home/steve/COMPO//line.d
+1390804307 /home/steve/COMPO//line.d
 
-1389417796 /home/steve/COMPO//morphtext.d
+1390804311 /home/steve/COMPO//morphtext.d
 
-1388558632 /home/steve/COMPO//pattern.d
+1390804312 /home/steve/COMPO//pattern.d
 
 1386240867 /home/steve/COMPO//picture.d
 
-1389344487 /home/steve/COMPO//polygon.d
+1390822463 /home/steve/COMPO//polygon.d
 
-1389343317 /home/steve/COMPO//random.d
+1390804317 /home/steve/COMPO//random.d
 
-1389428228 /home/steve/COMPO//rect.d
+1390804318 /home/steve/COMPO//rect.d
 
-1389343400 /home/steve/COMPO//regpoly.d
+1390804320 /home/steve/COMPO//regpoly.d
 
-1389343430 /home/steve/COMPO//separator.d
+1390804321 /home/steve/COMPO//separator.d
 
-1389343364 /home/steve/COMPO//reference.d
+1390804318 /home/steve/COMPO//reference.d
 
-1381177161 /usr/local/include/d/gtkd-2/gio/MemoryInputStream.d
+1384813905 /usr/local/include/d/gtkd-2/gio/MemoryInputStream.d
 	<gtkc/giotypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gtk/FileChooserDialog.d
+1384813905 /usr/local/include/d/gtkd-2/gtk/FileChooserDialog.d
 	<gtkc/gtktypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gtk/FileFilter.d
+1384813905 /usr/local/include/d/gtkd-2/gtk/FileFilter.d
 	<gtkc/gtktypes.d>
 
-1389341577 source:/home/steve/COMPO/fader.d
-	<main.d>
+1390826379 source:/home/steve/COMPO/fader.d
+	<mainwin.d>
 	<constants.d>
 	<acomp.d>
 	<common.d>
@@ -2065,10 +2070,10 @@
 	<cairo/Pattern.d>
 	<gtkc/cairotypes.d>
 
-1389788412 source:/home/steve/COMPO/fancytext.d
+1390804304 source:/home/steve/COMPO/fancytext.d
 	<types.d>
 	<controlset.d>
-	<main.d>
+	<mainwin.d>
 	<acomp.d>
 	<tvitem.d>
 	<common.d>
@@ -2105,26 +2110,26 @@
 	<pango/PgLayout.d>
 	<gtkc/pangotypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gtk/TextIter.d
+1384813905 /usr/local/include/d/gtkd-2/gtk/TextIter.d
 	<gtkc/gtktypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gtk/Style.d
+1384813905 /usr/local/include/d/gtkd-2/gtk/Style.d
 	<gtkc/gtktypes.d>
 	<gtkc/gdktypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/pango/PgCairo.d
+1384813905 /usr/local/include/d/gtkd-2/pango/PgCairo.d
 	<gtkc/pangotypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/pango/PgLayout.d
+1384813905 /usr/local/include/d/gtkd-2/pango/PgLayout.d
 	<gtkc/pangotypes.d>
 
 1316267883 source:/home/steve/COMPO/generic.d
 	<std/stdio.d>
 	<sheets.d>
 
-1389860067 source:/home/steve/COMPO/graphics.d
+1390804305 source:/home/steve/COMPO/graphics.d
 	<acomp.d>
-	<main.d>
+	<mainwin.d>
 	<std/stdio.d>
 	<gdk/Pixbuf.d>
 	<gdkpixbuf/PixbufLoader.d>
@@ -2134,8 +2139,8 @@
 	<cairo/Context.d>
 	<cairo/SvgSurface.d>
 
-1389341590 source:/home/steve/COMPO/heart.d
-	<main.d>
+1390900950 source:/home/steve/COMPO/heart.d
+	<mainwin.d>
 	<constants.d>
 	<acomp.d>
 	<common.d>
@@ -2153,9 +2158,10 @@
 	<gdk/RGBA.d>
 	<cairo/Context.d>
 	<cairo/Matrix.d>
+	<cairo/Surface.d>
 
-1388563262 source:/home/steve/COMPO/line.d
-	<main.d>
+1390804307 source:/home/steve/COMPO/line.d
+	<mainwin.d>
 	<constants.d>
 	<acomp.d>
 	<lineset.d>
@@ -2176,7 +2182,7 @@
 	<gtkc/cairotypes.d>
 	<cairo/Matrix.d>
 
-1389857064 source:/home/steve/COMPO/main.d
+1390627662 source:/home/steve/COMPO/main.d
 	<constants.d>
 	<config.d>
 	<common.d>
@@ -2230,6 +2236,7 @@
 	<mesh.d>
 	<moon.d>
 	<triangle.d>
+	<flatten.d>
 	<std/stdio.d>
 	<std/conv.d>
 	<std/file.d>
@@ -2277,89 +2284,89 @@
 	<cairo/Context.d>
 	<gdk/Screen.d>
 
-1386852897 /home/steve/COMPO//config.d
+1390729677 /home/steve/COMPO//config.d
 
-1389852119 /home/steve/COMPO//tree.d
+1390804327 /home/steve/COMPO//tree.d
 
-1389341698 /home/steve/COMPO//partition.d
+1390804312 /home/steve/COMPO//partition.d
 
-1388207981 /home/steve/COMPO//pglayout.d
+1390804313 /home/steve/COMPO//pglayout.d
 
-1389615828 /home/steve/COMPO//serialize.d
+1390931107 /home/steve/COMPO//serialize.d
 
-1389616507 /home/steve/COMPO//deserialize.d
+1390975625 /home/steve/COMPO//deserialize.d
 
-1316878654 /home/steve/COMPO//printing.d
+1390804316 /home/steve/COMPO//printing.d
 
-1381177161 /usr/local/include/d/gtkd-2/gtk/Main.d
+1384813905 /usr/local/include/d/gtkd-2/gtk/Main.d
 	<gtkc/gtktypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gtk/ScrolledWindow.d
-	<gtkc/gtktypes.d>
-	<gtkc/gdktypes.d>
-
-1381177161 /usr/local/include/d/gtkd-2/gtk/MainWindow.d
-	<gtkc/gtktypes.d>
-
-1381177161 /usr/local/include/d/gtkd-2/gtk/HBox.d
-	<gtkc/gtktypes.d>
-
-1381177161 /usr/local/include/d/gtkd-2/gtk/AccelGroup.d
+1384813905 /usr/local/include/d/gtkd-2/gtk/ScrolledWindow.d
 	<gtkc/gtktypes.d>
 	<gtkc/gdktypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gtk/MenuBar.d
+1384813905 /usr/local/include/d/gtkd-2/gtk/MainWindow.d
 	<gtkc/gtktypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gtk/Menu.d
-	<gtkc/gtktypes.d>
-	<gtkc/gdktypes.d>
-
-1381177161 /usr/local/include/d/gtkd-2/gtk/MenuItem.d
-	<gtkc/gtktypes.d>
-	<gtkc/gdktypes.d>
-
-1381177161 /usr/local/include/d/gtkd-2/gtk/MessageDialog.d
+1384813905 /usr/local/include/d/gtkd-2/gtk/HBox.d
 	<gtkc/gtktypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gtk/HPaned.d
-	<gtkc/gtktypes.d>
-
-1381177161 /usr/local/include/d/gtkd-2/gtk/TreeView.d
+1384813905 /usr/local/include/d/gtkd-2/gtk/AccelGroup.d
 	<gtkc/gtktypes.d>
 	<gtkc/gdktypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gtk/TextTag.d
+1384813905 /usr/local/include/d/gtkd-2/gtk/MenuBar.d
+	<gtkc/gtktypes.d>
+
+1384813905 /usr/local/include/d/gtkd-2/gtk/Menu.d
 	<gtkc/gtktypes.d>
 	<gtkc/gdktypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gtk/FontSelectionDialog.d
-	<gtkc/gtktypes.d>
-
-1381177161 /usr/local/include/d/gtkd-2/gtk/ColorSelectionDialog.d
-	<gtkc/gtktypes.d>
-
-1381177161 /usr/local/include/d/gtkd-2/gtk/ColorSelection.d
+1384813905 /usr/local/include/d/gtkd-2/gtk/MenuItem.d
 	<gtkc/gtktypes.d>
 	<gtkc/gdktypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gtk/TreeModelIF.d
+1384813905 /usr/local/include/d/gtkd-2/gtk/MessageDialog.d
+	<gtkc/gtktypes.d>
+
+1384813905 /usr/local/include/d/gtkd-2/gtk/HPaned.d
+	<gtkc/gtktypes.d>
+
+1384813905 /usr/local/include/d/gtkd-2/gtk/TreeView.d
 	<gtkc/gtktypes.d>
 	<gtkc/gdktypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gtk/TreeSelection.d
+1384813905 /usr/local/include/d/gtkd-2/gtk/TextTag.d
 	<gtkc/gtktypes.d>
 	<gtkc/gdktypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gtk/TreeViewColumn.d
+1384813905 /usr/local/include/d/gtkd-2/gtk/FontSelectionDialog.d
+	<gtkc/gtktypes.d>
+
+1384813905 /usr/local/include/d/gtkd-2/gtk/ColorSelectionDialog.d
+	<gtkc/gtktypes.d>
+
+1384813905 /usr/local/include/d/gtkd-2/gtk/ColorSelection.d
 	<gtkc/gtktypes.d>
 	<gtkc/gdktypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gdk/Rectangle.d
+1384813905 /usr/local/include/d/gtkd-2/gtk/TreeModelIF.d
+	<gtkc/gtktypes.d>
 	<gtkc/gdktypes.d>
 
-1389855188 source:/home/steve/COMPO/menus.d
-	<main.d>
+1384813905 /usr/local/include/d/gtkd-2/gtk/TreeSelection.d
+	<gtkc/gtktypes.d>
+	<gtkc/gdktypes.d>
+
+1384813905 /usr/local/include/d/gtkd-2/gtk/TreeViewColumn.d
+	<gtkc/gtktypes.d>
+	<gtkc/gdktypes.d>
+
+1384813905 /usr/local/include/d/gtkd-2/gdk/Rectangle.d
+	<gtkc/gdktypes.d>
+
+1390809434 source:/home/steve/COMPO/menus.d
+	<mainwin.d>
 	<config.d>
 	<treeops.d>
 	<acomp.d>
@@ -2399,36 +2406,36 @@
 	<gtk/MountOperation.d>
 	<gtkc/gtktypes.d>
 
-1386068024 /home/steve/COMPO//about.d
+1390984075 /home/steve/COMPO//about.d
 
 1315040087 /home/steve/COMPO//keyvals.d
 
-1316267796 /home/steve/COMPO//csv.d
+1390804301 /home/steve/COMPO//csv.d
 
-1386668575 /home/steve/COMPO//settings.d
+1390804323 /home/steve/COMPO//settings.d
 
-1381177161 /usr/local/include/d/gtkd-2/gdk/Atoms.d
+1384813905 /usr/local/include/d/gtkd-2/gdk/Atoms.d
 	<gtkc/gdktypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gtk/AccelMap.d
-	<gtkc/gtktypes.d>
-	<gtkc/gdktypes.d>
-
-1381177161 /usr/local/include/d/gtkd-2/gtk/CheckMenuItem.d
+1384813905 /usr/local/include/d/gtkd-2/gtk/AccelMap.d
 	<gtkc/gtktypes.d>
 	<gtkc/gdktypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gtk/SeparatorMenuItem.d
-	<gtkc/gtktypes.d>
-
-1381177161 /usr/local/include/d/gtkd-2/gtk/Clipboard.d
+1384813905 /usr/local/include/d/gtkd-2/gtk/CheckMenuItem.d
 	<gtkc/gtktypes.d>
 	<gtkc/gdktypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gtk/MountOperation.d
+1384813905 /usr/local/include/d/gtkd-2/gtk/SeparatorMenuItem.d
 	<gtkc/gtktypes.d>
 
-1385921470 source:/home/steve/COMPO/merger.d
+1384813905 /usr/local/include/d/gtkd-2/gtk/Clipboard.d
+	<gtkc/gtktypes.d>
+	<gtkc/gdktypes.d>
+
+1384813905 /usr/local/include/d/gtkd-2/gtk/MountOperation.d
+	<gtkc/gtktypes.d>
+
+1390804309 source:/home/steve/COMPO/merger.d
 	<std/stream.d>
 	<std/file.d>
 	<std/conv.d>
@@ -2440,7 +2447,7 @@
 	<std/datetime.d>
 	<acomp.d>
 	<tvitem.d>
-	<main.d>
+	<mainwin.d>
 	<csv.d>
 	<textsrc.d>
 	<text.d>
@@ -2462,14 +2469,14 @@
 	<gtk/FileChooserDialog.d>
 	<gtk/FileFilter.d>
 
-1316268516 /home/steve/COMPO//textsrc.d
+1390804327 /home/steve/COMPO//textsrc.d
 
-1381177161 /usr/local/include/d/gtkd-2/gtk/Notebook.d
+1384813905 /usr/local/include/d/gtkd-2/gtk/Notebook.d
 	<gtkc/gtktypes.d>
 	<gtkc/gdktypes.d>
 
-1389417791 source:/home/steve/COMPO/morphdlgs.d
-	<main.d>
+1390822353 source:/home/steve/COMPO/morphdlgs.d
+	<mainwin.d>
 	<interfaces.d>
 	<constants.d>
 	<common.d>
@@ -2504,8 +2511,8 @@
 	<std/math.d>
 	<gtkc/cairotypes.d>
 
-1389417796 source:/home/steve/COMPO/morphtext.d
-	<main.d>
+1390804311 source:/home/steve/COMPO/morphtext.d
+	<mainwin.d>
 	<acomp.d>
 	<tvitem.d>
 	<types.d>
@@ -2540,10 +2547,10 @@
 	<pango/PgLayout.d>
 	<gtkc/pangotypes.d>
 
-1389417791 /home/steve/COMPO//morphdlgs.d
+1390822353 /home/steve/COMPO//morphdlgs.d
 
-1389341698 source:/home/steve/COMPO/partition.d
-	<main.d>
+1390804312 source:/home/steve/COMPO/partition.d
+	<mainwin.d>
 	<constants.d>
 	<acomp.d>
 	<common.d>
@@ -2564,8 +2571,8 @@
 	<gtkc/cairotypes.d>
 	<cairo/Matrix.d>
 
-1388558632 source:/home/steve/COMPO/pattern.d
-	<main.d>
+1390804312 source:/home/steve/COMPO/pattern.d
+	<mainwin.d>
 	<acomp.d>
 	<common.d>
 	<constants.d>
@@ -2584,8 +2591,8 @@
 	<gtk/ComboBoxText.d>
 	<cairo/Context.d>
 
-1388207981 source:/home/steve/COMPO/pglayout.d
-	<main.d>
+1390804313 source:/home/steve/COMPO/pglayout.d
+	<mainwin.d>
 	<common.d>
 	<types.d>
 	<sheets.d>
@@ -2603,8 +2610,8 @@
 	<cairo/Surface.d>
 	<cairo/Context.d>
 
-1389852119 source:/home/steve/COMPO/tree.d
-	<main.d>
+1390804327 source:/home/steve/COMPO/tree.d
+	<mainwin.d>
 	<acomp.d>
 	<std/stdio.d>
 	<std/random.d>
@@ -2613,8 +2620,8 @@
 	<gtk/TreePath.d>
 	<gtk/TreeModel.d>
 
-1389429471 source:/home/steve/COMPO/circle.d
-	<main.d>
+1390804296 source:/home/steve/COMPO/circle.d
+	<mainwin.d>
 	<constants.d>
 	<acomp.d>
 	<common.d>
@@ -2674,15 +2681,15 @@
 	<pango/PgFontDescription.d>
 	<gobject/Value.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gdk/Cairo.d
+1384813905 /usr/local/include/d/gtkd-2/gdk/Cairo.d
 	<gtkc/gdktypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gobject/ObjectG.d
+1384813905 /usr/local/include/d/gtkd-2/gobject/ObjectG.d
 	<gtkc/gobjecttypes.d>
 	<gtkc/gdktypes.d>
 
-1389344487 source:/home/steve/COMPO/polygon.d
-	<main.d>
+1390822463 source:/home/steve/COMPO/polygon.d
+	<mainwin.d>
 	<container.d>
 	<constants.d>
 	<acomp.d>
@@ -2717,8 +2724,8 @@
 	<gtkc/cairotypes.d>
 	<cairo/Matrix.d>
 
-1316878654 source:/home/steve/COMPO/printing.d
-	<main.d>
+1390804316 source:/home/steve/COMPO/printing.d
+	<mainwin.d>
 	<acomp.d>
 	<container.d>
 	<merger.d>
@@ -2731,24 +2738,24 @@
 	<gtk/PaperSize.d>
 	<cairo/Context.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gtk/PrintContext.d
+1384813905 /usr/local/include/d/gtkd-2/gtk/PrintContext.d
 	<gtkc/gtktypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gtk/PrintOperation.d
+1384813905 /usr/local/include/d/gtkd-2/gtk/PrintOperation.d
 	<gtkc/gtktypes.d>
 	<gtkc/gdktypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gtk/PrintSettings.d
+1384813905 /usr/local/include/d/gtkd-2/gtk/PrintSettings.d
 	<gtkc/gtktypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gtk/PageSetup.d
+1384813905 /usr/local/include/d/gtkd-2/gtk/PageSetup.d
 	<gtkc/gtktypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gtk/PaperSize.d
+1384813905 /usr/local/include/d/gtkd-2/gtk/PaperSize.d
 	<gtkc/gtktypes.d>
 
-1389343317 source:/home/steve/COMPO/random.d
-	<main.d>
+1390804317 source:/home/steve/COMPO/random.d
+	<mainwin.d>
 	<constants.d>
 	<acomp.d>
 	<common.d>
@@ -2770,8 +2777,8 @@
 	<cairo/Matrix.d>
 	<gtkc/cairotypes.d>
 
-1389428228 source:/home/steve/COMPO/rect.d
-	<main.d>
+1390804318 source:/home/steve/COMPO/rect.d
+	<mainwin.d>
 	<constants.d>
 	<acomp.d>
 	<common.d>
@@ -2798,8 +2805,8 @@
 	<gtkc/cairotypes.d>
 	<cairo/Matrix.d>
 
-1389343364 source:/home/steve/COMPO/reference.d
-	<main.d>
+1390804318 source:/home/steve/COMPO/reference.d
+	<mainwin.d>
 	<acomp.d>
 	<common.d>
 	<constants.d>
@@ -2820,8 +2827,8 @@
 	<gtk/FileChooserDialog.d>
 	<gtk/ComboBoxText.d>
 
-1389343400 source:/home/steve/COMPO/regpoly.d
-	<main.d>
+1390804320 source:/home/steve/COMPO/regpoly.d
+	<mainwin.d>
 	<config.d>
 	<constants.d>
 	<acomp.d>
@@ -2847,8 +2854,8 @@
 	<gtkc/cairotypes.d>
 	<cairo/Matrix.d>
 
-1388498227 source:/home/steve/COMPO/richtext.d
-	<main.d>
+1390804321 source:/home/steve/COMPO/richtext.d
+	<mainwin.d>
 	<acomp.d>
 	<tvitem.d>
 	<common.d>
@@ -2887,21 +2894,21 @@
 	<gtkc/gdktypes.d>
 	<gtkc/gobjecttypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/glib/ListSG.d
+1384813905 /usr/local/include/d/gtkd-2/glib/ListSG.d
 	<gtkc/glibtypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gtk/TextTagTable.d
+1384813905 /usr/local/include/d/gtkd-2/gtk/TextTagTable.d
 	<gtkc/gtktypes.d>
 	<gtkc/gdktypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gobject/Boxed.d
+1384813905 /usr/local/include/d/gtkd-2/gobject/Boxed.d
 	<gtkc/gobjecttypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gobject/Type.d
+1384813905 /usr/local/include/d/gtkd-2/gobject/Type.d
 	<gtkc/gobjecttypes.d>
 
-1389343430 source:/home/steve/COMPO/separator.d
-	<main.d>
+1390804321 source:/home/steve/COMPO/separator.d
+	<mainwin.d>
 	<constants.d>
 	<acomp.d>
 	<common.d>
@@ -2918,8 +2925,8 @@
 	<gdk/RGBA.d>
 	<cairo/Context.d>
 
-1389788361 source:/home/steve/COMPO/serial.d
-	<main.d>
+1390804322 source:/home/steve/COMPO/serial.d
+	<mainwin.d>
 	<config.d>
 	<acomp.d>
 	<tvitem.d>
@@ -2948,7 +2955,7 @@
 	<pango/PgFontDescription.d>
 	<gtkc/gdktypes.d>
 
-1389615828 source:/home/steve/COMPO/serialize.d
+1390931107 source:/home/steve/COMPO/serialize.d
 	<std/stdio.d>
 	<std/conv.d>
 	<std/stream.d>
@@ -2958,7 +2965,7 @@
 	<types.d>
 	<acomp.d>
 	<container.d>
-	<main.d>
+	<mainwin.d>
 	<treeops.d>
 	<text.d>
 	<uspsib.d>
@@ -2991,16 +2998,19 @@
 	<strokeset.d>
 	<regpc.d>
 	<crescent.d>
+	<moon.d>
+	<triangle.d>
+	<brushdabs.d>
 	<gtk/FileChooserDialog.d>
 	<gtk/FileFilter.d>
 
-1386668575 source:/home/steve/COMPO/settings.d
+1390804323 source:/home/steve/COMPO/settings.d
 	<std/stdio.d>
 	<std/conv.d>
 	<std/array.d>
 	<std/string.d>
 	<std/path.d>
-	<main.d>
+	<mainwin.d>
 	<acomp.d>
 	<config.d>
 	<gtk/Dialog.d>
@@ -3021,7 +3031,7 @@
 	<gtk/Frame.d>
 	<pango/PgFontDescription.d>
 
-1387808378 source:/home/steve/COMPO/sheets.d
+1390804324 source:/home/steve/COMPO/sheets.d
 	<std/stdio.d>
 	<std/conv.d>
 	<std/regex.d>
@@ -3032,7 +3042,7 @@
 	<avery.d>
 	<generic.d>
 	<types.d>
-	<main.d>
+	<mainwin.d>
 	<gdk/RGBA.d>
 	<gtk/Widget.d>
 	<gtk/Dialog.d>
@@ -3055,12 +3065,12 @@
 
 1316267883 /home/steve/COMPO//generic.d
 
-1381177161 /usr/local/include/d/gtkd-2/gtk/EditableIF.d
+1384813905 /usr/local/include/d/gtkd-2/gtk/EditableIF.d
 	<gtkc/gtktypes.d>
 	<gtkc/gdktypes.d>
 
-1389788357 source:/home/steve/COMPO/text.d
-	<main.d>
+1390804326 source:/home/steve/COMPO/text.d
+	<mainwin.d>
 	<acomp.d>
 	<tvitem.d>
 	<common.d>
@@ -3090,18 +3100,18 @@
 	<gdk/Screen.d>
 	<gtkc/gdktypes.d>
 
-1316268516 source:/home/steve/COMPO/textsrc.d
+1390804327 source:/home/steve/COMPO/textsrc.d
 	<std/stream.d>
 	<std/conv.d>
 	<std/path.d>
 	<std/stdio.d>
 	<std/array.d>
-	<main.d>
+	<mainwin.d>
 	<merger.d>
 
-1389343530 source:/home/steve/COMPO/tvitem.d
+1390804329 source:/home/steve/COMPO/tvitem.d
 	<acomp.d>
-	<main.d>
+	<mainwin.d>
 	<config.d>
 	<constants.d>
 	<types.d>
@@ -3135,11 +3145,11 @@
 	<gtkc/cairotypes.d>
 	<cairo/Matrix.d>
 
-1388901321 source:/home/steve/COMPO/types.d
+1390645827 source:/home/steve/COMPO/types.d
 	<gtkc/gdktypes.d>
 
-1389788385 source:/home/steve/COMPO/uspsib.d
-	<main.d>
+1390804330 source:/home/steve/COMPO/uspsib.d
+	<mainwin.d>
 	<config.d>
 	<acomp.d>
 	<tvitem.d>
@@ -3174,9 +3184,9 @@
 	<gtkc/gdktypes.d>
 	<gtk/PopupBox.d>
 
-1387359605 source:/home/steve/COMPO/treeops.d
+1390804328 source:/home/steve/COMPO/treeops.d
 	<tree.d>
-	<main.d>
+	<mainwin.d>
 	<treeops.d>
 	<acomp.d>
 	<sheets.d>
@@ -3189,24 +3199,24 @@
 	<gtk/CellRendererText.d>
 	<gtk/CellRendererToggle.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gtk/CellRendererText.d
+1384813905 /usr/local/include/d/gtkd-2/gtk/CellRendererText.d
 	<gtkc/gtktypes.d>
 	<gtkc/gdktypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gtk/CellRendererToggle.d
+1384813905 /usr/local/include/d/gtkd-2/gtk/CellRendererToggle.d
 	<gtkc/gtktypes.d>
 	<gtkc/gdktypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gtk/Arrow.d
+1384813905 /usr/local/include/d/gtkd-2/gtk/Arrow.d
 	<gtkc/gtktypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gtk/EventBox.d
+1384813905 /usr/local/include/d/gtkd-2/gtk/EventBox.d
 	<gtkc/gtktypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gdk/RGBA.d
+1384813905 /usr/local/include/d/gtkd-2/gdk/RGBA.d
 	<gtkc/gdktypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gtk/Version.d
+1384813905 /usr/local/include/d/gtkd-2/gtk/Version.d
 	<gtkc/gtktypes.d>
 
 1384943286 source:/home/steve/COMPO/tb2pm.d
@@ -3233,30 +3243,30 @@
 	<pango/PgAttributeList.d>
 	<pango/PgFontDescription.d>
 
-1381177161 /usr/local/include/d/gtkd-2/pango/PgAttribute.d
+1384813905 /usr/local/include/d/gtkd-2/pango/PgAttribute.d
 	<gtkc/pangotypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gobject/ParamSpec.d
+1384813905 /usr/local/include/d/gtkd-2/gobject/ParamSpec.d
 	<gtkc/gobjecttypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/pango/PgAttributeList.d
+1384813905 /usr/local/include/d/gtkd-2/pango/PgAttributeList.d
 	<gtkc/pangotypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gtk/Box.d
+1384813905 /usr/local/include/d/gtkd-2/gtk/Box.d
 	<gtkc/gtktypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gtk/FontButton.d
+1384813905 /usr/local/include/d/gtkd-2/gtk/FontButton.d
 	<gtkc/gtktypes.d>
 	<gtkc/gdktypes.d>
 
-1389428206 /home/steve/COMPO//lineset.d
+1390804307 /home/steve/COMPO//lineset.d
 
-1389428206 source:/home/steve/COMPO/lineset.d
+1390804307 source:/home/steve/COMPO/lineset.d
 	<std/stdio.d>
 	<std/array.d>
 	<std/format.d>
 	<acomp.d>
-	<main.d>
+	<mainwin.d>
 	<constants.d>
 	<types.d>
 	<common.d>
@@ -3270,11 +3280,11 @@
 	<gtk/CheckButton.d>
 	<gtk/ComboBoxText.d>
 
-1381177161 /usr/local/include/d/gtkd-2/cairo/Pattern.d
+1384813905 /usr/local/include/d/gtkd-2/cairo/Pattern.d
 	<gtkc/cairotypes.d>
 
-1389341599 source:/home/steve/COMPO/lgradient.d
-	<main.d>
+1390804306 source:/home/steve/COMPO/lgradient.d
+	<mainwin.d>
 	<constants.d>
 	<acomp.d>
 	<common.d>
@@ -3294,12 +3304,12 @@
 	<cairo/Pattern.d>
 	<gtkc/cairotypes.d>
 
-1389341599 /home/steve/COMPO//lgradient.d
+1390804306 /home/steve/COMPO//lgradient.d
 
-1389343419 /home/steve/COMPO//rgradient.d
+1390804320 /home/steve/COMPO//rgradient.d
 
-1389343419 source:/home/steve/COMPO/rgradient.d
-	<main.d>
+1390804320 source:/home/steve/COMPO/rgradient.d
+	<mainwin.d>
 	<constants.d>
 	<acomp.d>
 	<common.d>
@@ -3326,14 +3336,14 @@
 
 1389781636 /home/steve/COMPO//rsvgwrap.d
 
-1381177161 /usr/local/include/d/gtkd-2/cairo/SvgSurface.d
+1384813905 /usr/local/include/d/gtkd-2/cairo/SvgSurface.d
 	<gtkc/cairotypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/gtk/PopupBox.d
+1384813905 /usr/local/include/d/gtkd-2/gtk/PopupBox.d
 	<gtkc/gtktypes.d>
 
-1389343505 source:/home/steve/COMPO/svgimage.d
-	<main.d>
+1390804325 source:/home/steve/COMPO/svgimage.d
+	<mainwin.d>
 	<acomp.d>
 	<common.d>
 	<constants.d>
@@ -3355,10 +3365,10 @@
 	<gtk/FileFilter.d>
 	<gtk/FileChooserDialog.d>
 
-1389863862 /home/steve/COMPO//pixelimage.d
+1390804314 /home/steve/COMPO//pixelimage.d
 
-1389863688 source:/home/steve/COMPO/pixelimage.d
-	<main.d>
+1390804314 source:/home/steve/COMPO/pixelimage.d
+	<mainwin.d>
 	<acomp.d>
 	<common.d>
 	<constants.d>
@@ -3390,11 +3400,11 @@
 	<pango/PgFontDescription.d>
 	<gobject/Value.d>
 
-1389343505 /home/steve/COMPO//svgimage.d
+1390804325 /home/steve/COMPO//svgimage.d
 
-1389340455 /home/steve/COMPO//interfaces.d
+1390848023 /home/steve/COMPO//interfaces.d
 
-1389340455 source:/home/steve/COMPO/interfaces.d
+1390848023 source:/home/steve/COMPO/interfaces.d
 	<std/math.d>
 	<types.d>
 	<controlset.d>
@@ -3402,8 +3412,8 @@
 	<gtk/Entry.d>
 	<cairo/Context.d>
 
-1389350014 source:/home/steve/COMPO/cross.d
-	<main.d>
+1390804300 source:/home/steve/COMPO/cross.d
+	<mainwin.d>
 	<constants.d>
 	<acomp.d>
 	<common.d>
@@ -3433,10 +3443,10 @@
 	<gtkc/cairotypes.d>
 	<cairo/Matrix.d>
 
-1389350014 /home/steve/COMPO//cross.d
+1390804300 /home/steve/COMPO//cross.d
 
-1389616945 source:/home/steve/COMPO/crescent.d
-	<main.d>
+1390804299 source:/home/steve/COMPO/crescent.d
+	<mainwin.d>
 	<constants.d>
 	<acomp.d>
 	<common.d>
@@ -3466,12 +3476,12 @@
 	<gtkc/cairotypes.d>
 	<cairo/Matrix.d>
 
-1389616945 /home/steve/COMPO//crescent.d
+1390804299 /home/steve/COMPO//crescent.d
 
-1389344456 /home/steve/COMPO//polycurve.d
+1390822408 /home/steve/COMPO//polycurve.d
 
-1389344456 source:/home/steve/COMPO/polycurve.d
-	<main.d>
+1390822408 source:/home/steve/COMPO/polycurve.d
+	<mainwin.d>
 	<constants.d>
 	<acomp.d>
 	<common.d>
@@ -3506,10 +3516,10 @@
 	<gtkc/cairotypes.d>
 	<cairo/Matrix.d>
 
-1389344536 /home/steve/COMPO//strokeset.d
+1390822526 /home/steve/COMPO//strokeset.d
 
-1389344536 source:/home/steve/COMPO/strokeset.d
-	<main.d>
+1390822526 source:/home/steve/COMPO/strokeset.d
+	<mainwin.d>
 	<container.d>
 	<constants.d>
 	<acomp.d>
@@ -3545,8 +3555,8 @@
 	<gtkc/cairotypes.d>
 	<cairo/Matrix.d>
 
-1389266999 source:/home/steve/COMPO/curve.d
-	<main.d>
+1390804301 source:/home/steve/COMPO/curve.d
+	<mainwin.d>
 	<constants.d>
 	<acomp.d>
 	<lineset.d>
@@ -3567,7 +3577,7 @@
 	<gtkc/cairotypes.d>
 	<cairo/Matrix.d>
 
-1389266999 /home/steve/COMPO//curve.d
+1390804301 /home/steve/COMPO//curve.d
 
 1388570749 source:/home/steve/COMPO/shape.d
 	<main.d>
@@ -3635,10 +3645,10 @@
 	<gtkc/cairotypes.d>
 	<cairo/Matrix.d>
 
-1389344415 /home/steve/COMPO//pointset.d
+1390822557 /home/steve/COMPO//pointset.d
 
-1389344415 source:/home/steve/COMPO/pointset.d
-	<main.d>
+1390822557 source:/home/steve/COMPO/pointset.d
+	<mainwin.d>
 	<container.d>
 	<constants.d>
 	<acomp.d>
@@ -3673,10 +3683,10 @@
 	<gtkc/cairotypes.d>
 	<cairo/Matrix.d>
 
-1389350152 /home/steve/COMPO//regpc.d
+1390809049 /home/steve/COMPO//regpc.d
 
-1389350152 source:/home/steve/COMPO/regpc.d
-	<main.d>
+1390809049 source:/home/steve/COMPO/regpc.d
+	<mainwin.d>
 	<config.d>
 	<constants.d>
 	<acomp.d>
@@ -3694,7 +3704,7 @@
 	<gtk/Frame.d>
 	<gdk/RGBA.d>
 	<gtk/ComboBoxText.d>
-	<gtk/SpinButton.d>
+	<gtk/ToggleButton.d>
 	<gtk/RadioButton.d>
 	<gtk/CheckButton.d>
 	<gtk/Label.d>
@@ -3702,15 +3712,15 @@
 	<gtkc/cairotypes.d>
 	<cairo/Matrix.d>
 
-1388911894 /home/steve/COMPO//shapelib.d
+1390485794 /home/steve/COMPO//shapelib.d
 
-1388911894 source:/home/steve/COMPO/shapelib.d
+1390485794 source:/home/steve/COMPO/shapelib.d
 	<types.d>
 
-1389341529 /home/steve/COMPO//drawing.d
+1390804302 /home/steve/COMPO//drawing.d
 
-1389341529 source:/home/steve/COMPO/drawing.d
-	<main.d>
+1390804302 source:/home/steve/COMPO/drawing.d
+	<mainwin.d>
 	<constants.d>
 	<acomp.d>
 	<common.d>
@@ -3720,6 +3730,8 @@
 	<std/stdio.d>
 	<std/math.d>
 	<std/conv.d>
+	<std/zlib.d>
+	<std/net/curl.d>
 	<gtk/DrawingArea.d>
 	<gtk/Widget.d>
 	<gtk/Button.d>
@@ -3737,10 +3749,10 @@
 	<gtkc/cairotypes.d>
 	<cairo/Matrix.d>
 
-1389341674 /home/steve/COMPO//mesh.d
+1390804309 /home/steve/COMPO//mesh.d
 
-1389341674 source:/home/steve/COMPO/mesh.d
-	<main.d>
+1390804309 source:/home/steve/COMPO/mesh.d
+	<mainwin.d>
 	<constants.d>
 	<acomp.d>
 	<common.d>
@@ -3769,16 +3781,16 @@
 	<cairo/MeshPattern.d>
 	<cairo/Version.d>
 
-1381177161 /usr/local/include/d/gtkd-2/cairo/MeshPattern.d
+1384813905 /usr/local/include/d/gtkd-2/cairo/MeshPattern.d
 	<gtkc/cairotypes.d>
 
-1381177161 /usr/local/include/d/gtkd-2/cairo/Version.d
+1384813905 /usr/local/include/d/gtkd-2/cairo/Version.d
 	<gtkc/cairotypes.d>
 
-1389698264 /home/steve/COMPO//moon.d
+1390804310 /home/steve/COMPO//moon.d
 
-1389698264 source:/home/steve/COMPO/moon.d
-	<main.d>
+1390804310 source:/home/steve/COMPO/moon.d
+	<mainwin.d>
 	<constants.d>
 	<acomp.d>
 	<common.d>
@@ -3808,10 +3820,10 @@
 	<gtkc/cairotypes.d>
 	<cairo/Matrix.d>
 
-1389703082 /home/steve/COMPO//triangle.d
+1390804328 /home/steve/COMPO//triangle.d
 
-1389703082 source:/home/steve/COMPO/triangle.d
-	<main.d>
+1390804328 source:/home/steve/COMPO/triangle.d
+	<mainwin.d>
 	<constants.d>
 	<acomp.d>
 	<common.d>
@@ -3837,4 +3849,164 @@
 	<cairo/Context.d>
 	<gtkc/cairotypes.d>
 	<cairo/Matrix.d>
+
+1390804304 source:/home/steve/COMPO/flatten.d
+	<std/stdio.d>
+	<std/conv.d>
+	<types.d>
+	<mainwin.d>
+	<acomp.d>
+	<lineset.d>
+	<circle.d>
+	<crescent.d>
+	<curve.d>
+	<heart.d>
+	<moon.d>
+	<rect.d>
+	<polygon.d>
+	<pointset.d>
+	<polycurve.d>
+	<regpc.d>
+	<strokeset.d>
+
+1390804304 /home/steve/COMPO//flatten.d
+
+1390809641 /home/steve/COMPO//mainwin.d
+
+1390804597 source:/home/steve/COMPO/compo.d
+	<mainwin.d>
+	<gtk/Main.d>
+	<gtk/MainWindow.d>
+
+1390809641 source:/home/steve/COMPO/mainwin.d
+	<constants.d>
+	<config.d>
+	<common.d>
+	<sheets.d>
+	<menus.d>
+	<tree.d>
+	<acomp.d>
+	<tvitem.d>
+	<container.d>
+	<richtext.d>
+	<text.d>
+	<uspsib.d>
+	<line.d>
+	<separator.d>
+	<bevel.d>
+	<circle.d>
+	<corner.d>
+	<fader.d>
+	<lgradient.d>
+	<rgradient.d>
+	<heart.d>
+	<polygon.d>
+	<random.d>
+	<reference.d>
+	<rect.d>
+	<regpoly.d>
+	<arrow.d>
+	<fancytext.d>
+	<morphtext.d>
+	<pattern.d>
+	<partition.d>
+	<pixelimage.d>
+	<pglayout.d>
+	<treeops.d>
+	<serialize.d>
+	<deserialize.d>
+	<printing.d>
+	<controlsdlg.d>
+	<merger.d>
+	<serial.d>
+	<svgimage.d>
+	<crescent.d>
+	<cross.d>
+	<polycurve.d>
+	<strokeset.d>
+	<curve.d>
+	<drawing.d>
+	<pointset.d>
+	<regpc.d>
+	<shapelib.d>
+	<mesh.d>
+	<moon.d>
+	<triangle.d>
+	<flatten.d>
+	<brushdabs.d>
+	<std/stdio.d>
+	<std/conv.d>
+	<std/file.d>
+	<std/datetime.d>
+	<std/array.d>
+	<std/format.d>
+	<gobject/ObjectG.d>
+	<gobject/Value.d>
+	<glib/Idle.d>
+	<gtk/Main.d>
+	<gtk/Widget.d>
+	<gtk/Frame.d>
+	<gtk/ScrolledWindow.d>
+	<gtk/MainWindow.d>
+	<gtk/HBox.d>
+	<gtk/VBox.d>
+	<gtk/AccelGroup.d>
+	<gtk/MenuBar.d>
+	<gtk/Menu.d>
+	<gtk/MenuItem.d>
+	<gtk/MessageDialog.d>
+	<gtk/HPaned.d>
+	<gtkc/gtktypes.d>
+	<gtk/TreeView.d>
+	<gtk/TextView.d>
+	<gtk/TreeIter.d>
+	<gtk/TreePath.d>
+	<gtk/Layout.d>
+	<gtk/DrawingArea.d>
+	<gtk/TextBuffer.d>
+	<gtk/TextIter.d>
+	<gtk/TextTag.d>
+	<gtk/FontSelectionDialog.d>
+	<gtk/ColorSelectionDialog.d>
+	<gtk/ColorSelection.d>
+	<gtk/TreeModelIF.d>
+	<gtk/TreeSelection.d>
+	<gtk/TreeViewColumn.d>
+	<cairo/Context.d>
+	<gdk/Event.d>
+	<gdk/RGBA.d>
+	<gdk/Rectangle.d>
+	<pango/PgFontDescription.d>
+	<cairo/Surface.d>
+	<cairo/Context.d>
+	<gdk/Screen.d>
+
+1390980470 /home/steve/COMPO//brushdabs.d
+
+1390980470 source:/home/steve/COMPO/brushdabs.d
+	<mainwin.d>
+	<constants.d>
+	<acomp.d>
+	<common.d>
+	<types.d>
+	<controlset.d>
+	<std/stdio.d>
+	<std/math.d>
+	<std/conv.d>
+	<std/random.d>
+	<gtk/DrawingArea.d>
+	<gtk/Widget.d>
+	<gtk/Button.d>
+	<gtk/Layout.d>
+	<gtk/Frame.d>
+	<gdk/RGBA.d>
+	<gtk/ComboBoxText.d>
+	<gtk/ToggleButton.d>
+	<gtk/RadioButton.d>
+	<gtk/CheckButton.d>
+	<gtk/Label.d>
+	<cairo/Context.d>
+	<gtkc/cairotypes.d>
+	<cairo/Matrix.d>
+	<cairo/Surface.d>
 

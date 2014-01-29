@@ -10,7 +10,7 @@ module fancytext;
 import types;
 import controlset;
 
-import main;
+import mainwin;
 import acomp;
 import tvitem;
 import common;
@@ -79,7 +79,7 @@ class FancyText : TextViewItem
    int orientation;
    double angle;
    double olt;
-   double lastHo = double.min, lastVo = double.max;
+   double lastHo = double.min_normal, lastVo = double.max;
    bool angleFixed, fill, solid;
    RGBA saveAltColor;
    CairoPath* tPath;
@@ -214,14 +214,14 @@ class FancyText : TextViewItem
 
    override void preResize(int oldW, int oldH)
    {
-      lastHo = double.min, lastVo = double.max;
+      lastHo = double.min_normal, lastVo = double.max;
       double vr = cast(double) width/oldW;
       double hr = cast(double) width/oldW;
       hOff *= hr;
       vOff *= vr;
    }
 
-   void bufferChanged(TextBuffer b)
+   override void bufferChanged(TextBuffer b)
    {
       aw.dirty = true;
       textChanged = true;
@@ -289,7 +289,7 @@ class FancyText : TextViewItem
       reDraw();
    }
 
-   void setOrientation(int o)
+   override void setOrientation(int o)
    {
       orientation = o;
       angleChanged = true;
@@ -319,7 +319,7 @@ class FancyText : TextViewItem
       reDraw();
    }
 
-   void toggleView()
+   override void toggleView()
    {
       if (editMode)
       {
@@ -350,6 +350,13 @@ class FancyText : TextViewItem
             cSet.enable(Purpose.MOL, 1);
          cSet.enable(Purpose.INCH, 0);
          dframe.show();
+         string txt=tb.getText();
+         if (txt.length)
+         {
+            if (txt.length > 20)
+               txt = txt[0..20];
+            setName(txt);
+         }
          da.show();
       }
       aw.dirty = true;

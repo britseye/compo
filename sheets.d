@@ -18,7 +18,7 @@ import std.math;
 import avery;
 import generic;
 import types;
-import main;
+import mainwin;
 
 import gdk.RGBA;
 import gtk.Widget;

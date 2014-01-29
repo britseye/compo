@@ -7,7 +7,7 @@
 // Written in the D programming language
 module menus;
 
-import main;
+import mainwin;
 import config;
 import treeops;
 import acomp;
@@ -49,9 +49,10 @@ import gtk.MountOperation;
 import gtkc.gtktypes;
 
 string[] fileNewSa = [ "Layered Composition", "Standalone Items", ];
-string[] cmSa = [ "Append item", "Save Image", "Move up", "Move down", "Duplicate", "Cut", "Delete", "Paste" ];
+string[] cmSa = [ "Append item", "Save Image", "Make Drawing", "Move up", "Move down", "Duplicate", "Cut", "Delete", "Paste" ];
 string[] imSa = [ "Move up", "Move down", "Add item after", "Add item before", "Duplicate", "Copy", "Cut", "Delete", "Paste" ];
-string[] rootSa = [ "Append Composition", "Append Standalone Item", "Paste", "Toggle RHS View", "Fill", "Print Immediate"];
+string[] smSa = [ "Duplicate", "Copy", "Cut", "Delete" ];
+string[] rootSa = [ "Append Composition", "Append Standalone Item", "Paste", "Expand All", "Collapse All", "Toggle RHS View", "Fill", "Print Immediate"];
 /*
 string[] itemsSa = [ "Plain Text", "USPS Address", "Serial Number", "Rich Text", "Fancy Text", "Morphed Text", "Pattern", "Picture", "Arrow",
                      "Bevel", "Box", "Circle", "Connector", "Corner", "Fader", "LGradient", "RGradient", "Heart", "Line", "Partition",
@@ -67,7 +68,7 @@ string[] allSa = [ "Plain Text", "USPS Address", "Serial Number", "Rich Text", "
 // All the things that can appear under 'Add/Append Item'
 string[] itemsSa = [ "Text", "Effects", "Geometric", "Image", "Reference", "Shapes", "Drawings" ];
 string[] txtSa = [ "Plain Text", "USPS Address", "Serial Number", "Rich Text", "Fancy Text", "Morphed Text" ];
-string[] effectsSa = [ "Bevel", "Corner", "Fader", "LGradient", "Mesh", "Partition", "Pattern", "Random", "RGradient", "Separator" ];
+string[] effectsSa = [ "Bevel","Brush Dabs", "Corner", "Fader", "LGradient", "Mesh", "Partition", "Pattern", "Random", "RGradient", "Separator" ];
 string[] geoSa = [ "Curve", "Line", "PointSet", "Polygon", "Polycurve", "Regular Polygon", "Regular Polycurve", "StrokeSet"];
 string[] shapesSa = [ "Arrow", "Circle", "Crescent", "Cross", "Heart", "Moon", "Rectangle", "Star", "Triangle" ];
 string[] imgSa = ["PixelImage", "SVGImage"];
@@ -230,6 +231,19 @@ class ContextMenus
             t.setSubmenu(itemsSm);
          else if (i == 3)
             t.setSubmenu(itemsSm);
+      }
+      m.showAll();
+      return m;
+   }
+
+   Menu createSingletonContextMenu(void delegate(MenuItem) dg)
+   {
+      Menu m = new Menu();
+      Menu itemsSm = createItemsMenu(true);
+      foreach (int i, string s; smSa)
+      {
+         MenuItem t = new MenuItem(dg, s);
+         m.append(t);
       }
       m.showAll();
       return m;
@@ -612,10 +626,13 @@ class MainMenu: MenuBar
          {
             int rv = aw.willSave();
             if (rv == ResponseType.OK)
+            {
                if (!aw.serializer.serialize(false))
                   return;
-               else if (rv == ResponseType.CANCEL)
-                  return;
+            }
+            else if (rv == ResponseType.CANCEL)
+               return;
+            else {}
          }
          aw.merger.clear();
          aw.deserializer.deserialize();
@@ -664,10 +681,13 @@ class MainMenu: MenuBar
          {
             int rv = aw.willSave();
             if (rv == ResponseType.OK)
+            {
                if (!aw.serializer.serialize(false))
                   return;
-               else if (rv == ResponseType.CANCEL)
-                  return;
+            }
+            else if (rv == ResponseType.CANCEL)
+               return;
+            else {}
          }
          aw.merger.clear();
          aw.deserializer.deserialize(fn);
@@ -699,7 +719,7 @@ class MainMenu: MenuBar
       x.addAccelerator("activate", aw.acg, KeyVals.c, ModifierType.CONTROL_MASK, AccelFlags.VISIBLE);
       edit.append(x);
 
-      x = new MenuItem("Copy as _Image");
+      x = new MenuItem("Copy as Ima_ge");
       mits ~= x;
       x.addOnActivate(&editMenuHandler);
       edit.append(x);
@@ -733,7 +753,7 @@ class MainMenu: MenuBar
       x = new SeparatorMenuItem();
       edit.append(x);
 
-      x = new MenuItem("_Settings");
+      x = new MenuItem("P_references");
       mits ~= x;
       x.addOnActivate(&editMenuHandler);
       edit.append(x);
@@ -764,34 +784,6 @@ class MainMenu: MenuBar
          }
          if (aw.cto is null)
             return;
-         /*
-         if (aw.cto.type < AC_RICHTEXT)
-         {
-            TextViewItem tvi = cast(TextViewItem) aw.cto;
-            if (tvi.editMode)
-            {
-               tvi.undoTB();
-               tvi.te.queueDraw();
-            }
-            else
-               aw.cto.undo();
-         }
-         else if (aw.cto.type == AC_RICHTEXT)
-         {
-            RichText rt = cast(RichText) aw.cto;
-            if (rt.editMode)
-            {
-               rt.undoTB();
-               rt.te.queueDraw();
-            }
-            else
-               aw.cto.undo();
-         }
-         else
-         {
-            aw.cto.undo();
-         }
-         */
          aw.cto.undo();
          break;
       case "_Copy":
@@ -809,7 +801,7 @@ class MainMenu: MenuBar
             TextViewItem tvi = cast(TextViewItem) aw.cto;
             tvi.tb.copyClipboard(cb);
          }
-         else if (group == ACGroups.PICTURE)
+         else if (group == ACGroups.PIXMAP)
          {
             Clipboard cb = Clipboard.get(cbAtom);
             PixelImage pixelImage = cast(PixelImage) aw.cto;
@@ -817,7 +809,7 @@ class MainMenu: MenuBar
          }
       }
       break;
-      case "Copy as _Image":
+      case "Copy as Ima_ge":
          Pixbuf pb = (cast(Container) aw.getRenderItem()).getPixbuf();
          Clipboard cb = Clipboard.get(cbAtom);
          cb.setImage(pb);
@@ -866,7 +858,6 @@ class MainMenu: MenuBar
                   aw.doItemInsert(null, 2, ni);
                }
             }
-            return;
          }
          ACGroups group = aw.cto.getGroup();
          if (group == ACGroups.TEXT)
@@ -879,13 +870,16 @@ class MainMenu: MenuBar
             tvi.tb.insertAtCursor(cbtext);
             aw.cto.reDraw();
          }
-         else if (group == ACGroups.PICTURE)
+         else if (group == ACGroups.PIXMAP)
          {
             Clipboard cb = Clipboard.get(cbAtom);
             Pixbuf img = cb.waitForImage();
             PixelImage pixelImage = cast(PixelImage) aw.cto;
             pixelImage.pasteImg(img);
+            aw.cto.reDraw();
          }
+         else
+            aw.popupMsg("There is no data in the clipboard\nthat is applicable to the currently\nselected item", MessageType.INFO);
       }
       break;
       case "_Add a Composition":
@@ -893,7 +887,7 @@ class MainMenu: MenuBar
          break;
       case "Add a Standalone _Item":
          break;
-      case "_Settings":
+      case "P_references":
          SettingsDlg sd = new SettingsDlg(aw);
          sd.run();
          break;
@@ -1070,7 +1064,6 @@ class MainMenu: MenuBar
          break;
       case "Printer _Alignment Test":
          aw.printHandler.printAlignment();
-         break;
          break;
       default:
          aw.popupMsg("Unrecognized  Option"~label, MessageType.ERROR);

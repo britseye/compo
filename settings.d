@@ -13,7 +13,7 @@ import std.array;
 import std.string;
 import std.path;
 
-import main;
+import mainwin;
 import acomp;
 import config;
 

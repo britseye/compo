@@ -7,7 +7,7 @@
 // Written in the D programming language
 module controlsdlg;
 
-import main;
+import mainwin;
 import controlset;
 import acomp;
 import menus;
