@@ -63,6 +63,8 @@ enum Purpose
    RECENTER,
    REMEMBER,
    UNDO,
+   REFRESH,
+   XCOLOR,
 
    R_RADIOBUTTONS = 1000,
    TOPLEFT,
@@ -96,6 +98,7 @@ enum Purpose
    HRDATA,
    FILL,
    FILLOUTLINE,
+   OUTLINE,
    PIN,
    SOLID,
    ROUNDED,
@@ -120,6 +123,7 @@ enum Purpose
    PATTERN,
    LOCALCTR,
    DCOLORS,
+   FILLOPTIONS,
 
    R_GP = 6000,
    ALIGNMENT,

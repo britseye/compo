@@ -52,7 +52,7 @@ class Reference : ACBase
    {
       this(other.aw, other.parent);
       fileName = other.fileName;
-      that = cast(Container) aw.cloneItem(other.that);
+      that = other.that;   // It's a reference - no need to copy
       scf = other.scf;
       local = other.local;
    }
@@ -62,7 +62,7 @@ class Reference : ACBase
       string s = "Reference "~to!string(++nextOid);
       super(w, parent, s, AC_REFERENCE);
       group = ACGroups.REFERENCE;
-      tm = new Matrix(&tmData)      ;
+      tm = new Matrix(&tmData);
 
       setupControls();
       positionControls(true);

@@ -36,6 +36,7 @@ import gtk.Label;
 import gtk.ToggleButton;
 import gtk.CheckButton;
 import gtk.RadioButton;
+import gtk.ComboBoxText;
 import gtk.Arrow;
 import gtk.Entry;
 import gdk.RGBA;
@@ -80,7 +81,7 @@ class FancyText : TextViewItem
    double angle;
    double olt;
    double lastHo = double.min_normal, lastVo = double.max;
-   bool angleFixed, fill, solid;
+   bool angleFixed, fill, outline;
    RGBA saveAltColor;
    CairoPath* tPath;
    CairoPath pathCopy;
@@ -100,14 +101,8 @@ class FancyText : TextViewItem
       cSet.setTextParams(alignment, pfd.toString());
       cSet.toggling(false);
       if (!angleFixed) cSet.enable(Purpose.MOL, 1);
-      if (solid)
-      {
-         cSet.setToggle(Purpose.SOLID, true);
-         cSet.disable(Purpose.FILL);
-         cSet.disable(Purpose.FILLCOLOR);
-      }
-      else if (fill)
-         cSet.setToggle(Purpose.FILL, true);
+      if (outline)
+         cSet.setToggle(Purpose.OUTLINE, true);
       if (editMode)
       {
          cSet.setToggle(Purpose.EDITMODE, true);
@@ -133,7 +128,7 @@ class FancyText : TextViewItem
       altColor = other.altColor.copy;
       pfd = other.pfd.copy();
       fill = other.fill;
-      solid = other.solid;
+      outline = other.outline;
       olt = other.olt;
       orientation = other.orientation;
       hOff = other.hOff;
@@ -154,6 +149,7 @@ class FancyText : TextViewItem
       aw = w;
       olt = 0.2;
       altColor = new RGBA(0,0,0,1);
+      fill = false;
       angle = 0.0;
       angleFixed = true;
       tm = new Matrix(&tmData);
@@ -161,6 +157,7 @@ class FancyText : TextViewItem
       int vp = rpTm+height+85;
       int tvp = vp;
       setupControls(1);
+      outline = true;
       cSet.setLineWidth(olt);
       positionControls(true);
    }
@@ -180,17 +177,6 @@ class FancyText : TextViewItem
       cSet.add(l, ICoord(167, tvp), Purpose.LABEL);
       MOLLineThick mlt = new MOLLineThick(cSet, 0, ICoord(240, tvp+5), false);
 
-      CheckButton cb = new CheckButton("Fill with color");
-      cb.setSensitive(0);
-      cSet.add(cb, ICoord(170, tvp+35), Purpose.FILL);
-
-      cb = new CheckButton("Solid");
-      cb.setSensitive(0);
-      cSet.add(cb, ICoord(170, tvp+55), Purpose.SOLID);
-
-      Button b = new Button("Fill Color");
-      b.setSensitive(0);
-      cSet.add(b, ICoord(170, tvp+87), Purpose.FILLCOLOR);
 
       vp += 45;
       l = new Label("Angle");
@@ -201,7 +187,21 @@ class FancyText : TextViewItem
 
       new InchTool(cSet, 0, ICoord(0, vp), false);
 
-      cSet.cy=vp+40;
+      vp += 35;
+      CheckButton check = new CheckButton("Outline");
+      check.setActive(1);
+      cSet.add(check, ICoord(0, vp), Purpose.OUTLINE);
+
+      fillOptions = new ComboBoxText(false);
+      fillOptions.appendText("Choose Fill Type");
+      fillOptions.appendText("Solid Color");
+      fillOptions.appendText("Translucent Color");
+      fillOptions.appendText("Refresh Options");
+      getFillOptions(this);
+      fillOptions.setActive(0);
+      cSet.add(fillOptions, ICoord(120, vp-5), Purpose.FILLOPTIONS);
+
+      cSet.cy = vp+30;
    }
 
    override void afterDeserialize()
@@ -241,18 +241,32 @@ class FancyText : TextViewItem
          else
             cSet.disable(Purpose.FILLCOLOR);
          break;
-      case Purpose.SOLID:
-         solid = !solid;
-         if (solid)
+      case Purpose.OUTLINE:
+         outline = !outline;
+         break;
+      case Purpose.FILLOPTIONS:
+         int n = (cast(ComboBoxText) w).getActive();
+         if (n == 0)
+            return false;
+         if (n == 1 || n == 2)
          {
-            cSet.disable(Purpose.FILL);
-            cSet.disable(Purpose.FILLCOLOR);
+            lastOp = push!RGBA(this, altColor, OP_ALTCOLOR);
+            setColor(true);
+            fillFromPattern = false;
+            fill = true;
+         }
+         else if (n == 3)
+         {
+            updateFillOptions(this);
+            return false;
          }
          else
          {
-            cSet.enable(Purpose.FILL);
-            cSet.enable(Purpose.FILLCOLOR);
+            fillFromPattern = true;
+            fillUid = others[n-4];
+            fill = true;
          }
+         fillOptions.setActive(0);
          break;
       default:
          return false;
@@ -430,19 +444,7 @@ class FancyText : TextViewItem
       pgl.getExtents(null, &pr);
       c.moveTo(lpX+0.5*width-pr.width/2048, lpY+.5*height-pr.height/2048);
       PgCairo.layoutPath(c, pgl);
-
-      c.setSourceRgb(baseColor.red,baseColor.green,baseColor.blue);
-      c.setLineWidth(olt);
-      c.strokePreserve();
-      if (solid)
-         c.fill();
-      else if (fill)
-      {
-         c.setSourceRgba(altColor.red, altColor.green, altColor.blue, 1.0);
-         c.fill();
-      }
+      strokeAndFill(c, olt, outline, fill);
       c.restore();
-
-      if (!isMoved) cSet.setDisplay(0, reportPosition());
    }
 }

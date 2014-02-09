@@ -23,6 +23,7 @@ import std.conv;
 import std.math;
 import std.array;
 import std.format;
+import std.uuid;
 
 import core.memory;
 import gtkc.gtktypes;
@@ -35,7 +36,7 @@ import gtk.CheckButton;
 import gtk.Button;
 import gtk.EventBox;
 import gtk.Label;
-import gtk.ComboBox;
+import gtk.ComboBoxText;
 import gdk.Event;
 import gdk.RGBA;
 import gtk.Layout;
@@ -337,6 +338,8 @@ enum
    AC_MESH,
    AC_MOON,
    AC_TRIANGLE,
+   AC_NOISE,
+   AC_TILINGS,
 
    AC_CONTAINER = 1000,
    AC_DUMMY,
@@ -346,7 +349,7 @@ enum
 string[] _ACTypeNames = [ "Text", "USPS Address", "Fancy Text", "Morphed Text", "Serial Number", "Rich Text", "Brush Dabs", "Pattern",
                           "PixelImage", "Line", "Rectangle", "Circle", "Curve", "Regular Polygon", "Regular Polycurve", "PointSet", "Polygon", "Polycurve", "Arrow", "Heart", "Barcode",
                           "Separator", "Corner", "Crescent", "Cross", "Bevel", "Fader", "LGradient", "RGradient",
-                          "Random", "Partition", "Reference", "SVGImage", "StrokeSet", "Drawing", "Mesh", "Moon", "Triangle" ];
+                          "Random", "Partition", "Reference", "SVGImage", "StrokeSet", "Drawing", "Mesh", "Moon", "Triangle", "Noise", "Color Tilings" ];
 string ACTypeNames(int t)
 {
    if (t < AC_CONTAINER)
@@ -375,6 +378,7 @@ enum ACGroups
    SVG,
    DRAWING,
    REFERENCE,
+   DRAWINGS,
    CONTAINER
 }
 
@@ -385,6 +389,8 @@ class ACBase : CSTarget     // Area Composition base class
    static bool svgFlag = false;
    static bool printFlag = false;
    AppWindow aw;
+   UUID uuid;
+   UUID[] others;
    bool dirty, hidden;
    int lastOp;
    CheckPoint[] cpStack;
@@ -403,8 +409,11 @@ class ACBase : CSTarget     // Area Composition base class
    Frame dframe;
    Layout layout;
    DrawingArea da;
+   ComboBoxText fillOptions;
+   bool fillFromPattern;
+   UUID fillUid;
    int renderCalled;
-   Surface background, pattern;
+   Surface background;
    ACBase skip;
    RGBA baseColor, altColor;
    Coord mPos;
@@ -427,6 +436,7 @@ class ACBase : CSTarget     // Area Composition base class
       aw = w;
       name = _name;
       type = _type;
+      uuid = md5UUID(name~to!string(type)~".COMPO");
       lastOp = OP_NONE;
       if (_type != AC_ROOT && type != AC_DUMMY)
       {
@@ -487,10 +497,6 @@ class ACBase : CSTarget     // Area Composition base class
    void onCSCompass(int instance, double angle, bool coarse) {}
    void onCSSaveSelection() {}
    void onCSPalette(PartColor[]) {}
-
-   bool isFillPattern() { return false; }
-   Surface getPattern() { return null; }
-   void renderHere(Context c) {}
 
    final ACBase prevSibling()
    {
@@ -1044,6 +1050,9 @@ class ACBase : CSTarget     // Area Composition base class
          return false;
       }
       cs.getCurrentRgba(color);
+      ushort us = cs.getCurrentAlpha();
+      double a = (cast(double) us)/ushort.max;
+      color.alpha(a);
       csd.destroy();
       return applyColor(color, alt);
    }
@@ -1054,6 +1063,7 @@ class ACBase : CSTarget     // Area Composition base class
       RGBA color = new RGBA();
       ColorSelectionDialog csd = new ColorSelectionDialog("Choose a Color");
       ColorSelection cs = csd.getColorSelection();
+      cs.setHasOpacityControl (1);
       cs.setCurrentRgba(current);
       int response = csd.run();
       if (response != ResponseType.OK)
@@ -1062,6 +1072,9 @@ class ACBase : CSTarget     // Area Composition base class
          return null;
       }
       cs.getCurrentRgba(color);
+      ushort us = cs.getCurrentAlpha();
+      double a = (cast(double) us)/ushort.max;
+      color.alpha(a);
       csd.destroy();
       return color;
    }
@@ -1193,42 +1206,78 @@ class ACBase : CSTarget     // Area Composition base class
 
    void doZoom(Context c) {}
 
-   void strokeAndFill(Context c, double lw, bool solid, bool fill)
+   final void getFillOptions(ACBase that)
    {
-      void doFill(bool preserve)
+      FillOptions fo;
+      fo.init(that);
+      FillOption[] foa = fo.get();
+      that.others.length = foa.length;
+      foreach (int i, FillOption o; foa)
       {
-         ACBase ps = prevSibling();
-         if (ps !is null && ps.isFillPattern())
+         that.others[i] = o.uuid;
+         fillOptions.appendText(o.name);
+      }
+   }
+
+
+   final void updateFillOptions(ACBase that)
+   {
+      FillOptions fo;
+      fo.init(that);
+      FillOption[] foa = fo.get();
+
+      bool exists(UUID uid)
+      {
+         for (int i = 0; i < that.others.length; i++)
          {
-            c.setSourceSurface(ps.getPattern(), 0, 0);
-            if (preserve)
-               c.fillPreserve();
-            else
-               c.fill();
-            return;
+            if (that.others[i] == uid)
+               return true;
          }
+         return false;
+      }
+
+      foreach (int i, FillOption o; foa)
+      {
+         if (exists(o.uuid))
+            continue;
+         that.others ~= o.uuid;
+         fillOptions.appendText(o.name);
+      }
+   }
+
+   void strokeAndFill(Context c, double lw, bool outline, bool fill)
+   {
+      void doFill()
+      {
+         if (fillFromPattern)
+         {
+            ACBase acb = aw.getObjectByUid(fillUid);
+            if (acb is null)
+               c.setSourceRgb(0,0,0);
+            else
+               c.setSourceSurface(acb.getPaintedSurface(c), 0, 0);
+         }
+         else
+            c.setSourceRgba(altColor.red, altColor.green, altColor.blue, altColor.alpha);
+         if (outline)
+            c.fillPreserve();
          else
             c.fill();
       }
 
-      if (solid)
+      if (fill)
       {
-         //c.strokePreserve();
-         c.setSourceRgba(baseColor.red, baseColor.green, baseColor.blue, 1.0);
-         doFill(false);
-      }
-      else if (fill)
-      {
-         //c.strokePreserve();
-         c.setSourceRgba(altColor.red, altColor.green, altColor.blue, 1.0);
-         doFill(true);
-         c.setSourceRgb(baseColor.red, baseColor.green, baseColor.blue);
-         c.setLineWidth(lw);
-         c.stroke();
+         doFill();
+         if (outline)
+         {
+            c.setSourceRgb(baseColor.red, baseColor.green, baseColor.blue);
+            c.setLineWidth(lw);
+            c.stroke();
+         }
       }
       else
       {
-         c.setSourceRgba(baseColor.red, baseColor.green, baseColor.blue, 1.0);
+         c.setSourceRgb(baseColor.red, baseColor.green, baseColor.blue);
          c.setLineWidth(lw);
          c.stroke();
       }
@@ -1306,10 +1355,12 @@ class ACBase : CSTarget     // Area Composition base class
       extendControls();
       RenameGadget rg = new RenameGadget(cSet, ICoord(0, cSet.cy), name, true);
       rg.setName(name);
-      CheckButton cb = new CheckButton("Hide Item");
-      cb.setActive(0);
-      cSet.add(cb, ICoord(210, cSet.cy), Purpose.HIDE, true);
-
+      if (type != AC_CONTAINER)
+      {
+         CheckButton cb = new CheckButton("Hide Item");
+         cb.setActive(0);
+         cSet.add(cb, ICoord(210, cSet.cy), Purpose.HIDE, true);
+      }
    }
    void extendControls() {}
 
@@ -1461,5 +1512,14 @@ class ACBase : CSTarget     // Area Composition base class
       hOff = savedHOff;
       vOff = savedVOff;
       lpX = lpY = 0.0;
+   }
+
+   Surface getPaintedSurface(Context c)
+   {
+      Surface pattern = c.getTarget().createSimilar(cairo_content_t.COLOR_ALPHA, width, height);
+      Context sc = Context.create(pattern);
+      dirty = false;
+      render(sc);
+      return pattern;
    }
 }

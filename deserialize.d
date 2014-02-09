@@ -49,6 +49,9 @@ import crescent;
 import moon;
 import triangle;
 import brushdabs;
+import noise;
+import mesh;
+import tilings;
 
 import std.stdio;
 import std.conv;
@@ -57,6 +60,8 @@ import std.format;
 import std.stream;
 import std.string;
 import std.conv;
+import std.path;
+import std.uuid;
 
 import gdk.RGBA;
 import pango.PgFontDescription;
@@ -265,7 +270,8 @@ class Deserializer
          return;
       }
       aw.adjustRecent(fileName);
-      string line = cast(string) si.readLine();    // skip the filename - debug only
+      si.readLine();    // skip the filename - debug only
+      aw.versionLoaded = cast(string) si.readLine();
       string sheetName = cast(string) si.readLine();
       aw.newTV(-1, sheetName);
 
@@ -331,9 +337,14 @@ class Deserializer
 
       si = new std.stream.File(fileName, FileMode.In);
       string line = cast(string) si.readLine();    // skip the filename - debug only
+      aw.versionLoaded = cast(string) si.readLine();
       string sheetName = cast(string) si.readLine(); // skip the sheet name
 
       si.readLine();
+      getNV(__LINE__, "dWidth");   // These are not used directly by COMPO, but may be needed by other tools
+      dWidth = to!double(val);
+      getNV(__LINE__, "dHeight");
+      dHeight = to!double(val);
       getNV(__LINE__, "rootItems");
       int rootItems = to!int(val);
       if (rootItems != 1)
@@ -347,6 +358,42 @@ class Deserializer
          r.that = that;
    }
 
+   void deserializeDrawing(Drawing d)
+   {
+      string s = d.dName.toLower();
+      fileName = expandTilde("/usr/share/compo/drawings/"~s~".compo");
+
+      try
+      {
+          si = new std.stream.File(fileName, FileMode.In);
+      }
+      catch (Exception x)
+      {
+         aw.popupMsg("Failed to open file "~fileName, MessageType.ERROR);
+         return;
+      }
+      string line = cast(string) si.readLine();    // skip the filename - debug only
+      aw.versionLoaded = cast(string) si.readLine();
+      string sheetName = cast(string) si.readLine(); // skip the sheet name
+
+      si.readLine();
+      getNV(__LINE__, "dWidth");   // These are not used directly by COMPO, but ma be needed by other tools
+      dWidth = to!double(val);
+      getNV(__LINE__, "dHeight");
+      dHeight = to!double(val);
+      getNV(__LINE__, "rootItems");
+      int rootItems = to!int(val);
+      if (rootItems < 1)
+      {
+         aw.popupMsg("The COMPO file is empty", MessageType.ERROR);
+         return;
+      }
+
+      Container that = readComposition(d);
+      if (that !is null)
+         d.that = that;
+   }
+
    void readItem()
    {
       line = skip();
@@ -356,13 +403,15 @@ class Deserializer
          if (line != "type=1000")
             throw new DSException(__LINE__, line, "Incorrect type for Container");
 
-         ACBase ctr = new Container(aw, aw.tm.root);
+         Container ctr = new Container(aw, aw.tm.root);
          aw.tm.root.children ~= ctr;
          aw.treeOps.notifyInsertion(ctr);
 
          basics(ctr);
          getNV(__LINE__, "baseColor");
          ctr.baseColor = makeColor(val);
+         getNV(__LINE__, "nextChildId");
+         ctr.nextChildId = to!int(val);
          getNV(__LINE__, "cc");
          int cc = to!int(val);
 
@@ -387,7 +436,7 @@ class Deserializer
       }
    }
 
-   Container readContainer(Reference r)
+   Container readContainer(ACBase r)
    {
       line = skip();
       if (line != "// Composition")
@@ -403,6 +452,8 @@ class Deserializer
       basics(ctr);
       getNV(__LINE__, "baseColor");
       ctr.baseColor = makeColor(val);
+      getNV(__LINE__, "nextChildId");
+      ctr.nextChildId = to!int(val);
       getNV(__LINE__, "cc");
       int cc = to!int(val);
 
@@ -418,7 +469,7 @@ class Deserializer
       return ctr;
    }
 
-   Container readComposition(Reference r)
+   Container readComposition(ACBase r)
    {
       try
       {
@@ -427,10 +478,13 @@ class Deserializer
             throw new DSException(__LINE__, line, "COMPO file for reference use should contain a Composition as the first element");
          getLn();
          Container ctr = new Container(aw, r);
+         ctr.setTransparent();
 
          basics(ctr);
          getNV(__LINE__, "baseColor");
-         ctr.baseColor = makeColor(val);
+         //ctr.baseColor = makeColor(val);
+         getNV(__LINE__, "nextChildId");
+         ctr.nextChildId = to!int(val);
          getNV(__LINE__, "cc");
          int cc = to!int(val);
 
@@ -525,9 +579,17 @@ class Deserializer
          child = new LGradient(aw, parent);
          setupLGradient(cast(LGradient) child);
          break;
+      case AC_MESH:
+         child = new Mesh(aw, parent);
+         setupMesh(cast(Mesh) child);
+         break;
       case AC_MOON:
          child = new Moon(aw, parent);
          setupMoon(cast(Moon) child);
+         break;
+      case AC_NOISE:
+         child = new Noise(aw, parent);
+         setupNoise(cast(Noise) child);
          break;
       case AC_MORPHTEXT:
          child = new MorphText(aw, parent, true);
@@ -586,12 +648,16 @@ class Deserializer
          child = new Separator(aw, parent);
          setupSeparator(cast(Separator) child);
          break;
+      case AC_TILINGS:
+         child = new Tilings(aw, parent);
+         setupTilings(cast(Tilings) child);
+         break;
       case AC_TRIANGLE:
          child = new Triangle(aw, parent);
          setupTriangle(cast(Triangle) child);
          break;
       case AC_DRAWING:
-         child = new Drawing(aw, parent, "");
+         child = new Drawing(aw, parent);
          setupDrawing(cast(Drawing) child);
          break;
       case AC_REFERENCE:
@@ -613,6 +679,8 @@ class Deserializer
    {
       getNV(__LINE__, "name");
       acb.name = val;
+      getNV(__LINE__, "uuid");
+      acb.uuid = UUID(val);
       getNV(__LINE__, "hOff");
       acb.hOff = to!double(val);
       getNV(__LINE__, "vOff");
@@ -761,8 +829,8 @@ class Deserializer
       x.olt = to!double(val);
       getNV(__LINE__, "fill");
       x.fill = to!bool(val);
-      getNV(__LINE__, "solid");
-      x.solid = to!bool(val);
+      getNV(__LINE__, "outline");
+      x.outline = to!bool(val);
       getNV(__LINE__, "text_length");
       int n = to!int(val);
       string text = cast(string) readBytes(n);
@@ -789,8 +857,8 @@ class Deserializer
       x.altColor = makeColor(val);
       getNV(__LINE__, "fill");
       x.fill = to!bool(val);
-      getNV(__LINE__, "solid");
-      x.solid = to!bool(val);
+      getNV(__LINE__, "outline");
+      x.outline = to!bool(val);
       getNV(__LINE__, "olt");
       x.olt = to!double(val);
       getNV(__LINE__, "tf");
@@ -822,8 +890,8 @@ class Deserializer
       x.hw = to!int(val);
       getNV(__LINE__, "fill");
       x.fill = to!bool(val);
-      getNV(__LINE__, "solid");
-      x.solid = to!bool(val);
+      getNV(__LINE__, "outline");
+      x.outline = to!bool(val);
       getNV(__LINE__, "center");
       x.center = s2Coord(val, __LINE__);
       getNV(__LINE__, "oPath");
@@ -857,13 +925,17 @@ class Deserializer
       getNV(__LINE__, "bcp");
       x.bcp = to!double(val);
       getNV(__LINE__, "nDabs");
-      x.nDabs = to!int(val);
+      x.nDabs = to!uint(val);
+      getNV(__LINE__, "shapeSeed");
+      x.shapeSeed = to!uint(val);
+      getNV(__LINE__, "colorSeed");
+      x.colorSeed = to!uint(val);
       getNV(__LINE__, "angle");
       x.angle = to!double(val);
       getNV(__LINE__, "pointed");
       x.pointed = to!bool(val);
-      getNV(__LINE__, "dontRender");
-      x.dontRender = to!bool(val);
+      getNV(__LINE__, "shade");
+      x.shade = to!int(val);
       getNV(__LINE__, "pca");
       x.pca[] = s2PartColorArray(val,__LINE__)[];
       x.afterDeserialize();
@@ -885,8 +957,8 @@ class Deserializer
       x.tf = makeTransform(val);
       getNV(__LINE__, "fill");
       x.fill = to!bool(val);
-      getNV(__LINE__, "solid");
-      x.solid = to!bool(val);
+      getNV(__LINE__, "outline");
+      x.outline = to!bool(val);
       x.afterDeserialize();
    }
 
@@ -926,8 +998,8 @@ class Deserializer
       x.les = to!bool(val);
       getNV(__LINE__, "fill");
       x.fill = to!bool(val);
-      getNV(__LINE__, "solid");
-      x.solid = to!bool(val);
+      getNV(__LINE__, "outline");
+      x.outline = to!bool(val);
       getNV(__LINE__, "center");
       x.center = s2Coord(val, __LINE__);
       getNV(__LINE__, "r0");
@@ -957,8 +1029,8 @@ class Deserializer
       x.les = to!bool(val);
       getNV(__LINE__, "fill");
       x.fill = to!bool(val);
-      getNV(__LINE__, "solid");
-      x.solid = to!bool(val);
+      getNV(__LINE__, "outline");
+      x.outline = to!bool(val);
       getNV(__LINE__, "center");
       x.center = s2Coord(val, __LINE__);
       getNV(__LINE__, "oPath");
@@ -1013,8 +1085,8 @@ class Deserializer
       x.xform = to!int(val);
       getNV(__LINE__, "fill");
       x.fill = to!bool(val);
-      getNV(__LINE__, "solid");
-      x.solid = to!bool(val);
+      getNV(__LINE__, "outline");
+      x.outline = to!bool(val);
       x.afterDeserialize();
    }
 
@@ -1057,6 +1129,15 @@ class Deserializer
       x.afterDeserialize();
    }
 
+   void setupMesh(Mesh x)
+   {
+      basics(x);
+
+      getNV(__LINE__, "pattern");
+      x.pattern = to!int(val);
+      x.afterDeserialize();
+   }
+
    void setupMoon(Moon x)
    {
       basics(x);
@@ -1073,10 +1154,27 @@ class Deserializer
       x.tf = makeTransform(val);
       getNV(__LINE__, "fill");
       x.fill = to!bool(val);
-      getNV(__LINE__, "solid");
-      x.solid = to!bool(val);
+      getNV(__LINE__, "outline");
+      x.outline = to!bool(val);
       getNV(__LINE__, "day");
       x.day = to!int(val);
+      x.afterDeserialize();
+   }
+
+   void setupNoise(Noise x)
+   {
+      basics(x);
+
+      getNV(__LINE__, "baseColor");
+      x.baseColor = makeColor(val);
+      getNV(__LINE__, "lineWidth");
+      x.lineWidth = to!double(val);
+      getNV(__LINE__, "level");
+      x.level = to!int(val);
+      getNV(__LINE__, "dots");
+      x.dots = to!int(val);
+      getNV(__LINE__, "instanceSeed");
+      x.instanceSeed = to!uint(val);
       x.afterDeserialize();
    }
 
@@ -1171,8 +1269,8 @@ class Deserializer
       x.les = to!bool(val);
       getNV(__LINE__, "fill");
       x.fill = to!bool(val);
-      getNV(__LINE__, "solid");
-      x.solid = to!bool(val);
+      getNV(__LINE__, "outline");
+      x.outline = to!bool(val);
       getNV(__LINE__, "center");
       x.center = s2Coord(val, __LINE__);
       getNV(__LINE__, "activeCoords");
@@ -1204,8 +1302,8 @@ class Deserializer
       x.les = to!bool(val);
       getNV(__LINE__, "fill");
       x.fill = to!bool(val);
-      getNV(__LINE__, "solid");
-      x.solid = to!bool(val);
+      getNV(__LINE__, "outline");
+      x.outline = to!bool(val);
       getNV(__LINE__, "center");
       x.center = s2Coord(val, __LINE__);
       getNV(__LINE__, "activeCoords");
@@ -1254,8 +1352,8 @@ class Deserializer
       x.les = to!bool(val);
       getNV(__LINE__, "fill");
       x.fill = to!bool(val);
-      getNV(__LINE__, "solid");
-      x.solid = to!bool(val);
+      getNV(__LINE__, "outline");
+      x.outline = to!bool(val);
       getNV(__LINE__, "center");
       x.center = s2Coord(val, __LINE__);
       getNV(__LINE__, "oPath");
@@ -1321,8 +1419,8 @@ class Deserializer
       x.rounded = to!bool(val);
       getNV(__LINE__, "fill");
       x.fill = to!bool(val);
-      getNV(__LINE__, "solid");
-      x.solid = to!bool(val);
+      getNV(__LINE__, "outline");
+      x.outline = to!bool(val);
       getNV(__LINE__, "ar");
       x.ar = to!double(val);
       getNV(__LINE__, "rr");
@@ -1348,8 +1446,8 @@ class Deserializer
       x.sides = to!int(val);
       getNV(__LINE__, "fill");
       x.fill = to!bool(val);
-      getNV(__LINE__, "solid");
-      x.solid = to!bool(val);
+      getNV(__LINE__, "outline");
+      x.outline = to!bool(val);
       getNV(__LINE__, "isStar");
       x.isStar = to!bool(val);
       getNV(__LINE__, "radius");
@@ -1381,8 +1479,8 @@ class Deserializer
       x.sides = to!int(val);
       getNV(__LINE__, "fill");
       x.fill = to!bool(val);
-      getNV(__LINE__, "solid");
-      x.solid = to!bool(val);
+      getNV(__LINE__, "outline");
+      x.outline = to!bool(val);
       getNV(__LINE__, "target");
       x.target = to!double(val);
       /*
@@ -1452,6 +1550,31 @@ class Deserializer
       x.afterDeserialize();
    }
 
+   void setupTilings(Tilings x)
+   {
+      basics(x);
+
+      getNV(__LINE__, "baseColor");
+      x.baseColor = makeColor(val);
+      getNV(__LINE__, "center");
+      x.center = s2Coord(val, __LINE__);
+      getNV(__LINE__, "pattern");
+      x.pattern = to!int(val);
+      getNV(__LINE__, "shade");
+      x.shade = to!int(val);
+      getNV(__LINE__, "colorSeed");
+      x.colorSeed = to!uint(val);
+      getNV(__LINE__, "shapeSeed");
+      x.shapeSeed = to!uint(val);
+      getNV(__LINE__, "pca");
+      x.pca[] = s2PartColorArray(val,__LINE__)[];
+      getNV(__LINE__, "printRandom");
+      x.printRandom = to!bool(val);
+      getNV(__LINE__, "irregular");
+      x.irregular = to!bool(val);
+      x.afterDeserialize();
+   }
+
    void setupTriangle(Triangle x)
    {
       basics(x);
@@ -1466,8 +1589,8 @@ class Deserializer
       x.les = to!bool(val);
       getNV(__LINE__, "fill");
       x.fill = to!bool(val);
-      getNV(__LINE__, "solid");
-      x.solid = to!bool(val);
+      getNV(__LINE__, "outline");
+      x.outline = to!bool(val);
       getNV(__LINE__, "center");
       x.center = s2Coord(val, __LINE__);
       getNV(__LINE__, "oPath");
@@ -1480,6 +1603,8 @@ class Deserializer
       x.h = to!double(val);
       getNV(__LINE__, "ttype");
       x.ttype = to!int(val);
+      getNV(__LINE__, "poo");
+      x.fill = to!bool(val);
       x.afterDeserialize();
    }
 
@@ -1487,17 +1612,12 @@ class Deserializer
    {
       basics(x);
 
-      getNV(__LINE__, "baseColor");
-      x.baseColor = makeColor(val);
-      getNV(__LINE__, "lineWidth");
-      x.lineWidth = to!double(val);
-      getNV(__LINE__, "les");
-      x.les = to!bool(val);
+      getNV(__LINE__, "center");
+      x.center = s2Coord(val, __LINE__);
       getNV(__LINE__, "dName");
       x.dName = val;
       getNV(__LINE__, "tf");
       x.tf = makeTransform(val);
-      x.spec = aw.shapeLib.getEntry(x.dName);
       x.afterDeserialize();
    }
 

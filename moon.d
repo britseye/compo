@@ -76,15 +76,10 @@ class Moon : LineSet
          cSet.setToggle(Purpose.LESSHARP, true);
       else
          cSet.setToggle(Purpose.LESROUND, true);
-      if (solid)
-      {
-         cSet.setToggle(Purpose.SOLID, true);
-         cSet.disable(Purpose.FILL);
-         cSet.disable(Purpose.FILLCOLOR);
-      }
-      else if (fill)
-         cSet.setToggle(Purpose.FILL, true);
+      if (outline)
+         cSet.setToggle(Purpose.OUTLINE, true);
       cSet.setComboIndex(Purpose.XFORMCB, xform);
+      cSet.setComboIndex(Purpose.FILLOPTIONS, 0);
       cSet.toggling(true);
       cSet.setHostName(name);
    }
@@ -98,7 +93,7 @@ class Moon : LineSet
       lineWidth = other.lineWidth;
       les = other.les;
       fill = other.fill;
-      solid = other.solid;
+      outline = other.outline;
       altColor = other.altColor.copy();
       center = other.center;
       xform = other.xform;
@@ -115,9 +110,10 @@ class Moon : LineSet
       string s = "Moon "~to!string(++nextOid);
       super(w, parent, s, AC_MOON);
       group = ACGroups.SHAPES;
+      closed = true;
       altColor = new RGBA(1,1,0.8,1);
       les = true;
-      fill = solid = false;
+      fill = false;
 
       center.x = 0.5*width;
       center.y = 0.5*height;
@@ -127,6 +123,7 @@ class Moon : LineSet
       tm = new Matrix(&tmData);
 
       setupControls(3);
+      outline = true;
       positionControls(true);
       dirty = true;
    }
@@ -134,11 +131,14 @@ class Moon : LineSet
    override void extendControls()
    {
       int vp = cSet.cy;
+      Label l = new Label("Size");
+      cSet.add(l, ICoord(245, vp-64), Purpose.LABEL);
+      new MoreLess(cSet, 0, ICoord(275, vp-64), true);
 
       dl = new Label("Phase");
       cSet.add(dl, ICoord(172, vp-40), Purpose.LABEL);
-      new MoreLess(cSet, 0, ICoord(275, vp-40), true);
-      dl = new Label("New Moon");
+      new MoreLess(cSet, 1, ICoord(275, vp-40), true);
+      dl = new Label("Waxing Crescent");
       cSet.add(dl, ICoord(172, vp-20), Purpose.INFO1);
 
       vp += 5;
@@ -156,24 +156,9 @@ class Moon : LineSet
       cbb.setActive(0);
       cbb.setSizeRequest(100, -1);
       cSet.add(cbb, ICoord(172, vp-5), Purpose.XFORMCB);
+      new MoreLess(cSet, 2, ICoord(275, vp), true);
 
-      new MoreLess(cSet, 1, ICoord(275, vp), true);
-
-      vp += 35;
-
-      CheckButton check = new CheckButton("Fill with color");
-      cSet.add(check, ICoord(0, vp), Purpose.FILL);
-
-      check = new CheckButton("Solid");
-      cSet.add(check, ICoord(115, vp), Purpose.SOLID);
-
-      Button b = new Button("Fill Color");
-      cSet.add(b, ICoord(240, vp-5), Purpose.FILLCOLOR);
-
-      vp += 25;
-      cSet.cy = vp;
-
-      //RenameGadget rg = new RenameGadget(cSet, ICoord(0, vp), name, true);
+      cSet.cy = vp+35;
    }
 
    override void preResize(int oldW, int oldH)
@@ -241,6 +226,18 @@ class Moon : LineSet
       focusLayout();
       if (instance == 0)
       {
+         double delta = coarse? 1.05: 1.01;
+         if (more)
+            radius *= delta;
+         else
+         {
+            if (radius > 10)
+               radius /= delta;
+         }
+         constructTable();
+      }
+      else if (instance == 1)
+      {
          if (more)
             day = (day+1)%28;
          else
@@ -252,7 +249,7 @@ class Moon : LineSet
          }
          setPhaseDesc();
       }
-      else if (instance == 1)
+      else if (instance == 2)
          modifyTransform(xform, more, coarse);
       else
          return;
@@ -269,6 +266,7 @@ class Moon : LineSet
 
    void constructTable()
    {
+      mda.length = 0;
       for (int i = 0; i < 28; i++)
       {
          MoonData md;
@@ -366,47 +364,7 @@ class Moon : LineSet
          mda ~= md;
       }
    }
-/*
-      if (day < 7)
-      {
-         c.arc(center.x, center.y, radius, 3*PI/2, PI/2);
-         int td = day;
-         double d = radius-td*radius/7;
-         getAngle2(d);
-         c.arcNegative(center.x+d-radius2, center.y, radius2, ha, -ha);
-      }
-      else if (day == 7)
-         c.arc(center.x, center.y, radius, 3*PI/2, PI/2);
-      else if (day < 14)
-      {
-         c.arc(center.x, center.y, radius, 3*PI/2, PI/2);
-         int td = day-7;
-         double d = td*radius/7;
-         getAngle2(d);
-         c.arc(center.x-d+radius2, center.y, radius2, PI-ha, PI+ha);
-      }
-      else if (day == 14)
-         c.arc(center.x, center.y, radius, 0, 2*PI);
-      else if (day < 21)
-      {
-         c.arcNegative(center.x, center.y, radius, 3*PI/2, PI/2);
-         int td = day-14;
-         double d = radius-td*radius/7;
-         getAngle2(d);
-         c.arcNegative(center.x+d-radius2, center.y, radius2, ha, -ha);
-      }
-      else if (day == 21)
-         c.arcNegative(center.x, center.y, radius, 3*PI/2, PI/2);
-      else
-      {
-         c.arcNegative(center.x, center.y, radius, 3*PI/2, PI/2);
-         double td = day-21;
-         double d = td*radius/7;
-         getAngle2(d);
-         c.arc(center.x-d+radius2, center.y, radius2, PI-ha, PI+ha);
-      }
-      c.closePath();
-*/
+
    override void render(Context c)
    {
       if (day == 0 || day == 28)
@@ -450,6 +408,6 @@ class Moon : LineSet
          }
          c.closePath();
       }
-      strokeAndFill(c, lineWidth, solid, fill);
+      strokeAndFill(c, lineWidth, outline, fill);
    }
 }

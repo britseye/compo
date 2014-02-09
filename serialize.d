@@ -12,7 +12,9 @@ import std.conv;
 import std.stream;
 import std.array;
 import std.format;
+import std.uuid;
 
+import about;
 import common;
 import types;
 import acomp;
@@ -53,6 +55,9 @@ import crescent;
 import moon;
 import triangle;
 import brushdabs;
+import noise;
+import mesh;
+import tilings;
 
 import gtk.FileChooserDialog;
 import gtk.FileFilter;
@@ -173,6 +178,7 @@ class Serializer
       os = new std.stream.File(fileName, FileMode.OutNew);
       // remember file name
       os.writeString(fileName ~ "\n");
+      os.writeString("version="~to!string(versionMajor())~"."~to!string(versionMinor())~"\n");
       // save sheet type
       string mfr = aw.currentSheet.mfr;
       string id;
@@ -184,12 +190,9 @@ class Serializer
          id = aw.currentSheet.id;
       os.writeString(mfr~": "~id~"\n\n");
       os.writeString("dWidth=" ~ to!string(root.children[0].width) ~ "\n");
-writefln("dHeight %d", root.children[0].height);
-      //os.writeString("dHeight=" ~ to!string(root.children[0].height) ~ "\n");
-      os.writeString("Any old thing\n");
-writefln("root children %s", to!string(root.children.length));
+      os.writeString("dHeight=" ~ to!string(root.children[0].height) ~ "\n");
       os.writeString("rootItems=" ~ to!string(root.children.length) ~ "\n\n");
-      /*
+
       foreach (ACBase acb; root.children)
       {
          switch (acb.type)
@@ -204,7 +207,7 @@ writefln("root children %s", to!string(root.children.length));
       }
       os.close();
       aw.setFileName(fileName);
-      */
+
       return true;
    }
 
@@ -213,6 +216,7 @@ writefln("root children %s", to!string(root.children.length));
       string s = "// " ~ ACTypeNames(acb.type) ~ "\n";
       s ~= "type=" ~ to!string(cast(int) acb.type) ~ "\n";
       s ~= "name=" ~ acb.name ~ "\n";
+      s ~= "uuid=" ~ acb.uuid.toString() ~ "\n";
       s ~= "hOff=" ~ to!string(acb.hOff) ~ "\n";
       s ~= "vOff=" ~ to!string(acb.vOff) ~ "\n";
       return s;
@@ -223,6 +227,7 @@ writefln("root children %s", to!string(root.children.length));
       Container o = cast(Container) acb;
       string s = basics(acb);
       s ~= "baseColor=" ~ o.colorString(false) ~ "\n";
+      s ~= "nextChildId=" ~ to!string(o.nextChildId) ~ "\n";
       s ~= "cc=" ~ to!string(o.children.length) ~ "\n\n";
       os.writeString(s);
       foreach (ACBase x; o.children)
@@ -267,8 +272,12 @@ writefln("root children %s", to!string(root.children.length));
          return serializeLine(acb);
       case AC_LGRADIENT:
          return serializeLGradient(acb);
+      case AC_MESH:
+         return serializeMesh(acb);
       case AC_MOON:
          return serializeMoon(acb);
+      case AC_NOISE:
+         return serializeNoise(acb);
       case AC_MORPHTEXT:
          return serializeMorphText(acb);
       case AC_PATTERN:
@@ -297,6 +306,8 @@ writefln("root children %s", to!string(root.children.length));
          return serializeSeparator(acb);
       case AC_STROKESET:
          return serializeStrokeSet(acb);
+      case AC_TILINGS:
+         return serializeTilings(acb);
       case AC_TRIANGLE:
          return serializeTriangle(acb);
       case AC_REFERENCE:
@@ -419,7 +430,7 @@ writefln("root children %s", to!string(root.children.length));
       s ~= "orientation=" ~ to!string(o.orientation) ~ "\n";
       s ~= "olt=" ~ to!string(o.olt) ~ "\n";
       s ~= "fill=" ~ to!string(o.fill) ~ "\n";
-      s ~= "solid=" ~ to!string(o.solid) ~"\n";
+      s ~= "outline=" ~ to!string(o.outline) ~"\n";
       string t = o.tb.getText();
       s ~= "text_length=" ~ to!string(t.length) ~ "\n";
       s ~= t;
@@ -437,7 +448,7 @@ writefln("root children %s", to!string(root.children.length));
       s ~= "baseColor=" ~ o.colorString(false) ~ "\n";
       s ~= "altColor=" ~ o.colorString(true) ~ "\n";
       s ~= "fill=" ~ to!string(o.fill) ~ "\n";
-      s ~= "solid=" ~ to!string(o.solid) ~"\n";
+      s ~= "outline=" ~ to!string(o.outline) ~"\n";
       s ~= "olt=" ~ to!string(o.olt) ~ "\n";
       s ~= "tf=" ~ transform2S(o.tf) ~ "\n";
       s ~= "cm=" ~ to!string(o.cm) ~ "\n";
@@ -459,7 +470,7 @@ writefln("root children %s", to!string(root.children.length));
       s ~= "les=" ~ to!string(o.les) ~ "\n";
       s ~= "hw=" ~ to!string(o.hw) ~ "\n";
       s ~= "fill=" ~ to!string(o.fill) ~ "\n";
-      s ~= "solid=" ~ to!string(o.solid) ~"\n";
+      s ~= "outline=" ~ to!string(o.outline) ~"\n";
       s ~= "center=" ~ coord2S(o.center) ~ "\n";
       s ~= "oPath=" ~ path2S(o.oPath) ~ "\n";
       s ~= "tf=" ~ transform2S(o.tf) ~ "\n";
@@ -485,10 +496,12 @@ writefln("root children %s", to!string(root.children.length));
       s ~= "w=" ~ to!string(o.w) ~ "\n";
       s ~= "tcp=" ~ to!string(o.tcp) ~ "\n";
       s ~= "bcp=" ~ to!string(o.bcp) ~ "\n";
-      s ~= "nDabs" ~ to!string(o.nDabs) ~ "\n";
+      s ~= "nDabs=" ~ to!string(o.nDabs) ~ "\n";
+      s ~= "shapeSeed=" ~ to!string(o.shapeSeed) ~ "\n";
+      s ~= "colorSeed=" ~ to!string(o.shapeSeed) ~ "\n";
       s ~= "angle=" ~ to!string(o.angle) ~ "\n";
       s ~= "pointed=" ~ to!string(o.pointed) ~ "\n";
-      s ~= "dontRender=" ~ to!string(o.dontRender) ~ "\n";
+      s ~= "shade=" ~ to!string(o.shade) ~ "\n";
       s ~= "pca=" ~ partColorArray2S(o.pca) ~ "\n";
       s ~= "\n";
       os.writeString(s);
@@ -504,7 +517,7 @@ writefln("root children %s", to!string(root.children.length));
       s ~= "radius=" ~ to!string(o.radius) ~"\n";
       s ~= "tf=" ~ transform2S(o.tf) ~ "\n";
       s ~= "fill=" ~ to!string(o.fill) ~ "\n";
-      s ~= "solid=" ~ to!string(o.solid) ~"\n";
+      s ~= "outline=" ~ to!string(o.outline) ~"\n";
       s ~= "\n";
       os.writeString(s);
    }
@@ -534,7 +547,7 @@ writefln("root children %s", to!string(root.children.length));
       s ~= "lineWidth=" ~ to!string(o.lineWidth) ~ "\n";
       s ~= "les=" ~ to!string(o.les) ~ "\n";
       s ~= "fill=" ~ to!string(o.fill) ~ "\n";
-      s ~= "solid=" ~ to!string(o.solid) ~"\n";
+      s ~= "outline=" ~ to!string(o.outline) ~"\n";
       s ~= "center=" ~ coord2S(o.center) ~ "\n";
       s ~= "r0=" ~ to!string(o.r0) ~ "\n";
       s ~= "r1=" ~ to!string(o.r1) ~ "\n";
@@ -554,7 +567,7 @@ writefln("root children %s", to!string(root.children.length));
       s ~= "lineWidth=" ~ to!string(o.lineWidth) ~ "\n";
       s ~= "les=" ~ to!string(o.les) ~ "\n";
       s ~= "fill=" ~ to!string(o.fill) ~ "\n";
-      s ~= "solid=" ~ to!string(o.solid) ~"\n";
+      s ~= "outline=" ~ to!string(o.outline) ~"\n";
       s ~= "center=" ~ coord2S(o.center) ~ "\n";
       s ~= "oPath=" ~ path2S(o.oPath) ~ "\n";
       s ~= "tf=" ~ transform2S(o.tf) ~ "\n";
@@ -591,7 +604,7 @@ writefln("root children %s", to!string(root.children.length));
       s ~= "lineWidth=" ~ to!string(o.lineWidth) ~ "\n";
       s ~= "xform=" ~ to!string(o.xform) ~ "\n";
       s ~= "fill=" ~ to!string(o.fill) ~ "\n";
-      s ~= "solid=" ~ to!string(o.solid) ~ "\n";
+      s ~= "outline=" ~ to!string(o.outline) ~ "\n";
       s ~= "tf=" ~ transform2S(o.tf) ~ "\n";
       s ~= "\n";
       os.writeString(s);
@@ -626,6 +639,15 @@ writefln("root children %s", to!string(root.children.length));
       os.writeString(s);
    }
 
+   void serializeMesh(ACBase acb)
+   {
+      Mesh o = cast(Mesh) acb;
+      string s = basics(acb);
+      s ~= "pattern=" ~ to!string(o.pattern) ~ "\n";
+      s ~= "\n";
+      os.writeString(s);
+   }
+
    void serializeMoon(ACBase acb)
    {
       Moon o = cast(Moon) acb;
@@ -636,8 +658,21 @@ writefln("root children %s", to!string(root.children.length));
       s ~= "radius=" ~ to!string(o.radius) ~"\n";
       s ~= "tf=" ~ transform2S(o.tf) ~ "\n";
       s ~= "fill=" ~ to!string(o.fill) ~ "\n";
-      s ~= "solid=" ~ to!string(o.solid) ~"\n";
+      s ~= "outline=" ~ to!string(o.outline) ~"\n";
       s ~= "day=" ~ to!string(o.day) ~"\n";
+      s ~= "\n";
+      os.writeString(s);
+   }
+
+   void serializeNoise(ACBase acb)
+   {
+      Noise o = cast(Noise) acb;
+      string s = basics(acb);
+      s ~= "baseColor=" ~ o.colorString(false) ~ "\n";
+      s ~= "lineWidth=" ~ to!string(o.lineWidth) ~ "\n";
+      s ~= "level=" ~ to!string(o.level) ~"\n";
+      s ~= "dots=" ~ to!string(o.dots) ~ "\n";
+      s ~= "instanceSeed=" ~ to!string(o.instanceSeed) ~ "\n";
       s ~= "\n";
       os.writeString(s);
    }
@@ -730,7 +765,7 @@ writefln("root children %s", to!string(root.children.length));
       s ~= "lineWidth=" ~ to!string(o.lineWidth) ~ "\n";
       s ~= "les=" ~ to!string(o.les) ~ "\n";
       s ~= "fill=" ~ to!string(o.fill) ~ "\n";
-      s ~= "solid=" ~ to!string(o.solid) ~"\n";
+      s ~= "outline=" ~ to!string(o.outline) ~"\n";
       s ~= "center=" ~ coord2S(o.center) ~ "\n";
       s ~= "oPath=" ~ path2S(o.oPath) ~ "\n";
       s ~= "tf=" ~ transform2S(o.tf) ~ "\n";
@@ -747,7 +782,7 @@ writefln("root children %s", to!string(root.children.length));
       s ~= "lineWidth=" ~ to!string(o.lineWidth) ~ "\n";
       s ~= "les=" ~ to!string(o.les) ~ "\n";
       s ~= "fill=" ~ to!string(o.fill) ~ "\n";
-      s ~= "solid=" ~ to!string(o.solid) ~"\n";
+      s ~= "outline=" ~ to!string(o.outline) ~"\n";
       s ~= "center=" ~ coord2S(o.center) ~ "\n";
       s ~= "activeCoords=" ~ to!string(o.activeCoords) ~ "\n";
       s ~= "current=" ~ to!string(o.current) ~ "\n";
@@ -769,7 +804,7 @@ writefln("root children %s", to!string(root.children.length));
       s ~= "lineWidth=" ~ to!string(o.lineWidth) ~ "\n";
       s ~= "les=" ~ to!string(o.les) ~ "\n";
       s ~= "fill=" ~ to!string(o.fill) ~ "\n";
-      s ~= "solid=" ~ to!string(o.solid) ~"\n";
+      s ~= "outline=" ~ to!string(o.outline) ~"\n";
       s ~= "center=" ~ coord2S(o.center) ~ "\n";
       s ~= "activeCoords=" ~ to!string(o.activeCoords) ~ "\n";
       s ~= "current=" ~ to!string(o.current) ~ "\n";
@@ -814,7 +849,7 @@ writefln("root children %s", to!string(root.children.length));
       s ~= "square=" ~ to!string(o.square) ~ "\n";
       s ~= "rounded=" ~ to!string(o.rounded) ~ "\n";
       s ~= "fill=" ~ to!string(o.fill) ~ "\n";
-      s ~= "solid=" ~ to!string(o.solid) ~"\n";
+      s ~= "outline=" ~ to!string(o.outline) ~"\n";
       s ~= "ar=" ~ to!string(o.ar) ~ "\n";
       s ~= "rr=" ~ to!string(o.rr) ~ "\n";
       s ~= "tf=" ~ transform2S(o.tf) ~ "\n";
@@ -832,7 +867,7 @@ writefln("root children %s", to!string(root.children.length));
       s ~= "les=" ~ to!string(o.les) ~ "\n";
       s ~= "sides=" ~ to!string(o.sides) ~ "\n";
       s ~= "fill=" ~ to!string(o.fill) ~ "\n";
-      s ~= "solid=" ~ to!string(o.solid) ~ "\n";
+      s ~= "outline=" ~ to!string(o.outline) ~ "\n";
       s ~= "isStar=" ~ to!string(o.isStar) ~ "\n";
       s ~= "radius=" ~ to!string(o.radius) ~ "\n";
       s ~= "center=" ~ coord2S(o.center) ~ "\n";
@@ -853,7 +888,7 @@ writefln("root children %s", to!string(root.children.length));
       s ~= "les=" ~ to!string(o.les) ~ "\n";
       s ~= "sides=" ~ to!string(o.sides) ~ "\n";
       s ~= "fill=" ~ to!string(o.fill) ~ "\n";
-      s ~= "solid=" ~ to!string(o.solid) ~ "\n";
+      s ~= "outline=" ~ to!string(o.outline) ~ "\n";
       s ~= "target=" ~ to!string(o.target) ~ "\n";
       /*
       s ~= "inner=" ~ to!string(o.inner) ~ "\n";
@@ -902,6 +937,23 @@ writefln("root children %s", to!string(root.children.length));
       os.writeString(s);
    }
 
+   void serializeTilings(ACBase acb)
+   {
+      Tilings o = cast(Tilings) acb;
+      string s = basics(acb);
+      s ~= "baseColor=" ~ o.colorString(false) ~ "\n";
+      s ~= "center=" ~ coord2S(o.center) ~ "\n";
+      s ~= "pattern=" ~ to!string(o.pattern) ~ "\n";
+      s ~= "shade=" ~ to!string(o.shade) ~ "\n";
+      s ~= "colorSeed=" ~ to!string(o.colorSeed) ~ "\n";
+      s ~= "shapeSeed=" ~ to!string(o.shapeSeed) ~ "\n";
+      s ~= "pca=" ~ partColorArray2S(o.pca) ~ "\n";
+      s ~= "printRandom=" ~ to!string(o.printRandom) ~ "\n";
+      s ~= "irregular=" ~ to!string(o.irregular) ~ "\n";
+      s ~= "\n";
+      os.writeString(s);
+   }
+
    void serializeTriangle(ACBase acb)
    {
       Triangle o = cast(Triangle) acb;
@@ -911,7 +963,7 @@ writefln("root children %s", to!string(root.children.length));
       s ~= "lineWidth=" ~ to!string(o.lineWidth) ~ "\n";
       s ~= "les=" ~ to!string(o.les) ~ "\n";
       s ~= "fill=" ~ to!string(o.fill) ~ "\n";
-      s ~= "solid=" ~ to!string(o.solid) ~"\n";
+      s ~= "outline=" ~ to!string(o.outline) ~"\n";
       s ~= "center=" ~ coord2S(o.center) ~ "\n";
       s ~= "oPath=" ~ path2S(o.oPath) ~ "\n";
       s ~= "tf=" ~ transform2S(o.tf) ~ "\n";
@@ -926,9 +978,7 @@ writefln("root children %s", to!string(root.children.length));
    {
       Drawing o = cast(Drawing) acb;
       string s = basics(acb);
-      s ~= "baseColor=" ~ o.colorString(false) ~ "\n";
-      s ~= "lineWidth=" ~ to!string(o.lineWidth) ~ "\n";
-      s ~= "les=" ~ to!string(o.les) ~ "\n";
+      s ~= "center=" ~ coord2S(o.center) ~ "\n";
       s ~= "dName=" ~ o.dName ~ "\n";
       s ~= "tf=" ~ transform2S(o.tf) ~ "\n";
       s ~= "\n";

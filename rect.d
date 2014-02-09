@@ -56,15 +56,10 @@ class Rectangle : LineSet
          cSet.setToggle(Purpose.PIN, true);
       if (rounded)
          cSet.setToggle(Purpose.ROUNDED, true);
-      if (solid)
-      {
-         cSet.setToggle(Purpose.SOLID, true);
-         cSet.disable(Purpose.FILL);
-         cSet.disable(Purpose.FILLCOLOR);
-      }
-      else if (fill)
-         cSet.setToggle(Purpose.FILL, true);
+      if (outline)
+         cSet.setToggle(Purpose.OUTLINE, true);
       cSet.setComboIndex(Purpose.XFORMCB, xform);
+      cSet.setComboIndex(Purpose.FILLOPTIONS, 0);
       cSet.setLabel(Purpose.LINEWIDTH, formatLT(lineWidth));
       cSet.toggling(true);
       cSet.setHostName(name);
@@ -83,6 +78,7 @@ class Rectangle : LineSet
       vOff = other.vOff;
       baseColor = other.baseColor.copy();
       altColor = other.altColor.copy();
+      size = other.size;
       w = other.w;
       h = other.h;
       ar = other.ar;
@@ -91,9 +87,10 @@ class Rectangle : LineSet
       square = other.square;
       rounded = other.rounded;
       fill = other.fill;
-      solid = other.solid;
+      outline = other.outline;
       rr = other.rr;
       tf = other.tf;
+      figureWH();
 
       xform = other.xform;
       syncControls();
@@ -104,8 +101,10 @@ class Rectangle : LineSet
       string s = "Rectangle "~to!string(++nextOid);
       super(appw, parent, s, AC_RECT);
       group = ACGroups.SHAPES;
+      closed = true;
       hOff = vOff = 0;
       altColor = new RGBA(0,0,0,1);
+      fill = false;
       ar = 2;
       size = (width > height)? 0.75*height: 0.75*width;
       center = Coord(0.5*width, 0.5*height);
@@ -121,6 +120,7 @@ class Rectangle : LineSet
       rounded = false;
 
       setupControls(3);
+      outline = true;
       positionControls(true);
    }
 
@@ -139,14 +139,18 @@ class Rectangle : LineSet
       cSet.add(l, ICoord(170, vp), Purpose.LABEL);
       new MoreLess(cSet, 0, ICoord(270, vp), true);
 
+      l = new Label("Adjust Size");
+      cSet.add(l, ICoord(170, vp+20), Purpose.LABEL);
+      new MoreLess(cSet, 1, ICoord(270, vp+20), true);
+
       new InchTool(cSet, 0, ICoord(0, vp+5), true);
 
       l = new Label("Aspect Ratio");
       l.setTooltipText("Adjust width to height ratio - hold down <Ctrl> for faster action");
-      cSet.add(l, ICoord(170, vp+20), Purpose.LABEL);
-      new MoreLess(cSet, 1, ICoord(270, vp+20), true);
+      cSet.add(l, ICoord(170, vp+40), Purpose.LABEL);
+      new MoreLess(cSet, 2, ICoord(270, vp+40), true);
 
-      vp += 45;
+      vp += 60;
 
       ComboBoxText cbb = new ComboBoxText(false);
       cbb.setTooltipText("Select transformation to apply");
@@ -161,18 +165,7 @@ class Rectangle : LineSet
       cSet.add(cbb, ICoord(167, vp), Purpose.XFORMCB);
       new MoreLess(cSet, 3, ICoord(270, vp+4), true);
 
-      vp += 40;
-
-      check = new CheckButton("Fill with color");
-      cSet.add(check, ICoord(0, vp), Purpose.FILL);
-
-      check = new CheckButton("Solid");
-      cSet.add(check, ICoord(115, vp), Purpose.SOLID);
-
-      Button b = new Button("Fill Color");
-      cSet.add(b, ICoord(195, vp-5), Purpose.FILLCOLOR);
-
-      cSet.cy = vp+30;
+      cSet.cy = vp+40;
    }
 
    override bool specificNotify(Widget w, Purpose wid)
@@ -253,6 +246,19 @@ class Rectangle : LineSet
       }
       else if (instance == 1)
       {
+         double factor = coarse? 1.5: 1.05;
+         if (more)
+            size *= factor;
+         else
+         {
+            if (0.5*(w+h)/factor < lineWidth)
+               return;
+            size /= factor;
+         }
+         figureWH();
+      }
+      else if (instance == 2)
+      {
          lastOp = pushC!double(this, ar, OP_HSIZE);
          double factor = more? (coarse? 1.05: 1.01): (coarse? 0.95: 0.99);
          ar *= factor;
@@ -298,7 +304,7 @@ class Rectangle : LineSet
          c.lineTo(topLeft.x, bottomRight.y);
          c.closePath();
       }
-      strokeAndFill(c, lineWidth, solid, fill);
+      strokeAndFill(c, lineWidth, outline, fill);
    }
 }
 

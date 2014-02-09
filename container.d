@@ -43,6 +43,7 @@ class Container: ACBase
    Surface surface;
    bool glShowing, glUseV, decorate;
    double glSaved;
+   int nextChildId;
 
    double zsf;
    Coord cvo;
@@ -112,20 +113,23 @@ class Container: ACBase
       cSet.add(b, ICoord(0, vp), Purpose.GUIDELINE);
 
       CheckButton cb = new CheckButton("Move Vertical");
+      cb.setTooltipText("The layer selected in the LHS tree view\ncan be moved using the 'inch tool' below.");
       cb.setActive(1);
       cSet.add(cb, ICoord(85, vp), Purpose.GLWHICH);
 
       new MoreLess(cSet, 0, ICoord(205, vp+1), true);
 
       vp += 35;
-      Label l = new Label("Move the child object currently checked\nas active in the LHS tree view");
-      cSet.add(l, ICoord(0, vp), Purpose.LABEL);
+      new InchTool(cSet, 0, ICoord(0, vp), true);
 
       vp += 35;
-      new InchTool(cSet, 0, ICoord(0, vp), true);
+      Label l = new Label("Left-click the composition container in the LHS\ntree view to add layers to this composition.");
+      cSet.add(l, ICoord(0, vp), Purpose.LABEL);
 
       cSet.cy = vp+35;
    }
+
+   int getNextId() { return ++nextChildId; }
 
    override void onCSNotify(Widget w, Purpose wid)
    {
@@ -218,6 +222,8 @@ class Container: ACBase
    {
       c.rectangle(xpos, ypos, width, height);
       c.clip();
+      c.setSourceRgba(baseColor.red, baseColor.green, baseColor.blue, baseColor.alpha);
+      c.paint();
 
       foreach (ACBase x; children)
       {
@@ -274,6 +280,11 @@ class Container: ACBase
       return rv;
    }
 
+   void setTransparent()
+   {
+      baseColor = new RGBA(1,1,1,0);
+   }
+
    void zoom(double sf, Coord vpo)
    {
       cZoomed = true;
@@ -288,7 +299,7 @@ class Container: ACBase
    override void render(Context c)
    {
       //c.save();
-      c.setSourceRgb(baseColor.red, baseColor.green, baseColor.blue);
+      c.setSourceRgba(baseColor.red, baseColor.green, baseColor.blue, baseColor.alpha);
       c.paint();
       //c.restore();
       if (decorate)

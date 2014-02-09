@@ -41,7 +41,8 @@ class Partition: ACBase
       ARCRIGHT,
       WAVE,
       EXPLEFT,
-      EXPRIGHT
+      EXPRIGHT,
+      HILLNDALE
    }
 
    double bt;
@@ -109,6 +110,7 @@ class Partition: ACBase
       cbb.appendText("Wave");
       cbb.appendText("Exponential -");
       cbb.appendText("Exponential +");
+      cbb.appendText("Hill'N Dale");
       cbb.setSizeRequest(120, -1);
       cbb.setActive(0);
       cSet.add(cbb, ICoord(0, vp), Purpose.PATTERN);
@@ -151,6 +153,8 @@ class Partition: ACBase
          case EXPRIGHT:
             x = 0.5*width;
             vOff = 0;
+            break;
+         case HILLNDALE:
             break;
          default:
             return false;
@@ -262,87 +266,119 @@ class Partition: ACBase
 
    void pathVertical(Context c)
    {
-      c.moveTo(hOff+x, -0.5);
-      c.lineTo(hOff+x, height+0.5);
-      c.lineTo(-0.5, height+0.5);
-      c.lineTo(-0.5, -0.5);
+      c.moveTo(hOff+x, lpY-0.5);
+      c.lineTo(hOff+x, lpY+height+0.5);
+      c.lineTo(lpX-0.5, lpY+height+0.5);
+      c.lineTo(lpX-0.5, lpY-0.5);
       c.closePath();
    }
 
    void pathHorizontal(Context c)
    {
-      c.moveTo(-0.5, vOff+y);
-      c.lineTo(width+0.5, vOff+y);
-      c.lineTo(width+0.5, height+0.5);
-      c.lineTo(-0.5, height+0.5);
+      c.moveTo(lpX-0.5, vOff+y);
+      c.lineTo(lpX+width+0.5, vOff+y);
+      c.lineTo(lpX+width+0.5, lpY+height+0.5);
+      c.lineTo(lpX-0.5, lpY+height+0.5);
       c.closePath();
    }
 
    void pathArcLeft(Context c)
    {
       double angle = atan((0.55*(height)) /(1.5*height));
-      c.arc(hOff+x+1.5*height, height/2, 1.5*height, PI-angle, PI+angle);
-      c.lineTo(-0.5, -0.5);
-      c.lineTo(0.5, height+0.5);
+      c.arc(hOff+x+1.5*height, lpY+height/2, 1.5*height, PI-angle, PI+angle);
+      c.lineTo(lpX-0.5, lpY-0.5);
+      c.lineTo(lpX+0.5, lpY+height+0.5);
       c.closePath();
    }
 
    void pathArcRight(Context c)
    {
       double angle = atan((0.55*(height)) /(1.5*height));
-      c.arc(hOff+x-1.5*height, height/2, 1.5*height, -angle, angle);
-      c.lineTo(width+0.5, height+0.5);
-      c.lineTo(width+0.5, -0.5);
+      c.arc(hOff+x-1.5*height, lpY+height/2, 1.5*height, -angle, angle);
+      c.lineTo(lpX+width+0.5, lpY+height+0.5);
+      c.lineTo(lpX+width+0.5, lpY-0.5);
       c.closePath();
    }
 
    void pathWave(Context c)
    {
       double vx = 0;
-      c.moveTo(-1, vOff+y);
+      c.moveTo(lpX-1, vOff+y);
       double d = 0;
       for (int i = 0; i*2.0 <= width; i++, vx += 2)
       {
          d =  sin(vx/(PI*width*0.01));
-         c.lineTo(vx, vOff+y+0.04*d*height);
+         c.lineTo(lpX+vx, vOff+y+0.04*d*height);
       }
-      c.lineTo(width+1, height+1);
-      c.lineTo(-1, height+1);
+      c.lineTo(lpX+width+1, lpY+height+1);
+      c.lineTo(lpX-1, lpY+height+1);
       c.closePath();
    }
 
    void pathNegExp(Context c)
    {
       double ex = 0;
-      c.moveTo(hOff+x, height+1);
+      c.moveTo(hOff+x, lpY+height+1);
       double d = 0;
       for (int i = 0; height+2-d >= 0; i++, ex += 0.14)
       {
          d = pow(E, ex);
-         c.lineTo(hOff+x-i*4.0, height+2-d);
+         c.lineTo(hOff+x-i*4.0, lpY+height+2-d);
       }
-      c.lineTo(-1, height+2-d);
-      c.lineTo(-1, height+1);
+      c.lineTo(lpX-1, lpY+height+2-d);
+      c.lineTo(lpX-1, lpY+height+1);
       c.closePath();
    }
 
    void pathExp(Context c)
    {
       double ex = 0;
-      c.moveTo(hOff+x, height+1);
+      c.moveTo(hOff+x, lpY+height+1);
       double d = 0;
       for (int i = 0; height+2-d >= 0; i++, ex += 0.14)
       {
          d = pow(E, ex);
-         c.lineTo(hOff+x+i*4.0, height+2-d);
+         c.lineTo(hOff+x+i*4.0, lpY+height+2-d);
       }
-      c.lineTo(width+1, height+2-d);
-      c.lineTo(width+1, height+1);
+      c.lineTo(lpX+width+1, lpY+height+2-d);
+      c.lineTo(lpX+width+1, lpY+height+1);
       c.closePath();
+   }
+
+   void pathHillNDale(Context c, bool outline = false)
+   {
+      Coord s0, cp10, cp20, e0, cp11, cp21, e1, cp12, cp22, e2;
+      s0 = Coord(lpX-1, vOff+0.4*height);
+      cp10 = Coord(lpX+0.2*width, vOff+0.1*height);
+      cp20 = Coord(lpX+0.4*width, vOff+0.1*height);
+      e0 = Coord(lpX+0.55*width, vOff+0.5*height);
+      cp11 = Coord(lpX+0.6*width, vOff+0.3*height);
+      cp21 = Coord(lpX+0.8*width, vOff+0.25*height);
+      e1 = Coord(lpX+width+1, vOff+0.25*height);
+      cp12 = Coord(lpX+0.6*width, vOff+0.6*height);
+      cp22 = Coord(lpX+0.65*width, vOff+0.6*height);
+      e2 = Coord(lpX+0.65*width, vOff+0.6*height);
+      if (outline)
+      {
+         c.moveTo(s0.x, s0.y);
+         c.curveTo(cp10.x, cp10.y, cp20.x,cp20.y, e0.x, e0.y);
+         c.curveTo(cp12.x, cp12.y, cp22.x,cp22.y, e2.x, e2.y);
+         c.stroke();
+      }
+      else
+      {
+         c.moveTo(s0.x, s0.y);
+         c.curveTo(cp10.x, cp10.y, cp20.x,cp20.y, e0.x, e0.y);
+         c.curveTo(cp11.x, cp11.y, cp21.x,cp21.y, e1.x, e1.y);
+         c.lineTo(lpX+width+1, vOff+height*1.5);
+         c.lineTo(lpX-1, vOff+height*1.5);
+         c.closePath();
+      }
    }
 
    override void render(Context c)
    {
+      bool old = outline;
       c.setLineWidth(0.5);
       c.setSourceRgb(baseColor.red, baseColor.green, baseColor.blue);
       switch (choice)
@@ -368,8 +404,11 @@ class Partition: ACBase
       case 6:
          pathExp(c);
          break;
+      case 7:
+         outline = true;
+         pathHillNDale(c);
+         break;
       default:
-         c.restore();
          return;
       }
 
@@ -378,9 +417,12 @@ class Partition: ACBase
          c.fillPreserve();
          c.setSourceRgb(0,0,0);
          c.stroke();
+         if (choice == 7)
+            pathHillNDale(c, true);
       }
       else
          c.fill();
+      outline = old;
    }
 }
 

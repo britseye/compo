@@ -383,15 +383,10 @@ class Polycurve : LineSet
          cSet.setToggle(Purpose.LESSHARP, true);
       else
          cSet.setToggle(Purpose.LESROUND, true);
-      if (solid)
-      {
-         cSet.setToggle(Purpose.SOLID, true);
-         cSet.disable(Purpose.FILL);
-         cSet.disable(Purpose.FILLCOLOR);
-      }
-      else if (fill)
-         cSet.setToggle(Purpose.FILL, true);
+      if (outline)
+         cSet.setToggle(Purpose.OUTLINE, true);
       cSet.setComboIndex(Purpose.XFORMCB, xform);
+      cSet.setComboIndex(Purpose.FILLOPTIONS, 0);
       cSet.setLabel(Purpose.LINEWIDTH, formatLT(lineWidth));
       cSet.toggling(true);
       cSet.setHostName(name);
@@ -408,7 +403,7 @@ class Polycurve : LineSet
       lineWidth = other.lineWidth;
       les = other.les;
       fill = other.fill;
-      solid = other.solid;
+      outline = other.outline;
       center = other.center;
       activeCoords = other.activeCoords;
       pcPath = other.pcPath.dup;
@@ -426,10 +421,12 @@ class Polycurve : LineSet
       string s = "Polycurve "~to!string(++nextOid);
       super(w, parent, s, AC_POLYCURVE);
       group = ACGroups.GEOMETRIC;
+      closed = true;
       center.x = 0.5*width;
       center.y = 0.5*height;
       constructing = true;
       altColor = new RGBA(1,1,1,1);
+      fill = false;
       editOpacity = 0.5;
       esf = 1;
       les = true;
@@ -444,6 +441,7 @@ class Polycurve : LineSet
       edits = 0;
 
       setupControls(3);
+      outline = true;
       cSet.addInfo(
 "Click in the Drawing Area to add curves.\nThese will initially be shown as straight\n lines. Right-click when finished - the\nlast curve will be added then.");
       positionControls(true);
@@ -475,18 +473,7 @@ class Polycurve : LineSet
       b.setSensitive(!constructing);
       cSet.add(b, ICoord(203, vp+2), Purpose.REDRAW);
 
-      vp += 40;
-
-      CheckButton check = new CheckButton("Fill with color");
-      cSet.add(check, ICoord(0, vp), Purpose.FILL);
-
-      check = new CheckButton("Solid");
-      cSet.add(check, ICoord(115, vp), Purpose.SOLID);
-
-      b = new Button("Fill Color");
-      cSet.add(b, ICoord(203, vp-5), Purpose.FILLCOLOR);
-
-      cSet.cy = vp+30;
+      cSet.cy = vp+40;
    }
 
    override void afterDeserialize()
@@ -962,7 +949,7 @@ class Polycurve : LineSet
       for (int i = 0; i < pcPath.length; i++)
          rSegTo(c, pcPath[i]);
       c.closePath();
-      strokeAndFill(c, lineWidth, solid, fill);
+      strokeAndFill(c, lineWidth, outline, fill);
    }
 
    void adjustPI(double dx, double dy)

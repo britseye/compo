@@ -14,6 +14,6 @@ in a similar way for eae of maintenance.
 Added a more complete implementation of flatten and drawing, and a new
 pattern type - BrushDabs. This introduces the idea of 'shim' layers/
 objects that do not normally display themselves, but effect the
-following layer. So BrushPats will be used as fill for any closed shape
+following layer. So BrushDabs will be used as fill for any closed shape
 or geometric object that is placed over it.
 

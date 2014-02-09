@@ -127,6 +127,12 @@ class TextViewItem : ACBase
       extendControls();
       RenameGadget rg = new RenameGadget(cSet, ICoord(2, cSet.cy), name, true);
       rg.setName(name);
+      if (type != AC_CONTAINER)
+      {
+         CheckButton cb = new CheckButton("Hide Item");
+         cb.setActive(0);
+         cSet.add(cb, ICoord(210, cSet.cy), Purpose.HIDE, true);
+      }
       cSet.addInfo("Enter the required text in the drawing area,\nand then click the \"Edit/Design\"\nbutton to continue.");
    }
 

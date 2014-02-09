@@ -42,7 +42,7 @@ import cairo.Matrix;
 class Cross : LineSet
 {
    static int nextOid = 0;
-   double cbOff, cbW, urW;
+   double size, cbOff, cbW, urW;
    double h, w, cw, uw, ho, vo, ar, cbPos, drop, rise;
 
    override void syncControls()
@@ -53,15 +53,10 @@ class Cross : LineSet
          cSet.setToggle(Purpose.LESSHARP, true);
       else
          cSet.setToggle(Purpose.LESROUND, true);
-      if (solid)
-      {
-         cSet.setToggle(Purpose.SOLID, true);
-         cSet.disable(Purpose.FILL);
-         cSet.disable(Purpose.FILLCOLOR);
-      }
-      else if (fill)
-         cSet.setToggle(Purpose.FILL, true);
+      if (outline)
+         cSet.setToggle(Purpose.OUTLINE, true);
       cSet.setComboIndex(Purpose.XFORMCB, xform);
+      cSet.setComboIndex(Purpose.FILLOPTIONS, 0);
       cSet.toggling(true);
       cSet.setHostName(name);
    }
@@ -77,7 +72,7 @@ class Cross : LineSet
       uw = other.uw;
       cw = other.cw;
       fill = other.fill;
-      solid = other.solid;
+      outline = other.outline;
       altColor = other.altColor.copy();
       center = other.center;
       oPath = other.oPath.dup;
@@ -97,15 +92,16 @@ class Cross : LineSet
       string s = "Cross "~to!string(++nextOid);
       super(w, parent, s, AC_CROSS);
       group = ACGroups.SHAPES;
+      closed = true;
       altColor = new RGBA(0,0,0,1);
       les = true;
-      fill = solid = false;
+      fill = false;
       oPath.length = 12;
       ar = 1;
       cbOff = 0.5;
       urW = 0.2;
       cbW = 0.2;
-
+      size = 1;
       center.x = width/2;
       center.y = height/2;
 
@@ -113,25 +109,29 @@ class Cross : LineSet
       tm = new Matrix(&tmData);
 
       setupControls(3);
+      outline = true;
       positionControls(true);
    }
 
    override void extendControls()
    {
       int vp = cSet.cy;
+      Label l = new Label("Size");
+      cSet.add(l, ICoord(265, vp-64), Purpose.LABEL);
+      new MoreLess(cSet, 0, ICoord(300, vp-64), true);
 
-      Label l = new Label("Upright Width");
+      l = new Label("Upright Width");
       cSet.add(l, ICoord(172, vp-40), Purpose.LABEL);
-      new MoreLess(cSet, 0, ICoord(300, vp-40), true);
+      new MoreLess(cSet, 1, ICoord(300, vp-40), true);
       l = new Label("Cross Bar Width");
       cSet.add(l, ICoord(172, vp-20), Purpose.LABEL);
-      new MoreLess(cSet, 1, ICoord(300, vp-20), true);
+      new MoreLess(cSet, 2, ICoord(300, vp-20), true);
       l = new Label("Cross Bar Position");
       cSet.add(l, ICoord(172, vp), Purpose.LABEL);
-      new MoreLess(cSet, 2, ICoord(300, vp), true);
+      new MoreLess(cSet, 3, ICoord(300, vp), true);
       l = new Label("Aspect Ratio");
       cSet.add(l, ICoord(172, vp+20), Purpose.LABEL);
-      new MoreLess(cSet, 3, ICoord(300, vp+20), true);
+      new MoreLess(cSet, 4, ICoord(300, vp+20), true);
 
       vp += 5;
       new InchTool(cSet, 0, ICoord(0, vp), true);
@@ -149,22 +149,9 @@ class Cross : LineSet
       cbb.setActive(0);
       cbb.setSizeRequest(100, -1);
       cSet.add(cbb, ICoord(172, vp-5), Purpose.XFORMCB);
+      new MoreLess(cSet, 5, ICoord(300, vp), true);
 
-      new MoreLess(cSet, 4, ICoord(300, vp), true);
-
-      vp += 35;
-
-      CheckButton check = new CheckButton("Fill with color");
-      cSet.add(check, ICoord(0, vp), Purpose.FILL);
-
-      check = new CheckButton("Solid");
-      cSet.add(check, ICoord(115, vp), Purpose.SOLID);
-
-      Button b = new Button("Fill Color");
-      cSet.add(b, ICoord(240, vp-5), Purpose.FILLCOLOR);
-
-      vp += 25;
-      cSet.cy = vp;
+      cSet.cy = vp+35;
 
       //RenameGadget rg = new RenameGadget(cSet, ICoord(0, vp), name, true);
    }
@@ -184,9 +171,9 @@ class Cross : LineSet
    void constructBase()
    {
       if (width > height)
-         h = height;
+         h = height*size;
       else
-         h = width;
+         h = width*size;
       h *=0.9;
       w = h*ar;
       uw = h*urW;
@@ -224,7 +211,19 @@ class Cross : LineSet
 
    override void onCSMoreLess(int instance, bool more, bool coarse)
    {
-      if (instance == 0)  // Upright width
+      if (instance == 0)
+      {
+         double delta = coarse? 1.05: 1.01;
+         if (more)
+            size *= delta;
+         else
+         {
+            if (size > 0.1)
+               size /= delta;
+         }
+         constructBase();
+      }
+      else if (instance == 1)  // Upright width
       {
          if (more)
          {
@@ -240,7 +239,7 @@ class Cross : LineSet
          }
          constructBase();
       }
-      else if (instance == 1)
+      else if (instance == 2)
       {
          if (more)
          {
@@ -256,7 +255,7 @@ class Cross : LineSet
          }
          constructBase();
       }
-      else if (instance == 2)
+      else if (instance == 3)
       {
          if (more)
          {
@@ -275,7 +274,7 @@ class Cross : LineSet
          cbOff = (cbPos-h/2)/-h;
          constructBase();
       }
-      else if (instance == 3)
+      else if (instance == 4)
       {
          if (more)
          {
@@ -291,7 +290,7 @@ class Cross : LineSet
          }
          constructBase();
       }
-      else if (instance == 4)
+      else if (instance == 5)
          modifyTransform(xform, more, coarse);
       else
          return;
@@ -313,7 +312,7 @@ class Cross : LineSet
       for (int i = 1; i < oPath.length; i++)
          c.lineTo(oPath[i].x, oPath[i].y);
       c.closePath();
-      strokeAndFill(c, lineWidth, solid, fill);
+      strokeAndFill(c, lineWidth, outline, fill);
    }
 }
 

@@ -7,6 +7,7 @@
 // Written in the D programming language
 module random;
 
+import container;
 import mainwin;
 import constants;
 import acomp;
@@ -30,6 +31,7 @@ import gdk.RGBA;
 import cairo.Context;
 import cairo.Matrix;
 import gtkc.cairotypes;
+import cairo.Surface;
 
 class Random: LineSet
 {
@@ -128,11 +130,20 @@ class Random: LineSet
       cSet.add(cb, ICoord(0, vp), Purpose.PATTERN);
 
       Button b = new Button("Regenerate");
-      cSet.add(b, ICoord(215, vp), Purpose.MORE);
+      cSet.add(b, ICoord(215, vp+3), Purpose.MORE);
 
-      vp += 27;
-      CheckButton pr = new CheckButton("Print random");
-      cSet.add(pr, ICoord(213, vp), Purpose.PRINTRANDOM);
+      vp += 40;
+      CheckButton check = new CheckButton("Fill with color");
+      check.setActive(1);
+      fill = true;
+      cSet.add(check, ICoord(0, vp), Purpose.FILL);
+
+      b = new Button("Fill Color");
+      cSet.add(b, ICoord(215, vp-5), Purpose.FILLCOLOR);
+
+      vp += 25;
+      check = new CheckButton("Print random");
+      cSet.add(check, ICoord(213, vp), Purpose.PRINTRANDOM);
 
       cSet.cy = vp+25;
    }
@@ -144,6 +155,20 @@ class Random: LineSet
       {
       case Purpose.PATTERN:
          element = (cast(ComboBoxText) w).getActive();
+         if (element == 0 || element == 2)
+         {
+            fill = true;
+            cSet.toggling(false);
+            cSet.setToggle(Purpose.FILL, true);
+            cSet.toggling(true);
+         }
+         else
+         {
+            fill = false;
+            cSet.toggling(false);
+            cSet.setToggle(Purpose.FILL, false);
+            cSet.toggling(true);
+         }
          break;
       case Purpose.PRINTRANDOM:
          printRandom = !printRandom;
@@ -286,8 +311,11 @@ class Random: LineSet
          foreach (ShapeInfo t; si)
          {
             c.arc(hOff+t.c2, vOff+t.c3, t.c1*height, 0, 2*PI);
-            c.setSourceRgba(1,1,1, 0.5);
-            c.fillPreserve();
+            if (fill)
+            {
+               c.setSourceRgba(altColor.red, altColor.green, altColor.blue, 0.5);
+               c.fillPreserve();
+            }
             c.setSourceRgb(r,g,b);
             c.stroke();
          }
@@ -316,8 +344,11 @@ class Random: LineSet
             c.curveTo(hOff+t[1].x, vOff+t[1].y,     hOff+t[2].x, vOff+t[2].y,     hOff+t[3].x, vOff+t[3].y);
             c.curveTo(hOff+t[4].x, vOff+t[4].y,    hOff+t[5].x, vOff+t[5].y,     hOff+t[6].x, vOff+t[6].y);
             c.closePath();
-            c.setSourceRgb(1,1,1);
-            c.fillPreserve();
+            if (fill)
+            {
+               c.setSourceRgba(altColor.red, altColor.green, altColor.blue, 1);
+               c.fillPreserve();
+            }
             c.setSourceRgb(0,0,0);
             c.stroke();
          }
@@ -332,8 +363,11 @@ class Random: LineSet
             c.lineTo(x+t.c3*height, y+t.c4*height);
             c.lineTo(x+t.c5*height, y+t.c6*height);
             c.closePath();
-            c.setSourceRgba(1,1,1, 0.5);
-            c.fillPreserve();
+            if (fill)
+            {
+               c.setSourceRgba(altColor.red, altColor.green, altColor.blue, 0.5);
+               c.fillPreserve();
+            }
             c.setSourceRgb(r,g,b);
             c.stroke();
          }
@@ -341,7 +375,5 @@ class Random: LineSet
 
       if (!isMoved) cSet.setDisplay(0, reportPosition());
    }
+
 }
-
-
-

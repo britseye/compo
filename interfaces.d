@@ -49,3 +49,17 @@ interface CSTarget
    // Notifies a change in the limited palette
    void onCSPalette(PartColor[]);
 }
+
+interface FillPattern
+{
+   void doRef();
+   void unRef();
+   bool checkRefs();
+   void getIdentity();
+   int getId();
+}
+
+interface Shim
+{
+   void detach();
+}

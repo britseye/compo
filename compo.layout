@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <CodeBlocks_layout_file>
-	<ActiveTarget name="Debug" />
-	<File name="about.d" open="1" top="1" tabpos="0">
+	<ActiveTarget name="Release" />
+	<File name="about.d" open="0" top="0" tabpos="0">
 		<Cursor position="961" topLine="0" />
+	</File>
+	<File name="acomp.d" open="0" top="0" tabpos="4">
+		<Cursor position="20775" topLine="909" />
 	</File>
 	<File name="arrow.d" open="0" top="0" tabpos="2">
 		<Cursor position="0" topLine="0" />
@@ -10,14 +13,14 @@
 	<File name="bevel.d" open="0" top="0" tabpos="1">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="brushdabs.d" open="0" top="0" tabpos="2">
-		<Cursor position="0" topLine="0" />
+	<File name="brushdabs.d" open="0" top="0" tabpos="1">
+		<Cursor position="3911" topLine="108" />
 	</File>
 	<File name="circle.d" open="0" top="0" tabpos="2">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="common.d" open="0" top="0" tabpos="4">
-		<Cursor position="0" topLine="0" />
+	<File name="common.d" open="0" top="0" tabpos="3">
+		<Cursor position="3194" topLine="124" />
 	</File>
 	<File name="constants.d" open="0" top="0" tabpos="5">
 		<Cursor position="0" topLine="0" />
@@ -28,11 +31,14 @@
 	<File name="controlsdlg.d" open="0" top="0" tabpos="1">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="controlset.d" open="0" top="0" tabpos="2">
-		<Cursor position="0" topLine="0" />
+	<File name="controlset.d" open="0" top="0" tabpos="5">
+		<Cursor position="1231" topLine="42" />
 	</File>
 	<File name="corner.d" open="0" top="0" tabpos="1">
 		<Cursor position="0" topLine="0" />
+	</File>
+	<File name="crescent.d" open="0" top="0" tabpos="0">
+		<Cursor position="4520" topLine="162" />
 	</File>
 	<File name="csv.d" open="0" top="0" tabpos="3">
 		<Cursor position="0" topLine="0" />
@@ -49,17 +55,14 @@
 	<File name="fancytext.d" open="0" top="0" tabpos="1">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="flatten.d" open="0" top="0" tabpos="3">
-		<Cursor position="0" topLine="0" />
-	</File>
 	<File name="generic.d" open="0" top="0" tabpos="3">
 		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="graphics.d" open="0" top="0" tabpos="5">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="interfaces.d" open="0" top="0" tabpos="1">
-		<Cursor position="0" topLine="0" />
+	<File name="interfaces.d" open="0" top="0" tabpos="3">
+		<Cursor position="1583" topLine="11" />
 	</File>
 	<File name="lgradient.d" open="0" top="0" tabpos="1">
 		<Cursor position="0" topLine="0" />
@@ -67,14 +70,17 @@
 	<File name="line.d" open="0" top="0" tabpos="2">
 		<Cursor position="0" topLine="0" />
 	</File>
+	<File name="mainwin.d" open="0" top="0" tabpos="0">
+		<Cursor position="1857" topLine="72" />
+	</File>
 	<File name="menus.d" open="0" top="0" tabpos="1">
 		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="merger.d" open="0" top="0" tabpos="1">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="mesh.d" open="0" top="0" tabpos="1">
-		<Cursor position="0" topLine="0" />
+	<File name="mesh.d" open="0" top="0" tabpos="0">
+		<Cursor position="11861" topLine="415" />
 	</File>
 	<File name="morphdlgs.d" open="0" top="0" tabpos="2">
 		<Cursor position="0" topLine="0" />
@@ -95,7 +101,7 @@
 		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="polygon.d" open="0" top="0" tabpos="3">
-		<Cursor position="0" topLine="0" />
+		<Cursor position="8614" topLine="345" />
 	</File>
 	<File name="printing.d" open="0" top="0" tabpos="2">
 		<Cursor position="0" topLine="0" />
@@ -135,6 +141,9 @@
 	</File>
 	<File name="textsrc.d" open="0" top="0" tabpos="4">
 		<Cursor position="0" topLine="0" />
+	</File>
+	<File name="tilings.d" open="0" top="0" tabpos="2">
+		<Cursor position="4225" topLine="111" />
 	</File>
 	<File name="tree.d" open="0" top="0" tabpos="4">
 		<Cursor position="0" topLine="0" />

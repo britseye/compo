@@ -27,10 +27,10 @@ class LineSet : ACBase
    Coord[] oPath;
    Coord[] rPath;
    Coord center;
-   bool fill, solid;
+   bool fill, outline;
 
    cairo_path_t* cpath;
-   bool les;
+   bool les, closed;
    bool killAdjust;
 
    this(AppWindow _aw, ACBase _parent, string _name, uint _type)
@@ -57,8 +57,32 @@ class LineSet : ACBase
       LineParams tp = new LineParams(cSet, ICoord(0, 0), true, withLes, sharp);
 
       extendControls();
+
+      if (closed)
+      {
+         CheckButton check = new CheckButton("Outline");
+         check.setActive(1);
+         cSet.add(check, ICoord(0, cSet.cy), Purpose.OUTLINE);
+
+         fillOptions = new ComboBoxText(false);
+         fillOptions.appendText("Choose Fill Type");
+         fillOptions.appendText("Solid Color");
+         fillOptions.appendText("Translucent Color");
+         fillOptions.appendText("Refresh Options");
+         getFillOptions(this);
+         fillOptions.setActive(0);
+         cSet.add(fillOptions, ICoord(120, cSet.cy-5), Purpose.FILLOPTIONS);
+         cSet.cy += 30;
+      }
+
       RenameGadget rg = new RenameGadget(cSet, ICoord(2, cSet.cy), name, true);
       rg.setName(name);
+      if (type != AC_CONTAINER)
+      {
+         CheckButton cb = new CheckButton("Hide Item");
+         cb.setActive(0);
+         cSet.add(cb, ICoord(210, cSet.cy), Purpose.HIDE, true);
+      }
       cSet.setLineWidth(lineWidth);
    }
 
@@ -91,22 +115,32 @@ class LineSet : ACBase
          if ((cast(RadioButton) w).getActive())
             les = true;
          break;
-      case Purpose.FILL:
-         fill = !fill;
+      case Purpose.OUTLINE:
+         outline = !outline;
          break;
-      case Purpose.SOLID:
-         if (lastOp != OP_SOLID)
-            solid = !solid;
-         if (solid)
+      case Purpose.FILLOPTIONS:
+         int n = (cast(ComboBoxText) w).getActive();
+         if (n == 0)
+            return;
+         if (n == 1 || n == 2)
          {
-            cSet.disable(Purpose.FILL);
-            cSet.disable(Purpose.FILLCOLOR);
+            lastOp = push!RGBA(this, altColor, OP_ALTCOLOR);
+            setColor(true);
+            fillFromPattern = false;
+            fill = true;
+         }
+         else if (n == 3)
+         {
+            updateFillOptions(this);
+            return;
          }
          else
          {
-            cSet.enable(Purpose.FILL);
-            cSet.enable(Purpose.FILLCOLOR);
+            fillFromPattern = true;
+            fillUid = others[n-4];
+            fill = true;
          }
+         fillOptions.setActive(0);
          break;
       case Purpose.XFORMCB:
          xform = (cast(ComboBoxText) w).getActive();

@@ -46,9 +46,6 @@ import cairo.Matrix;
 class Crescent : LineSet
 {
    static int nextOid = 0;
-   double radius, rr, radius2, ha;
-   double dmax= 0.705, dmin = 0.3;
-   double r1min = 0.24, r1max = 0.38;
    double r0, r1, d;
    double a0, a1;
    double a, b, h;
@@ -64,16 +61,11 @@ class Crescent : LineSet
          cSet.setToggle(Purpose.LESSHARP, true);
       else
          cSet.setToggle(Purpose.LESROUND, true);
-      if (solid)
-      {
-         cSet.setToggle(Purpose.SOLID, true);
-         cSet.disable(Purpose.FILL);
-         cSet.disable(Purpose.FILLCOLOR);
-      }
-      else if (fill)
-         cSet.setToggle(Purpose.FILL, true);
+      if (outline)
+         cSet.setToggle(Purpose.OUTLINE, true);
       cSet.setToggle(Purpose.SHOWMARKERS, guidelines);
       cSet.setComboIndex(Purpose.XFORMCB, xform);
+      cSet.setComboIndex(Purpose.FILLOPTIONS, 0);
       cSet.toggling(true);
       cSet.setHostName(name);
    }
@@ -93,7 +85,7 @@ class Crescent : LineSet
       lineWidth = other.lineWidth;
       les = other.les;
       fill = other.fill;
-      solid = other.solid;
+      outline = other.outline;
       altColor = other.altColor.copy();
       center = other.center;
       xform = other.xform;
@@ -113,7 +105,8 @@ class Crescent : LineSet
       group = ACGroups.SHAPES;
       altColor = new RGBA(0,0,0,1);
       les = true;
-      fill = solid = false;
+      closed = true;
+      fill = false;
 
       center.x = 0.5*width;
       center.y = 0.5*height;
@@ -124,6 +117,7 @@ class Crescent : LineSet
       guidelines = true;
       tm = new Matrix(&tmData);
       setupControls(3);
+      outline = true;
       positionControls(true);
       dirty = true;
    }
@@ -131,13 +125,16 @@ class Crescent : LineSet
    override void extendControls()
    {
       int vp = cSet.cy;
+      Label l = new Label("Size");
+      cSet.add(l, ICoord(255, vp-64), Purpose.LABEL);
+      new MoreLess(cSet, 0, ICoord(295, vp-64), true);
 
-      Label l = new Label("Separation");
+      l = new Label("Separation");
       cSet.add(l, ICoord(172, vp-40), Purpose.LABEL);
-      new MoreLess(cSet, 0, ICoord(275, vp-40), true);
+      new MoreLess(cSet, 1, ICoord(275, vp-40), true);
       l = new Label("Inner Radius");
       cSet.add(l, ICoord(172, vp-20), Purpose.LABEL);
-      new MoreLess(cSet, 1, ICoord(275, vp-20), true);
+      new MoreLess(cSet, 2, ICoord(275, vp-20), true);
       CheckButton cb = new CheckButton("Show GuideLines");
       cb.setActive(1);
       cSet.add(cb, ICoord(172, vp), Purpose.SHOWMARKERS);
@@ -159,22 +156,9 @@ class Crescent : LineSet
       cbb.setActive(0);
       cbb.setSizeRequest(100, -1);
       cSet.add(cbb, ICoord(172, vp-5), Purpose.XFORMCB);
+      new MoreLess(cSet, 3, ICoord(275, vp), true);
 
-      new MoreLess(cSet, 2, ICoord(275, vp), true);
-
-      vp += 35;
-
-      CheckButton check = new CheckButton("Fill with color");
-      cSet.add(check, ICoord(0, vp), Purpose.FILL);
-
-      check = new CheckButton("Solid");
-      cSet.add(check, ICoord(115, vp), Purpose.SOLID);
-
-      Button b = new Button("Fill Color");
-      cSet.add(b, ICoord(240, vp-5), Purpose.FILLCOLOR);
-
-      vp += 25;
-      cSet.cy = vp;
+      cSet.cy = vp+35;
 
       //RenameGadget rg = new RenameGadget(cSet, ICoord(0, vp), name, true);
    }
@@ -208,12 +192,29 @@ class Crescent : LineSet
    override void onCSMoreLess(int instance, bool more, bool coarse)
    {
       focusLayout();
-      if (instance == 0) // Distance between centers
+      if (instance == 0) // Size
+      {
+         double delta = coarse? 1.05: 1.01;
+         if (more)
+         {
+            r0 *= delta;
+            r1 *= delta;
+         }
+         else
+         {
+            if (r0 > 0.1)
+            {
+               r0 /= delta;
+               r1 /= delta;
+            }
+         }
+      }
+      else if (instance == 1) // Distance between centers
       {
          double dd = more? 1: -1;
          d += dd;
       }
-      else if (instance == 1)  // Radius of smaller circle
+      else if (instance == 2)  // Radius of smaller circle
       {
          if (more)
          {
@@ -230,19 +231,13 @@ class Crescent : LineSet
                r1 -= 1;
          }
       }
-      else if (instance == 2)
+      else if (instance == 3)
          modifyTransform(xform, more, coarse);
       else
          return;
       dirty = true;
       aw.dirty = true;
       reDraw();
-   }
-
-   void getAngle2(Coord a, Coord b)
-   {
-      double hc = (a.y-b.y)/2;
-      ha = atan2(hc,radius2);
    }
 
    void figureIPs()
@@ -317,7 +312,7 @@ class Crescent : LineSet
       }
 
       c.closePath();
-      strokeAndFill(c, lineWidth, solid, fill);
+      strokeAndFill(c, lineWidth, outline, fill);
    }
 }
 

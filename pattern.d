@@ -14,25 +14,29 @@ import constants;
 import types;
 import controlset;
 import lineset;
+import container;
 
 import std.stdio;
 import std.string;
 import std.math;
 import std.conv;
+import std.random;
 
 import gdk.RGBA;
 import gtk.Widget;
 import gtk.Label;
-import gtk.Button;
-import gtk.SpinButton;
+import gtk.CheckButton;
 import gtk.ComboBoxText;
 import cairo.Context;
+import cairo.Matrix;
+import cairo.Surface;
 
 class Pattern : LineSet
 {
-   static int nextOid = 0;;
+   static int nextOid = 0;
+   ACBase partner;
    int rows, cols;
-   double unit;
+   double unit, diagonal;
    int choice;
 
    override void syncControls()
@@ -57,11 +61,14 @@ class Pattern : LineSet
       string s = "Pattern "~to!string(++nextOid);
       super(w, parent, s, AC_PATTERN);
       group = ACGroups.EFFECTS;
-      rows= 30;
-      cols = 30;
+      center = Coord(0.5*width, 0.5*height);
+      diagonal = 1.1*sqrt(cast(double)(width*width+height*height));
       unit = 5;
+      rows= to!int(diagonal/unit);
+      cols = rows;
       choice = 0;
       lineWidth = 0.5;
+      tm = new Matrix(&tmData);
 
       setupControls();
       positionControls(true);
@@ -71,23 +78,6 @@ class Pattern : LineSet
    {
       int vp = cSet.cy;
 
-      Label l = new Label("Width");
-      cSet.add(l, ICoord(185, vp), Purpose.LABEL);
-      new MoreLess(cSet, 0, ICoord(246, vp), true);
-
-      l = new Label("Height");
-      cSet.add(l, ICoord(185, vp+20), Purpose.LABEL);
-      new MoreLess(cSet, 1, ICoord(246, vp+20), true);
-
-      l = new Label("Unit size");
-      cSet.add(l, ICoord(185, vp+40), Purpose.LABEL);
-      new MoreLess(cSet, 2, ICoord(246, vp+40), true);
-
-      new InchTool(cSet, 0, ICoord(0, vp), true);
-
-      vp += 60;
-      l = new Label("Choose Pattern");
-      cSet.add(l, ICoord(0, vp+4), Purpose.LABEL);
       ComboBoxText cbb = new ComboBoxText(false);
       cbb.appendText("Grid");
       cbb.appendText("Honeycomb");
@@ -97,9 +87,30 @@ class Pattern : LineSet
       cbb.appendText("Cross hatched");
       cbb.appendText("Down stripes");
       cbb.appendText("Up stripes");
-      cbb.setSizeRequest(120, -1);
+      cbb.appendText("Concentric");
+      cbb.appendText("Spiral");
+      cbb.appendText("Vortex");
+      cbb.setSizeRequest(150, -1);
       cbb.setActive(0);
-      cSet.add(cbb, ICoord(142, vp), Purpose.PATTERN);
+      cSet.add(cbb, ICoord(150, vp), Purpose.PATTERN);
+
+      cbb = new ComboBoxText(false);
+      cbb.appendText("Scale");
+      cbb.appendText("Stretch-H");
+      cbb.appendText("Stretch-V");
+      cbb.appendText("Skew-H");
+      cbb.appendText("Skew-V");
+      cbb.appendText("Rotate");
+      cbb.appendText("Flip-H");
+      cbb.appendText("Flip-V");
+      cbb.setActive(0);
+      cbb.setSizeRequest(150, -1);
+      cSet.add(cbb, ICoord(150, vp+30), Purpose.XFORMCB);
+      new MoreLess(cSet, 0, ICoord(300, vp+35), true);
+
+      new InchTool(cSet, 0, ICoord(0, vp), true);
+
+      vp += 32;
 
       cSet.cy = vp+40;
    }
@@ -111,6 +122,7 @@ class Pattern : LineSet
       case Purpose.PATTERN:
          lastOp = push!int(this, choice, OP_IV0);
          choice = (cast(ComboBoxText) w).getActive();
+         dirty = true;
          break;
       default:
          return false;
@@ -120,42 +132,12 @@ class Pattern : LineSet
 
    override void onCSMoreLess(int instance, bool more, bool coarse)
    {
+      focusLayout();
       if (instance == 0)
-      {
-         lastOp = pushC!int(this, cols, OP_HSIZE);
-         if (more)
-            cols++;
-         else
-         {
-            if (cols > 1)
-               cols--;
-         }
-      }
-      else if (instance == 1)
-      {
-         lastOp = pushC!int(this, rows, OP_VSIZE);
-         if (more)
-            rows++;
-         else
-         {
-            if (rows > 1)
-               rows--;
-         }
-      }
+         modifyTransform(xform, more, coarse);
       else
-      {
-         lastOp = pushC!double(this, unit, OP_SIZE);
-         if (more)
-            unit *= coarse? 1.3: 1.05;
-         else
-         {
-            double saveunit = unit;
-            if (unit > 3)
-               unit *= coarse? 0.8: 0.95;
-            if (unit < 3)
-            unit = saveunit;
-         }
-      }
+         return;
+      dirty = true;
       aw.dirty = true;
       reDraw();
    }
@@ -164,20 +146,8 @@ class Pattern : LineSet
    {
       switch (cp.type)
       {
-      case OP_HSIZE:
-         cols = cp.iVal;
-         break;
-      case OP_VSIZE:
-         rows = cp.iVal;
-         break;
-      case OP_SIZE:
-         unit = cp.dVal;
-         break;
-      case OP_IV0:
-         choice = cp.iVal;
-         break;
       default:
-         return false;
+         break;
       }
       lastOp = OP_UNDEF;
       return true;
@@ -246,25 +216,27 @@ class Pattern : LineSet
    {
       c.setSourceRgb(baseColor.red, baseColor.green, baseColor.blue);
       c.setLineWidth(lineWidth);
-      for (int i = 0; i < cols+1; i++)
+
+      double ho = -(diagonal-width)/2;
+      double vo = -(diagonal-height)/2;
+      for (int i = 0; i < cols; i++)
       {
-         c.moveTo(hOff+i*unit, vOff);
-         c.lineTo(hOff+i*unit, vOff+rows*unit);
+         c.moveTo(ho+i*unit, vo);
+         c.lineTo(ho+i*unit, vo+rows*unit);
          c.stroke();
       }
-      for (int i = 0; i < rows+1; i++)
+      for (int i = 0; i < rows; i++)
       {
-         c.moveTo(hOff, vOff+i*unit);
-         c.lineTo(hOff+cols*unit, vOff+i*unit);
+         c.moveTo(ho, vo+i*unit);
+         c.lineTo(ho+cols*unit, vo+i*unit);
          c.stroke();
       }
-      if (!isMoved) cSet.setDisplay(0, reportPosition());
    }
 
    void renderHoneycomb(Context c)
    {
       double hunit = unit*1.333;
-      double cx, cy = vOff;
+      double cx = center.x-diagonal/2, cy = center.y-diagonal/2;
       c.setLineWidth(lineWidth);
       c.setSourceRgb(baseColor.red, baseColor.green, baseColor.blue);
 
@@ -272,7 +244,6 @@ class Pattern : LineSet
       double apoth = 0.5*hunit*cos(PI/6);
       double rise = side*cos(PI/3);
 
-      cx = hOff;
       cy += apoth;
       for (int i = 0; i < cols/2; i++)
       {
@@ -294,8 +265,7 @@ class Pattern : LineSet
       }
       for (int i = 0; i < rows-1; i++)
       {
-         cx = hOff;
-
+         cx = center.x-diagonal/2;
 
          for (int j = 0; j  < cols/2; j++)
          {
@@ -316,7 +286,7 @@ class Pattern : LineSet
             c.lineTo(cx+rise+side, cy+apoth);
             c.stroke();
          }
-         cx = hOff;
+         cx = center.x-diagonal/2;
          cy += 2*apoth;
          for (int j = 0; j  < cols/2; j++)
          {
@@ -338,7 +308,7 @@ class Pattern : LineSet
             c.stroke();
          }
       }
-      cx = hOff;
+      cx = center.x-diagonal/2;
       for (int i = 0; i < cols/2; i++)
       {
          c.moveTo(cx, cy);
@@ -356,11 +326,71 @@ class Pattern : LineSet
          c.lineTo(cx+hunit, cy);
          c.stroke();
       }
-      if (!isMoved) cSet.setDisplay(0, reportPosition());
+   }
+
+   void renderConcentric(Context c, int n)
+   {
+      c.setSourceRgb(baseColor.red, baseColor.green, baseColor.blue);
+      c.setLineWidth(lineWidth);
+      double ho = center.x;
+      double vo = center.y;
+      double r;
+
+      if (n == 8)
+      {
+         r = 4;
+         for (; r*2 < diagonal;)
+         {
+            c.arc(ho,vo,r,0,PI*2);
+            c.stroke();
+            r += 8;
+         }
+      }
+      else if (n == 9)
+      {
+         r = 0;
+         double a = 0;
+         double x = ho;
+         double y = vo;
+         c.moveTo(x, y);
+         for (; r*2 < diagonal;)
+         {
+            r = 1.15*a;
+            x = ho+r*cos(a);
+            y = vo+r*sin(a);
+            c.lineTo(x, y);
+            a += 2* rads;
+         }
+         c.stroke();
+      }
+      else
+      {
+         r = 0;
+         double a = PI*45;
+         r = 0.1*pow(E, 0.03*a);
+         double x = ho+r*cos(a);
+         double y = vo+r*sin(a);
+         a += 2* rads;
+         c.moveTo(x, y);
+         for (; r*2 < diagonal;)
+         {
+            r = 0.1*pow(E, 0.03*a);
+            x = ho+r*cos(a);
+            y = vo+r*sin(a);
+            c.lineTo(x, y);
+            a += 2* rads;
+         }
+         c.stroke();
+      }
    }
 
    override void render(Context c)
    {
+      c.translate(hOff+center.x, vOff+center.y);
+      if (compoundTransform())
+         c.transform(tm);
+      c.translate(-center.x, -center.y);  // lpX and lpY both zero at design time
+
       if (choice == 0)
       {
          renderGrid(c);
@@ -371,11 +401,16 @@ class Pattern : LineSet
          renderHoneycomb(c);
          return;
       }
-      double cx, cy = vOff;
+      else if (choice >= 8)
+      {
+         renderConcentric(c, choice);
+         return;
+      }
+      double cx, cy = center.y-diagonal/2;
       c.setLineWidth(lineWidth);
       for (int i = 0; i < rows; i++)
       {
-         cx = hOff;
+         cx = center.x-diagonal/2;
          bool render = (i & 1);
          for (int j = 0; j < cols; j++)
          {
@@ -388,10 +423,5 @@ class Pattern : LineSet
          }
          cy += unit;
       }
-
-      if (!isMoved) cSet.setDisplay(0, reportPosition());
    }
 }
-
-
-

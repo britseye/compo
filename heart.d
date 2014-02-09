@@ -40,16 +40,12 @@ class Heart: LineSet
    {
       cSet.setLineParams(lineWidth);
       cSet.toggling(false);
-      if (solid)
-      {
-         cSet.setToggle(Purpose.SOLID, true);
-         cSet.disable(Purpose.FILL);
-         cSet.disable(Purpose.FILLCOLOR);
-      }
-      else if (fill)
-         cSet.setToggle(Purpose.FILL, true);
+      if (outline)
+         cSet.setToggle(Purpose.OUTLINE, true);
       cSet.setLabel(Purpose.LINEWIDTH, formatLT(lineWidth));
       cSet.toggling(true);
+      cSet.setComboIndex(Purpose.XFORMCB, xform);
+      cSet.setComboIndex(Purpose.FILLOPTIONS, 0);
       cSet.setHostName(name);
    }
 
@@ -65,7 +61,7 @@ class Heart: LineSet
       unit = other.unit;
       tf = other.tf;
       fill = other.fill;
-      solid = other.solid;
+      outline = other.outline;
       syncControls();
    }
 
@@ -74,22 +70,28 @@ class Heart: LineSet
       string s = "Heart "~to!string(++nextOid);
       super(w, parent, s, AC_HEART);
       group = ACGroups.SHAPES;
+      closed = true;
       hOff = vOff = 0;
       altColor = new RGBA(1,0,0,1);
       center = Coord(0.5*width, 0.5*height);
       lineWidth = 0.5;
+      fill = false;
       unit = width > height? height*0.6666: width*0.6666;
       constructBase();
       xform = 0;
       tm = new Matrix(&tmData);
 
       setupControls();
+      outline = true;
       positionControls(true);
    }
 
    override void extendControls()
    {
       int vp = cSet.cy;
+      Label l = new Label("Size");
+      cSet.add(l, ICoord(255, vp-24), Purpose.LABEL);
+      new MoreLess(cSet, 0, ICoord(295, vp-24), true);
 
       new InchTool(cSet, 0, ICoord(0, vp), true);
 
@@ -101,21 +103,10 @@ class Heart: LineSet
       cbb.appendText("Flip-H");
       cbb.appendText("Flip-V");
       cbb.setActive(0);
-      cSet.add(cbb, ICoord(209, vp), Purpose.XFORMCB);
-      new MoreLess(cSet, 0, ICoord(310, vp), true);
+      cSet.add(cbb, ICoord(190, vp), Purpose.XFORMCB);
+      new MoreLess(cSet, 0, ICoord(295, vp), true);
 
-      vp += 40;
-
-      CheckButton check = new CheckButton("Fill with color");
-      cSet.add(check, ICoord(0, vp), Purpose.FILL);
-
-      check = new CheckButton("Solid");
-      cSet.add(check, ICoord(115, vp), Purpose.SOLID);
-
-      Button b = new Button("Fill Color");
-      cSet.add(b, ICoord(210, vp-5), Purpose.FILLCOLOR);
-
-      cSet.cy = vp+30;
+      cSet.cy = vp+40;
    }
 
    override void preResize(int oldW, int oldH)
@@ -142,9 +133,24 @@ class Heart: LineSet
    override void onCSMoreLess(int instance, bool more, bool coarse)
    {
       focusLayout();
-      int[] xft = [0,5,6,7];
-      int tt = xft[xform];
-      modifyTransform(tt, more, coarse);
+      if (instance == 0)
+      {
+         double delta = coarse? 1.05: 1.01;
+         if (more)
+            unit *= delta;
+         else
+         {
+            if (unit > 0.1)
+               unit /= delta;
+         }
+         constructBase();
+      }
+      else
+      {
+         int[] xft = [0,5,6,7];
+         int tt = xft[xform];
+         modifyTransform(tt, more, coarse);
+      }
       dirty = true;
       aw.dirty = true;
       reDraw();
@@ -165,7 +171,7 @@ class Heart: LineSet
       c.curveTo(oPath[1].x, oPath[1].y, oPath[2].x, oPath[2].y, oPath[3].x, oPath[3].y);
       c.curveTo(oPath[4].x, oPath[4].y, oPath[5].x, oPath[5].y, oPath[6].x, oPath[6].y);
       c.closePath();
-      strokeAndFill(c, lineWidth, solid, fill);
+      strokeAndFill(c, lineWidth, outline, fill);
    }
 }
 

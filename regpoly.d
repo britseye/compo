@@ -51,15 +51,10 @@ class RegularPolygon : LineSet
          cSet.setToggle(Purpose.LESSHARP, true);
       else
          cSet.setToggle(Purpose.LESROUND, true);
-      if (solid)
-      {
-         cSet.setToggle(Purpose.SOLID, true);
-         cSet.disable(Purpose.FILL);
-         cSet.disable(Purpose.FILLCOLOR);
-      }
-      else if (fill)
-         cSet.setToggle(Purpose.FILL, true);
+      if (outline)
+         cSet.setToggle(Purpose.OUTLINE, true);
       cSet.setComboIndex(Purpose.XFORMCB, xform);
+      cSet.setComboIndex(Purpose.FILLOPTIONS, 0);
       if (isStar)
          cSet.setToggle(Purpose.ASSTAR, true);
       cSet.setLabel(Purpose.LINEWIDTH, formatLT(lineWidth));
@@ -81,7 +76,7 @@ class RegularPolygon : LineSet
       isStar = other.isStar;
       starIndent = other.starIndent;
       fill = other.fill;
-      solid = other.solid;
+      outline = other.outline;
       center = other.center;
       oPath = other.oPath.dup;
       xform = other.xform;
@@ -93,7 +88,9 @@ class RegularPolygon : LineSet
       string s = "Regular Polygon "~to!string(++nextOid);
       super(w, parent, s, AC_REGPOLYGON);
       group = ACGroups.GEOMETRIC;
+      closed = true;
       altColor = new RGBA(1,1,1,1);
+      fill = false;
       les  = true;
       radius = cast(double) height/2-20;
       starIndent = 0.3;
@@ -104,6 +101,7 @@ class RegularPolygon : LineSet
       tm = new Matrix(&tmData);
 
       setupControls(3);
+      outline = true;
       positionControls(true);
    }
 
@@ -142,16 +140,6 @@ class RegularPolygon : LineSet
       l = new Label("Star Indent");
       cSet.add(l, ICoord(166, vp), Purpose.LABEL);
       new MoreLess(cSet, 2, ICoord(265, vp), true);
-      vp += 25;
-
-      check = new CheckButton("Fill with color");
-      cSet.add(check, ICoord(0, vp), Purpose.FILL);
-
-      check = new CheckButton("Solid");
-      cSet.add(check, ICoord(125, vp), Purpose.SOLID);
-
-      Button b = new Button("Fill Color");
-      cSet.add(b, ICoord(240, vp-5), Purpose.FILLCOLOR);
 
       cSet.cy = vp+30;
    }
@@ -286,7 +274,7 @@ class RegularPolygon : LineSet
       for (int i = 1; i < oPath.length; i++)
          c.lineTo(oPath[i].x, oPath[i].y);
       c.closePath();
-      strokeAndFill(c, lineWidth, solid, fill);
+      strokeAndFill(c, lineWidth, outline, fill);
    }
 }
 

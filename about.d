@@ -8,9 +8,15 @@
 module about;
 
 import std.conv;
+
 import gtk.Dialog;
 import gtk.AboutDialog;
 import gtk.Version;
+
+
+immutable int major = 2, minor = 0;
+int versionMajor() { return major; }
+int versionMinor() { return minor; }
 
 class COMPOAbout: AboutDialog
 {
@@ -19,8 +25,8 @@ class COMPOAbout: AboutDialog
       string gtkver = "GTK+"~to!string(Version.getMajorVersion())~"."~to!string(Version.getMinorVersion());
       addOnResponse(&onResponse);
       setProgramName("COMPO");
-      setVersion("2.0 (running with "~gtkver~")");
-      setCopyright("Copyright Steve Teale 2011-2013");
+      setVersion(to!string(major)~"."~to!string(minor)~" (running with "~gtkver~")");
+      setCopyright("Copyright Steve Teale 2011-2014");
       setComments("A rewrite of this graphical composition program for GTK3");
       setLicense("This program is licensed under the terms\nof the Boost License version 3");
       setWebsite("http://britseyeview.com/software/compo");
@@ -32,3 +38,4 @@ class COMPOAbout: AboutDialog
       destroy();
    }
 }
+

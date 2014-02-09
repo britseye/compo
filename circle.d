@@ -45,15 +45,10 @@ class Circle : LineSet
    {
       cSet.setLineParams(lineWidth);
       cSet.toggling(false);
-      if (solid)
-      {
-         cSet.setToggle(Purpose.SOLID, true);
-         cSet.disable(Purpose.FILL);
-         cSet.disable(Purpose.FILLCOLOR);
-      }
-      else if (fill)
-         cSet.setToggle(Purpose.FILL, true);
+      if (outline)
+         cSet.setToggle(Purpose.OUTLINE, true);
       cSet.setComboIndex(Purpose.XFORMCB, xform);
+      cSet.setComboIndex(Purpose.FILLOPTIONS, 0);
       cSet.setLabel(Purpose.LINEWIDTH, formatLT(lineWidth));
       cSet.toggling(true);
       cSet.setHostName(name);
@@ -70,7 +65,7 @@ class Circle : LineSet
       center = other.center;
       radius = other.radius;
       fill = other.fill;
-      solid = other.solid;
+      outline = other.outline;
       tf = other.tf;
 
       xform = other.xform;
@@ -82,6 +77,7 @@ class Circle : LineSet
       string s = "Circle "~to!string(++nextOid);
       super(w, parent, s, AC_CIRCLE);
       group = ACGroups.SHAPES;
+      closed = true;
       hOff = vOff = 0;
       altColor = new RGBA(0,0,0,1);
       center = Coord(0.5*width, 0.5*height);
@@ -89,6 +85,7 @@ class Circle : LineSet
       tm = new Matrix(&tmData);
 
       setupControls();
+      outline = true;
       positionControls(true);
    }
 
@@ -98,6 +95,11 @@ class Circle : LineSet
 
       new InchTool(cSet, 0, ICoord(10, vp), true);
 
+      Label l = new Label("Radius");
+      cSet.add(l, ICoord(165, vp), Purpose.LABEL);
+      new MoreLess(cSet, 0, ICoord(275, vp), true);
+
+      vp += 20;
       ComboBoxText cbb = new ComboBoxText(false);
       cbb.setTooltipText("Select transformation to apply");
       cbb.setSizeRequest(100, -1);
@@ -108,27 +110,32 @@ class Circle : LineSet
       cbb.appendText("Flip-V");
       cbb.setActive(0);
       cSet.add(cbb, ICoord(165, vp), Purpose.XFORMCB);
-      new MoreLess(cSet, 0, ICoord(275, vp+5), true);
+      new MoreLess(cSet, 1, ICoord(275, vp+5), true);
 
-      vp+=40;
-      CheckButton check = new CheckButton("Fill with color");
-      cSet.add(check, ICoord(0, vp), Purpose.FILL);
-
-      check = new CheckButton("Solid");
-      cSet.add(check, ICoord(115, vp), Purpose.SOLID);
-
-      Button b = new Button("Fill Color");
-      cSet.add(b, ICoord(240, vp), Purpose.FILLCOLOR);
-
-      cSet.cy = vp+30;
+      cSet.cy = vp+40;
    }
 
    override void onCSMoreLess(int instance, bool more, bool coarse)
    {
       focusLayout();
-      int[] xft = [0,2,5,6,7];
-      int tt = xft[xform];
-      modifyTransform(tt, more, coarse);
+      if (instance == 0)
+      {
+         double factor = coarse? 1.5: 1.05;
+         if (more)
+            radius *= factor;
+         else
+         {
+            if (radius/factor < lineWidth)
+               return;
+            radius /= factor;
+         }
+      }
+      else
+      {
+         int[] xft = [0,2,5,6,7];
+         int tt = xft[xform];
+         modifyTransform(tt, more, coarse);
+      }
       dirty = true;
       aw.dirty = true;
       reDraw();
@@ -158,7 +165,7 @@ class Circle : LineSet
       c.setSourceRgb(baseColor.red, baseColor.green, baseColor.blue);
       c.newSubPath();
       c.arc(center.x, center.y, radius, 0, PI*2);
-      strokeAndFill(c, lineWidth, solid, fill);
+      strokeAndFill(c, lineWidth, outline, fill);
    }
 }
 

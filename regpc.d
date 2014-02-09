@@ -72,14 +72,8 @@ class RegularPolycurve : LineSet
          cSet.setToggle(Purpose.LESSHARP, true);
       else
          cSet.setToggle(Purpose.LESROUND, true);
-      if (solid)
-      {
-         cSet.setToggle(Purpose.SOLID, true);
-         cSet.disable(Purpose.FILL);
-         cSet.disable(Purpose.FILLCOLOR);
-      }
-      else if (fill)
-         cSet.setToggle(Purpose.FILL, true);
+      if (outline)
+         cSet.setToggle(Purpose.OUTLINE, true);
       if (symmetry == SS)
       {
          cSet.disable(Purpose.CP1);
@@ -110,6 +104,7 @@ class RegularPolycurve : LineSet
       cSet.setToggle(activeCP-Purpose.CP1, true);
       cSet.setComboIndex(Purpose.XFORMCB, xform);
       cSet.setComboIndex(Purpose.PATTERN, symmetry);
+      cSet.setComboIndex(Purpose.FILLOPTIONS, 0);
       cSet.setLabel(Purpose.LINEWIDTH, formatLT(lineWidth));
       cSet.toggling(true);
       cSet.setHostName(name);
@@ -141,7 +136,7 @@ class RegularPolycurve : LineSet
       constructBase();
       les = other.les;
       fill = other.fill;
-      solid = other.solid;
+      outline = other.outline;
       center = other.center;
       pcPath = other.pcPath.dup;
       xform = other.xform;
@@ -155,8 +150,10 @@ class RegularPolycurve : LineSet
       string s = "Regular Polycurve "~to!string(++nextOid);
       super(w, parent, s, AC_REGPOLYCURVE);
       group = ACGroups.GEOMETRIC;
+      closed = true;
       altColor = new RGBA(1,1,1,1);
       les  = true;
+      fill = false;
       if (width > height)
       {
          target = 0.25*height;
@@ -185,6 +182,7 @@ class RegularPolycurve : LineSet
       tm = new Matrix(&tmData);
 
       setupControls(3);
+      outline = true;
       positionControls(true);
    }
 
@@ -283,17 +281,7 @@ class RegularPolycurve : LineSet
       vp += 35;
       new InchTool(cSet, 0, ICoord(0, vp+5), true);
 
-      vp += 38;
-      check = new CheckButton("Fill with color");
-      cSet.add(check, ICoord(0, vp), Purpose.FILL);
-
-      check = new CheckButton("Solid");
-      cSet.add(check, ICoord(125, vp), Purpose.SOLID);
-
-      Button b = new Button("Fill Color");
-      cSet.add(b, ICoord(240, vp-5), Purpose.FILLCOLOR);
-
-      cSet.cy = vp+20;
+      cSet.cy = vp+38;
    }
 
    override void afterDeserialize()
@@ -827,7 +815,7 @@ class RegularPolycurve : LineSet
       for (int i = 0; i < pcPath.length; i++)
          c.curveTo(pcPath[i].cp1.x, pcPath[i].cp1.y, pcPath[i].cp2.x, pcPath[i].cp2.y, pcPath[i].end.x, pcPath[i].end.y);
       c.closePath();
-      strokeAndFill(c, lineWidth, solid, fill);
+      strokeAndFill(c, lineWidth, outline, fill);
 
    }
 

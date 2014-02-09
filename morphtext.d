@@ -51,7 +51,7 @@ class MorphText : TextViewItem
    Morpher morpher;
    CairoPath* morphed;
    RGBA saveAltColor;
-   bool fill, solid, doXform;
+   bool fill, outline, doXform;
    double olt;
    MorphDlg md;
    bool mdShowing;
@@ -69,14 +69,8 @@ class MorphText : TextViewItem
    {
       cSet.setLineWidth(olt);
       cSet.toggling(false);
-      if (solid)
-      {
-         cSet.setToggle(Purpose.SOLID, true);
-         cSet.disable(Purpose.FILL);
-         cSet.disable(Purpose.FILLCOLOR);
-      }
-      else if (fill)
-         cSet.setToggle(Purpose.FILL, true);
+      if (outline)
+         cSet.setToggle(Purpose.OUTLINE, true);
       cSet.setComboIndex(Purpose.XFORMCB, xform);
       cSet.setComboIndex(Purpose.MORPHCB, cm);
       if (editMode)
@@ -84,6 +78,8 @@ class MorphText : TextViewItem
       toggleView();
       cSet.setLabel(Purpose.LINEWIDTH, formatLT(olt));
       cSet.toggling(true);
+      cSet.setComboIndex(Purpose.XFORMCB, xform);
+      cSet.setComboIndex(Purpose.FILLOPTIONS, 0);
       cSet.setHostName(name);
    }
 
@@ -103,7 +99,7 @@ class MorphText : TextViewItem
       tf = other.tf;
       cm = other.cm;
       fill = other.fill;
-      solid = other.solid;
+      outline = other.outline;
       syncControls();
 
       string text = other.tb.getText();
@@ -115,6 +111,7 @@ class MorphText : TextViewItem
       string s = "Morphed Text "~to!string(++nextOid);
       super(w, parent, s, AC_MORPHTEXT);
       altColor = new RGBA(0,0,0,1);
+      fill = false;
       olt = 0.5;
       editMode = true;
       xform = 0;
@@ -123,6 +120,7 @@ class MorphText : TextViewItem
       mdShowing = false;
       cm = aw.config.defMorph;
       setupControls();
+      outline = true;
       positionControls(true);
       toggleView();
       pfd = PgFontDescription.fromString("Sans 30");
@@ -158,11 +156,11 @@ class MorphText : TextViewItem
       cbb.setTooltipText("Select transformation to apply");
       cbb.setSizeRequest(120, -1);
       cbb.appendText("Scale");
-      cbb.appendText("Rotate");
       cbb.appendText("Stretch-H");
-      cbb.appendText("Stretch -V");
+      cbb.appendText("Stretch-V");
       cbb.appendText("Skew-H");
       cbb.appendText("Skew-V");
+      cbb.appendText("Rotate");
       cbb.appendText("Flip-H");
       cbb.appendText("Flip-V");
       cbb.setSizeRequest(100, -1);
@@ -197,15 +195,18 @@ class MorphText : TextViewItem
       cSet.add(b, ICoord(0, vp), Purpose.MORE);
 
       vp += 30;
+      CheckButton check = new CheckButton("Outline");
+      check.setActive(1);
+      cSet.add(check, ICoord(0, vp), Purpose.OUTLINE);
 
-      CheckButton check = new CheckButton("Solid");
-      cSet.add(check, ICoord(0, vp), Purpose.SOLID);
-
-      check = new CheckButton("Fill with color");
-      cSet.add(check, ICoord(78, vp), Purpose.FILL);
-
-      b = new Button("Fill Color");
-      cSet.add(b, ICoord(202, vp-5), Purpose.FILLCOLOR);
+      fillOptions = new ComboBoxText(false);
+      fillOptions.appendText("Choose Fill Type");
+      fillOptions.appendText("Solid Color");
+      fillOptions.appendText("Translucent Color");
+      fillOptions.appendText("Refresh Options");
+      getFillOptions(this);
+      fillOptions.setActive(0);
+      cSet.add(fillOptions, ICoord(120, vp-5), Purpose.FILLOPTIONS);
 
       cSet.cy = vp+30;
    }
@@ -231,18 +232,32 @@ class MorphText : TextViewItem
       case Purpose.FILL:
          fill = !fill;
          break;
-      case Purpose.SOLID:
-         solid = !solid;
-         if (solid)
+      case Purpose.OUTLINE:
+         outline = !outline;
+         break;
+      case Purpose.FILLOPTIONS:
+         int n = (cast(ComboBoxText) w).getActive();
+         if (n == 0)
+            return false;
+         if (n == 1 || n == 2)
          {
-            cSet.disable(Purpose.FILL);
-            cSet.disable(Purpose.FILLCOLOR);
+            lastOp = push!RGBA(this, altColor, OP_ALTCOLOR);
+            setColor(true);
+            fillFromPattern = false;
+            fill = true;
+         }
+         else if (n == 3)
+         {
+            updateFillOptions(this);
+            return false;
          }
          else
          {
-            cSet.enable(Purpose.FILL);
-            cSet.enable(Purpose.FILLCOLOR);
+            fillFromPattern = true;
+            fillUid = others[n-4];
+            fill = true;
          }
+         fillOptions.setActive(0);
          break;
       case Purpose.MORE:
          if (mdShowing)
@@ -342,9 +357,6 @@ class MorphText : TextViewItem
          da.hide();
          dframe.hide();
          te.show();
-         cSet.disable(Purpose.FILL);
-         cSet.disable(Purpose.SOLID);
-         cSet.disable(Purpose.FILLCOLOR);
          cSet.disable(Purpose.MOLLT, 0);
          cSet.disable(Purpose.XFORMCB);
          cSet.disable(Purpose.MORPHCB);
@@ -358,9 +370,6 @@ class MorphText : TextViewItem
       {
          te.hide();
          eframe.hide();
-         cSet.enable(Purpose.FILL);
-         cSet.enable(Purpose.SOLID);
-         cSet.enable(Purpose.FILLCOLOR);
          cSet.enable(Purpose.MOLLT, 0);
          cSet.enable(Purpose.XFORMCB);
          cSet.enable(Purpose.MORPHCB);
@@ -578,49 +587,7 @@ class MorphText : TextViewItem
       }
       return n;
    }
-/*
-   string parseParams(string s)
-   {
-      Coord[] ca;
-      ca.length = 0;
-      string[] a = s.split("\n\\\\\\");
-      if (a.length != 2)
-         return s;
-      if (mp.valid)
-         return a[0];
-      if (paramString == a[1])
-         return a[0];
-      string[] va = a[1].split(";");
-      foreach (string ss; va)
-      {
-         ss = ss.strip();
-         string[] pa = ss.split(",");
-         if (pa.length != 2)
-            return s;
-         string t = pa[0].strip();
-         Coord tc;
-         try
-         {
-            tc.x = 0.01*width*to!double(t);
-         }
-         catch { return s; }
-         t = pa[1].strip();
-         try
-         {
-            tc.y = 0.01*height*to!double(t);
-         }
-         catch { return s; }
-         ca ~= tc;
-      }
-      if (ca.length == 8)
-      {
-         given.cpa[] = ca;
-         given.ipa[0] = 1;
-         paramString = a[1];
-      }
-      return a[0];
-   }
-*/
+
    void onFontChange()
    {
       morphed = null;
@@ -629,17 +596,8 @@ class MorphText : TextViewItem
    override void render(Context c)
    {
       string text = tb.getText();
-      //text = parseParams(text);
       if (!text.length)
          return;
-      /*
-      if (cm == 11 && given.ipa[0])
-      {
-         mp.cpa[] = given.cpa[];
-         morpher.refreshParams();
-         given.ipa[0] = 0;
-      }
-      */
       double r = baseColor.red();
       double g = baseColor.green();
       double b = baseColor.blue();
@@ -659,7 +617,6 @@ class MorphText : TextViewItem
       }
 
       c.newPath();
-      //Coord bp = cm.basePoint();
 
       c.translate(hOff+width/2, vOff+height/2);
       if (compoundTransform())
@@ -667,23 +624,6 @@ class MorphText : TextViewItem
       c.translate(-width/2, -height/2);
 
       c.appendPath(cast(cairo_path_t*) morphed);
-      c.setLineWidth(olt);
-      if (solid)
-      {
-         c.setSourceRgba(r, g, b, 1.0);
-         c.fill();
-      }
-      else if (fill)
-      {
-         c.setSourceRgba(altColor.red, altColor.green, altColor.blue, 1.0);
-         c.fillPreserve();
-      }
-      if (!solid)
-      {
-         c.setSourceRgb(r, g, b);
-         c.stroke();
-      }
-
-      if (!isMoved) cSet.setDisplay(0, reportPosition());
+      strokeAndFill(c, olt, outline, fill);
    }
 }

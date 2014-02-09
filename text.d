@@ -7,6 +7,7 @@
 // Written in the D programming language
 module text;
 
+import container;
 import mainwin;
 import acomp;
 import tvitem;
@@ -39,6 +40,7 @@ import gtk.Style;
 import pango.PgFontDescription;
 import gdk.Screen;
 import gtkc.gdktypes;
+import cairo.Surface;
 
 class PlainText : TextViewItem
 {
@@ -237,5 +239,3 @@ class PlainText : TextViewItem
       textBlock.setFont(pfd);
    }
 }
-
-

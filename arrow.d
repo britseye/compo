@@ -18,6 +18,7 @@ import lineset;
 import std.stdio;
 import std.math;
 import std.conv;
+import std.random;
 
 import gtk.DrawingArea;
 import gtk.Widget;
@@ -42,6 +43,7 @@ import cairo.Matrix;
 class Arrow : LineSet
 {
    static int nextOid = 0;
+   double size;
    int hw;
 
    override void syncControls()
@@ -52,14 +54,8 @@ class Arrow : LineSet
          cSet.setToggle(Purpose.LESSHARP, true);
       else
          cSet.setToggle(Purpose.LESROUND, true);
-      if (solid)
-      {
-         cSet.setToggle(Purpose.SOLID, true);
-         cSet.disable(Purpose.FILL);
-         cSet.disable(Purpose.FILLCOLOR);
-      }
-      else if (fill)
-         cSet.setToggle(Purpose.FILL, true);
+      if (outline)
+         cSet.setToggle(Purpose.OUTLINE, true);
       if (hw == 0)
          cSet.setToggle(Purpose.MEDIUM, true);
       else if (hw == 1)
@@ -67,6 +63,7 @@ class Arrow : LineSet
       else
          cSet.setToggle(Purpose.WIDE, true);
       cSet.setComboIndex(Purpose.XFORMCB, xform);
+      cSet.setComboIndex(Purpose.FILLOPTIONS, 0);
       cSet.toggling(true);
       cSet.setHostName(name);
    }
@@ -79,9 +76,10 @@ class Arrow : LineSet
       baseColor = other.baseColor.copy();
       lineWidth = other.lineWidth;
       les = other.les;
+      size = other.size;
       hw = other.hw;
       fill = other.fill;
-      solid = other.solid;
+      outline = other.outline;
       altColor = other.altColor.copy();
       center = other.center;
       oPath = other.oPath.dup;
@@ -97,21 +95,27 @@ class Arrow : LineSet
       super(w, parent, s, AC_ARROW);
       altColor = new RGBA(0,0,0,1);
       les = true;
-      fill = solid = false;
+      closed = true;
+      fill = false;
 
       center.x = 0.5*width;
       center.y = 0.5*height;
+      size = 1;
       hw = 0;  // medium head width
       constructBase();
       tm = new Matrix(&tmData);
 
       setupControls(3);
+      outline = true;
       positionControls(true);
    }
 
    override void extendControls()
    {
       int vp = cSet.cy;
+      Label l = new Label("Size");
+      cSet.add(l, ICoord(255, vp-64), Purpose.LABEL);
+      new MoreLess(cSet, 0, ICoord(295, vp-64), true);
 
       RadioButton rb = new RadioButton("Head width medium");
       cSet.add(rb, ICoord(172, vp-40), Purpose.MEDIUM);
@@ -136,22 +140,9 @@ class Arrow : LineSet
       cbb.setActive(0);
       cbb.setSizeRequest(100, -1);
       cSet.add(cbb, ICoord(172, vp-5), Purpose.XFORMCB);
+      new MoreLess(cSet, 1, ICoord(295, vp), true);
 
-      new MoreLess(cSet, 0, ICoord(275, vp), true);
-
-      vp += 35;
-
-      CheckButton check = new CheckButton("Fill with color");
-      cSet.add(check, ICoord(0, vp), Purpose.FILL);
-
-      check = new CheckButton("Solid");
-      cSet.add(check, ICoord(115, vp), Purpose.SOLID);
-
-      Button b = new Button("Fill Color");
-      cSet.add(b, ICoord(240, vp-5), Purpose.FILLCOLOR);
-
-      vp += 25;
-      cSet.cy = vp;
+      cSet.cy = vp+35;
    }
 
    override void preResize(int oldW, int oldH)
@@ -200,13 +191,13 @@ class Arrow : LineSet
          ho = 2;
       else if (hw == 2)
          ho = 8;
-      oPath[0] = Coord(-30, -5);
-      oPath[1] = Coord(18, -5);
-      oPath[2] = Coord(18, -(5+ho));
-      oPath[3] = Coord(30, 0);
-      oPath[4] = Coord(18, 5+ho);
-      oPath[5] = Coord(18, 5);
-      oPath[6] = Coord(-30, 5);
+      oPath[0] = Coord(-30*size, -5*size);
+      oPath[1] = Coord(18*size, -5*size);
+      oPath[2] = Coord(18*size, -(5+ho)*size);
+      oPath[3] = Coord(30*size, 0);
+      oPath[4] = Coord(18*size, (5+ho)*size);
+      oPath[5] = Coord(18*size, 5*size);
+      oPath[6] = Coord(-30*size, 5*size);
       center.x = 0.5*width;
       center.y = 0.5*height;
       for (int i = 0; i < oPath.length; i++)
@@ -219,8 +210,20 @@ class Arrow : LineSet
    override void onCSMoreLess(int instance, bool more, bool coarse)
    {
       focusLayout();
-      if (instance == 0)
+      if (instance == 1)
          modifyTransform(xform, more, coarse);
+      else if (instance == 0)
+      {
+         double delta = coarse? 1.05: 1.01;
+         if (more)
+            size *= delta;
+         else
+         {
+            if (size > 0.1)
+               size /= delta;
+         }
+         constructBase();
+      }
       else
          return;
       aw.dirty = true;
@@ -240,6 +243,6 @@ class Arrow : LineSet
       for (int i = 1; i < oPath.length; i++)
          c.lineTo(oPath[i].x, oPath[i].y);
       c.closePath();
-      strokeAndFill(c, lineWidth, solid, fill);
+      strokeAndFill(c, lineWidth, outline, fill);
    }
 }

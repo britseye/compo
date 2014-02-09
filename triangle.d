@@ -50,15 +50,11 @@ class Triangle : LineSet
          cSet.setToggle(Purpose.LESSHARP, true);
       else
          cSet.setToggle(Purpose.LESROUND, true);
-      if (solid)
-      {
-         cSet.setToggle(Purpose.SOLID, true);
-         cSet.disable(Purpose.FILL);
-         cSet.disable(Purpose.FILLCOLOR);
-      }
-      else if (fill)
-         cSet.setToggle(Purpose.FILL, true);
+      if (outline)
+         cSet.setToggle(Purpose.OUTLINE, true);
       cSet.setComboIndex(Purpose.XFORMCB, xform);
+      cSet.setComboIndex(Purpose.FILLOPTIONS, 0);
+      cSet.setComboIndex(Purpose.PATTERN, ttype);
       cSet.setLabel(Purpose.LINEWIDTH, formatLT(lineWidth));
       cSet.toggling(true);
       cSet.setHostName(name);
@@ -84,7 +80,7 @@ class Triangle : LineSet
       les = other.les;
       ttype = other.ttype;
       fill = other.fill;
-      solid = other.solid;
+      outline = other.outline;
       tf = other.tf;
 
       xform = other.xform;
@@ -96,8 +92,10 @@ class Triangle : LineSet
       string s = "Triangle "~to!string(++nextOid);
       super(appw, parent, s, AC_TRIANGLE);
       group = ACGroups.SHAPES;
+      closed = true;
       hOff = vOff = 0;
       altColor = new RGBA(1,1,1,1);
+      fill = false;
       h = 0.75*height;
       w = 0.75*width;
       center = Coord(0.5*width, 0.5*height);
@@ -109,12 +107,17 @@ class Triangle : LineSet
       dirty = true;
 
       setupControls(3);
+      outline = true;
       positionControls(true);
    }
 
    override void extendControls()
    {
       int vp = cSet.cy;
+
+      Label l = new Label("Adjust Size");
+      cSet.add(l, ICoord(167, vp-40), Purpose.LABEL);
+      new MoreLess(cSet, 0, ICoord(275, vp-40), true);
 
       ComboBoxText cbb = new ComboBoxText(false);
       cbb.setTooltipText("Select transformation to apply");
@@ -124,11 +127,11 @@ class Triangle : LineSet
       cbb.appendText("Equilateral");
       cbb.appendText("Isosceles");
       cbb.setActive(0);
-      cSet.add(cbb, ICoord(167, vp), Purpose.PATTERN);
+      cSet.add(cbb, ICoord(167, vp-20), Purpose.PATTERN);
 
       new InchTool(cSet, 0, ICoord(0, vp+5), true);
 
-      vp += 45;
+      vp += 17;
 
       cbb = new ComboBoxText(false);
       cbb.setTooltipText("Select transformation to apply");
@@ -143,20 +146,9 @@ class Triangle : LineSet
       cbb.appendText("Flip-V");
       cbb.setActive(0);
       cSet.add(cbb, ICoord(167, vp), Purpose.XFORMCB);
-      new MoreLess(cSet, 0, ICoord(270, vp+4), true);
+      new MoreLess(cSet, 1, ICoord(275, vp+4), true);
 
-      vp += 40;
-
-      CheckButton check = new CheckButton("Fill with color");
-      cSet.add(check, ICoord(0, vp), Purpose.FILL);
-
-      check = new CheckButton("Solid");
-      cSet.add(check, ICoord(115, vp), Purpose.SOLID);
-
-      Button b = new Button("Fill Color");
-      cSet.add(b, ICoord(195, vp-5), Purpose.FILLCOLOR);
-
-      cSet.cy = vp+30;
+      cSet.cy = vp+40;
    }
 
    override bool specificNotify(Widget w, Purpose wid)
@@ -229,9 +221,26 @@ class Triangle : LineSet
    {
       focusLayout();
       if (instance == 0)
-         modifyTransform(xform, more, coarse);
+      {
+         double factor = coarse? 1.5: 1.05;
+         if (more)
+         {
+            w *= factor;
+            h *= factor;
+         }
+         else
+         {
+            if (0.5*(w+h)/factor < lineWidth)
+               return;
+            w /= factor;
+            h /= factor;
+         }
+         figurePath();
+      }
       else
-         return;
+      {
+         modifyTransform(xform, more, coarse);
+      }
       aw.dirty = true;
       reDraw();
    }
@@ -255,7 +264,7 @@ class Triangle : LineSet
       c.lineTo(oPath[1].x, oPath[1].y);
       c.lineTo(oPath[2].x, oPath[2].y);
       c.closePath();
-      strokeAndFill(c, lineWidth, solid, fill);
+      strokeAndFill(c, lineWidth, outline, fill);
    }
 }
 

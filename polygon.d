@@ -325,15 +325,10 @@ class Polygon : LineSet
          cSet.setToggle(Purpose.LESSHARP, true);
       else
          cSet.setToggle(Purpose.LESROUND, true);
-      if (solid)
-      {
-         cSet.setToggle(Purpose.SOLID, true);
-         cSet.disable(Purpose.FILL);
-         cSet.disable(Purpose.FILLCOLOR);
-      }
-      else if (fill)
-         cSet.setToggle(Purpose.FILL, true);
+      if (outline)
+         cSet.setToggle(Purpose.OUTLINE, true);
       cSet.setComboIndex(Purpose.XFORMCB, xform);
+      cSet.setComboIndex(Purpose.FILLOPTIONS, 0);
       cSet.setLabel(Purpose.LINEWIDTH, formatLT(lineWidth));
       cSet.toggling(true);
       cSet.setHostName(name);
@@ -350,11 +345,14 @@ class Polygon : LineSet
       lineWidth = other.lineWidth;
       les = other.les;
       fill = other.fill;
-      solid = other.solid;
+      outline = other.outline;
       center = other.center;
       oPath = other.oPath.dup;
       xform = other.xform;
       tf = other.tf;
+      editing = other.editing;
+      cSet.enable(Purpose.REDRAW);
+      cSet.setInfo("Click the Edit button to move, add, or delete edges");
       dirty = true;
       syncControls();
    }
@@ -364,6 +362,7 @@ class Polygon : LineSet
       string s = "Polygon "~to!string(++nextOid);
       super(w, parent, s, AC_POLYGON);
       group = ACGroups.GEOMETRIC;
+      closed = true;
       constructing = true;
       altColor = new RGBA(1,1,1,1);
       editOpacity = 0.5;
@@ -382,6 +381,7 @@ class Polygon : LineSet
       tm = new Matrix(&tmData);
 
       setupControls(3);
+      outline = true;
       cSet.addInfo("Click in the Drawing Area to add edges.\nRight-click when finished - the\n last edge will be added then.");
       positionControls(true);
       dirty = true;
@@ -413,18 +413,7 @@ class Polygon : LineSet
       b.setSensitive(0);
       cSet.add(b, ICoord(203, vp+2), Purpose.REDRAW);
 
-      vp += 40;
-
-      CheckButton check = new CheckButton("Fill with color");
-      cSet.add(check, ICoord(0, vp), Purpose.FILL);
-
-      check = new CheckButton("Solid");
-      cSet.add(check, ICoord(115, vp), Purpose.SOLID);
-
-      b = new Button("Fill Color");
-      cSet.add(b, ICoord(203, vp-5), Purpose.FILLCOLOR);
-
-      cSet.cy = vp+30;
+      cSet.cy = vp+40;
    }
 
    override void afterDeserialize()
@@ -752,7 +741,7 @@ class Polygon : LineSet
          c.lineTo(oPath[i].x, oPath[i].y);
       }
       c.closePath();
-      strokeAndFill(c, lineWidth, solid, fill);
+      strokeAndFill(c, lineWidth, outline, fill);
    }
 
    void adjustPI(double dx, double dy)

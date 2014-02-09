@@ -7,6 +7,7 @@
 // Written in the D programming language
 module types;
 
+import std.uuid;
 import gtkc.gdktypes;
 
 struct Coord
@@ -143,5 +144,11 @@ struct PathItemR
 {
    int type;
    Coord start, cp1, cp2, end;
+}
+
+struct FillOption
+{
+   string name;
+   UUID uuid;
 }
 
