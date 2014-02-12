@@ -114,6 +114,8 @@ class BrushDabs : ACBase
 
       Button b = new Button("Color");
       cSet.add(b, ICoord(0, vp), Purpose.XCOLOR);
+      b = new Button("Refresh Dabs");
+      cSet.add(b, ICoord(70, vp), Purpose.REDRAW);
       b = new Button("Refresh Colors");
       cSet.add(b, ICoord(0, vp+33), Purpose.REFRESH);
 
@@ -170,6 +172,10 @@ class BrushDabs : ACBase
       {
       case Purpose.REFRESH:
          colorSeed++;
+         break;
+      case Purpose.REDRAW:
+         shapeSeed++;
+         generate();
          break;
       case Purpose.GLWHICH:
          pointed = !pointed;

@@ -5,7 +5,7 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 // Written in the D programming language
-module corner;
+module corners;
 
 import mainwin;
 import constants;
@@ -22,18 +22,14 @@ import gtk.DrawingArea;
 import gtk.Widget;
 import gtk.Label;
 import gtk.Button;
-import gtk.SpinButton;
-import gtk.RadioButton;
-import gtk.ToggleButton;
+import gtk.CheckButton;
 import gtk.Layout;
-import gtk.Frame;
-import gtk.Range;
 import gdk.RGBA;
 import cairo.Context;
 import gtkc.cairotypes;
 import cairo.Matrix;
 
-class Corner : LineSet
+class Corners : LineSet
 {
    static int nextOid = 0;
    enum
@@ -45,7 +41,7 @@ class Corner : LineSet
    }
    double cw, ch, inset;
    int relto;
-   int which;
+   bool tl, tr, bl, br;
 
    override void syncControls()
    {
@@ -55,27 +51,20 @@ class Corner : LineSet
          cSet.setToggle(Purpose.LESSHARP, true);
       else
          cSet.setToggle(Purpose.LESROUND, true);
-      switch (which)
-      {
-      case 0:
+      if (tl)
          cSet.setToggle(Purpose.TOPLEFT, true);
-         break;
-      case 1:
+      if (tr)
          cSet.setToggle(Purpose.TOPRIGHT, true);
-         break;
-      case 2:
+      if (bl)
          cSet.setToggle(Purpose.BOTTOMLEFT, true);
-         break;
-      default:
+      if (br)
          cSet.setToggle(Purpose.BOTTOMRIGHT, true);
-         break;
-      }
       cSet.setLabel(Purpose.LINEWIDTH, formatLT(lineWidth));
       cSet.toggling(true);
       cSet.setHostName(name);
    }
 
-   this(Corner other)
+   this(Corners other)
    {
       this(other.aw, other.parent);
       hOff = other.hOff;
@@ -86,18 +75,22 @@ class Corner : LineSet
       inset = other.inset;
       lineWidth = other.lineWidth;
       les = other.les;
+      tl = other.tl;
+      tr = other.tr;
+      bl = other.bl;
+      br = other.br;
       syncControls();
    }
 
    this(AppWindow w, ACBase parent)
    {
-      string s = "Corner "~to!string(++nextOid);
-      super(w, parent, s, AC_CORNER);
+      string s = "Corners "~to!string(++nextOid);
+      super(w, parent, s, AC_CORNERS);
       group = ACGroups.EFFECTS;
       hOff = vOff = 0;
       cw = 0.2*width;
       ch = 0.2*height;
-      //relto = width>height? height: width;
+      tl = true;
       inset = 3;
       lineWidth = 0.5;
       les = true;
@@ -133,17 +126,45 @@ class Corner : LineSet
 
       vp += 40;
 
-      RadioButton rb = new RadioButton("Top left");
-      cSet.add(rb, ICoord(0, vp), Purpose.TOPLEFT);
-      RadioButton rb2 = new RadioButton(rb, "Top Right");
-      cSet.add(rb2, ICoord(142, vp), Purpose.TOPRIGHT);
+      CheckButton cb = new CheckButton("Top left");
+      cb.setActive(1);
+      cSet.add(cb, ICoord(0, vp), Purpose.TOPLEFT);
+      cb = new CheckButton("Top Right");
+      cSet.add(cb, ICoord(142, vp), Purpose.TOPRIGHT);
       vp += 20;
-      rb2 = new RadioButton(rb, "Bottom left");
-      cSet.add(rb2, ICoord(0, vp), Purpose.BOTTOMLEFT);
-      rb2 = new RadioButton(rb, "Bottom right");
-      cSet.add(rb2, ICoord(142, vp), Purpose.BOTTOMRIGHT);
+      cb = new CheckButton("Bottom left");
+      cSet.add(cb, ICoord(0, vp), Purpose.BOTTOMLEFT);
+      cb = new CheckButton("Bottom right");
+      cSet.add(cb, ICoord(142, vp), Purpose.BOTTOMRIGHT);
 
       cSet.cy = vp+30;
+   }
+
+   int toBits()
+   {
+      int n = 0;
+      if (tl)
+         n |= 1;
+      if (tr)
+         n |= 2;
+      if (bl)
+         n |= 4;
+      if (br)
+         n |= 8;
+      return n;
+   }
+
+   void fromBits(int n)
+   {
+      tl = tr = bl = br = false;
+      if (n & 1)
+         tl = true;
+      if (n & 2)
+         tr = true;
+      if (n & 4)
+         bl = true;
+      if (n & 8)
+         br = true;
    }
 
    override bool specificNotify(Widget w, Purpose wid)
@@ -151,28 +172,20 @@ class Corner : LineSet
       switch (wid)
       {
       case Purpose.TOPLEFT:
-         if (which == TL)
-            return true;
-         lastOp = push!int(this, which, OP_IV0);
-         which = TL;
+         tl = ! tl;
+         lastOp = push!int(this, toBits(), OP_IV0);
          break;
       case Purpose.TOPRIGHT:
-         if (which == TR)
-            return true;
-         lastOp = push!int(this, which, OP_IV1);
-         which = TR;
+         tr = !tr;
+         lastOp = push!int(this, toBits(), OP_IV0);
          break;
       case Purpose.BOTTOMLEFT:
-         if (which == BL)
-            return true;
-         lastOp = push!int(this, which, OP_IV2);
-         which = BL;
+         bl = !bl;
+         lastOp = push!int(this, toBits(), OP_IV0);
          break;
       case Purpose.BOTTOMRIGHT:
-         if (which == BR)
-            return true;
-         lastOp = push!int(this, which, OP_IV3);
-         which = BR;
+         br = !br;
+         lastOp = push!int(this, toBits(), OP_IV0);
          break;
       default:
          return false;
@@ -223,10 +236,7 @@ class Corner : LineSet
          lastOp = OP_UNDEF;
          break;
       case OP_IV0:
-      case OP_IV1:
-      case OP_IV2:
-      case OP_IV3:
-         which = cp.iVal;
+         fromBits(cp.iVal);
          break;
       default:
          return false;
@@ -243,34 +253,34 @@ class Corner : LineSet
       double g = baseColor.green();
       double b = baseColor.blue();
       c.setSourceRgb(r, g, b);
-      switch (which)
+      if (tl)
       {
-      case TL:
          c.moveTo(hOff+inset, vOff+inset+ch);
          c.lineTo(hOff+inset, vOff+inset);
          c.lineTo(hOff+inset+cw, vOff+inset);
          c.stroke();
-         break;
-      case TR:
+      }
+      if (tr)
+      {
          c.moveTo(hOff+width-inset-cw, vOff+inset);
          c.lineTo(hOff+width-inset, vOff+inset);
          c.lineTo(hOff+width-inset, vOff+inset+ch);
          c.stroke();
-         break;
-      case BL:
+      }
+      if (bl)
+      {
          c.moveTo(hOff+inset, vOff+height-inset-ch);
          c.lineTo(hOff+inset, vOff+height-inset);
          c.lineTo(hOff+inset+cw, vOff+height-inset);
          c.stroke();
-         break;
-      default:
+      }
+      if (br)
+      {
          c.moveTo(hOff+width-inset-cw, vOff+height-inset);
          c.lineTo(hOff+width-inset, vOff+height-inset);
          c.lineTo(hOff+width-inset, vOff+height-inset-ch);
          c.stroke();
-         break;
       }
-      if (!isMoved) cSet.setDisplay(0, reportPosition());
    }
 }
 

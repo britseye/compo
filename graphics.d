@@ -57,6 +57,16 @@ void renderPNG(ACBase item)
 
 void renderSVG(ACBase item)
 {
+   double res = item.aw.screenRes;  // screen res in dots/mm
+//writefln("width %d, height %d, screenres %f wmm %f", item.width, item.height, res, item.width/res);
+   double ppm = 72/25.4;  // points per mm adjusted by fudge factor
+//writefln("ppm %f", ppm);
+/*
+As far as I can tell from what I've seen here, the width and height in points passed to SvgSurface.create()
+are not correctly applied. My scrap on the screen measured with a ruler is pretty close to what I specified
+but the images come out smaller when I use a mm -> points ratio of 72/22.4, so I have to fudge by 1.08 to
+get the same size svg image on the screen.
+*/
    string fileName = "", folder = "";
    FileChooserDialog fcd = new FileChooserDialog("Save Image to SVG", item.aw, FileChooserAction.SAVE);
    FileFilter filter = new FileFilter();
@@ -76,7 +86,7 @@ void renderSVG(ACBase item)
    folder = fcd.getCurrentFolder();
    item.aw.recent.lastImageFolder = folder;
    fcd.destroy();
-   double w = item.width/item.aw.screenRes*2.83464567, h = item.height/item.aw.screenRes*2.83464567; // 0.352777778
+   double w = item.width/res*ppm, h = item.height/res*ppm;
    SvgSurface svgs = SvgSurface.create(fileName, w, h);
    Context svgc = Context.create(svgs);
    svgc.scale(w/item.width, h/item.height);

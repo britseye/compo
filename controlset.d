@@ -67,10 +67,6 @@ enum Purpose
    XCOLOR,
 
    R_RADIOBUTTONS = 1000,
-   TOPLEFT,
-   TOPRIGHT,
-   BOTTOMLEFT,
-   BOTTOMRIGHT,
    LESROUND,
    LESSHARP,
    MEDIUM,
@@ -92,6 +88,10 @@ enum Purpose
    EDITMODE,
 
    R_CHECKBUTTONS = 3000,
+   TOPLEFT,
+   TOPRIGHT,
+   BOTTOMLEFT,
+   BOTTOMRIGHT,
    HIDE,
    CENTERTEXT,
    SHRINK2FIT,
@@ -151,6 +151,7 @@ enum Purpose
    MLABEL1,
    MLABEL2,
    PALETTE,
+   FILLTYPE,
    // Put any new IDs before MAXWID
    MAXWID
 }

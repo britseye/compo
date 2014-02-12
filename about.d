@@ -27,7 +27,7 @@ class COMPOAbout: AboutDialog
       setProgramName("COMPO");
       setVersion(to!string(major)~"."~to!string(minor)~" (running with "~gtkver~")");
       setCopyright("Copyright Steve Teale 2011-2014");
-      setComments("A rewrite of this graphical composition program for GTK3");
+      setComments("This is an Alpha version - if you are attempting real composition, save frequently.");
       setLicense("This program is licensed under the terms\nof the Boost License version 3");
       setWebsite("http://britseyeview.com/software/compo");
       setWebsiteLabel("BritsEyeView COMPO page");
@@ -38,4 +38,5 @@ class COMPOAbout: AboutDialog
       destroy();
    }
 }
+
 

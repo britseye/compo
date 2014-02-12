@@ -59,6 +59,7 @@ class Mesh : ACBase
       preDefined ~= [ 0x7cf3f2, 0x1c8ee2, 0x7cf3f2, 0x1c8ee2 ];
       preDefined ~= [ 0xf61613, 0x631d1b, 0x631d1b, 0xf61613 ];
       preDefined ~= [ 0,0,0,0 ];
+      preDefined ~= [ 0,0,0,0 ];
    }
 
    static PartColor uint2PartColor(uint u)
@@ -115,7 +116,7 @@ class Mesh : ACBase
 
    this(AppWindow w, ACBase parent)
    {
-      string s = "Mesh "~to!string(++nextOid);
+      string s = "Mesh Pattern "~to!string(++nextOid);
       super(w, parent, s, AC_MESH);
       group = ACGroups.EFFECTS;
       center = Coord(0.5*width, 0.5*height);
@@ -150,6 +151,7 @@ class Mesh : ACBase
       cbb.appendText("Diamonds");
       cbb.appendText("Shaded Spheres");
       cbb.appendText("Random");
+      cbb.appendText("Corrugated");
       cbb.setActive(0);
       cbb.setSizeRequest(100, -1);
       cSet.add(cbb, ICoord(0, vp), Purpose.PATTERN);
@@ -168,7 +170,7 @@ class Mesh : ACBase
       cSet.add(cbb, ICoord(200, vp), Purpose.XFORMCB);
       new MoreLess(cSet, 0, ICoord(300, vp+5), true);
 
-      cSet.cy = vp+30;
+      cSet.cy = vp+35;
    }
 
    override bool specificNotify(Widget w, Purpose wid)
@@ -491,7 +493,7 @@ class Mesh : ACBase
       switch (pattern)
       {
          case 0:
-            mesh = corrugated();//rectangles(20, 20);
+            mesh = rectangles(20, 20);
             break;
          case 1:
             mesh = chequers(10,10);
@@ -504,6 +506,9 @@ class Mesh : ACBase
             break;
          case 4:
             mesh = rectangles(20, 20, true);
+            break;
+         case 5:
+            mesh = corrugated();
             break;
          default:
             return;

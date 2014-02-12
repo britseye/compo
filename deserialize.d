@@ -20,7 +20,7 @@ import richtext;
 import arrow;
 import bevel;
 import circle;
-import corner;
+import corners;
 import cross;
 import fancytext;
 import fader;
@@ -547,9 +547,9 @@ class Deserializer
          child = new Circle(aw, parent);
          setupCircle(cast(Circle) child);
          break;
-      case AC_CORNER:
-         child = new Corner(aw, parent);
-         setupCorner(cast(Corner) child);
+      case AC_CORNERS:
+         child = new Corners(aw, parent);
+         setupCorners(cast(Corners) child);
          break;
       case AC_CRESCENT:
          child = new Crescent(aw, parent);
@@ -962,7 +962,7 @@ class Deserializer
       x.afterDeserialize();
    }
 
-   void setupCorner(Corner x)
+   void setupCorners(Corners x)
    {
       basics(x);
 
@@ -980,8 +980,14 @@ class Deserializer
       x.inset = to!double(val);
       getNV(__LINE__, "relto");
       x.relto = to!int(val);
-      getNV(__LINE__, "which");
-      x.which = to!int(val);
+      getNV(__LINE__, "tl");
+      x.tl = to!bool(val);
+      getNV(__LINE__, "tr");
+      x.tr = to!bool(val);
+      getNV(__LINE__, "bl");
+      x.bl = to!bool(val);
+      getNV(__LINE__, "br");
+      x.br = to!bool(val);
    }
 
    void setupCrescent(Crescent x)

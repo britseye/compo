@@ -19,6 +19,7 @@ import gtk.Widget;
 import gtk.RadioButton;
 import gtk.CheckButton;
 import gtk.ComboBoxText;
+import gtk.Label;
 
 class LineSet : ACBase
 {
@@ -62,12 +63,15 @@ class LineSet : ACBase
       {
          CheckButton check = new CheckButton("Outline");
          check.setActive(1);
-         cSet.add(check, ICoord(0, cSet.cy), Purpose.OUTLINE);
+         cSet.add(check, ICoord(0, cSet.cy+2), Purpose.OUTLINE);
+
+         fillType = new Label("(N)");
+         cSet.add(fillType, ICoord(98, cSet.cy+4), Purpose.FILLTYPE);
 
          fillOptions = new ComboBoxText(false);
          fillOptions.appendText("Choose Fill Type");
-         fillOptions.appendText("Solid Color");
-         fillOptions.appendText("Translucent Color");
+         fillOptions.appendText("Color");
+         fillOptions.appendText("None");
          fillOptions.appendText("Refresh Options");
          getFillOptions(this);
          fillOptions.setActive(0);
@@ -119,19 +123,27 @@ class LineSet : ACBase
          outline = !outline;
          break;
       case Purpose.FILLOPTIONS:
-         int n = (cast(ComboBoxText) w).getActive();
+         int n = fillOptions.getActive();
          if (n == 0)
             return;
-         if (n == 1 || n == 2)
+         if (n == 1)
          {
             lastOp = push!RGBA(this, altColor, OP_ALTCOLOR);
             setColor(true);
             fillFromPattern = false;
             fill = true;
+            fillType.setText("(C)");
+         }
+         else if (n == 2)
+         {
+            fillFromPattern = false;
+            fill = false;
+            fillType.setText("(N)");
          }
          else if (n == 3)
          {
             updateFillOptions(this);
+            fillOptions.setActive(0);
             return;
          }
          else
@@ -139,6 +151,7 @@ class LineSet : ACBase
             fillFromPattern = true;
             fillUid = others[n-4];
             fill = true;
+            fillType.setText("(P)");
          }
          fillOptions.setActive(0);
          break;

@@ -190,12 +190,15 @@ class FancyText : TextViewItem
       vp += 35;
       CheckButton check = new CheckButton("Outline");
       check.setActive(1);
-      cSet.add(check, ICoord(0, vp), Purpose.OUTLINE);
+      cSet.add(check, ICoord(0, vp+2), Purpose.OUTLINE);
+
+      fillType = new Label("(N)");
+      cSet.add(fillType, ICoord(98, vp+4), Purpose.FILLTYPE);
 
       fillOptions = new ComboBoxText(false);
       fillOptions.appendText("Choose Fill Type");
-      fillOptions.appendText("Solid Color");
-      fillOptions.appendText("Translucent Color");
+      fillOptions.appendText("Color");
+      fillOptions.appendText("None");
       fillOptions.appendText("Refresh Options");
       getFillOptions(this);
       fillOptions.setActive(0);
@@ -234,30 +237,31 @@ class FancyText : TextViewItem
       case Purpose.FILLCOLOR:
          setColor(true);
          break;
-      case Purpose.FILL:
-         fill = !fill;
-         if (fill)
-            cSet.enable(Purpose.FILLCOLOR);
-         else
-            cSet.disable(Purpose.FILLCOLOR);
-         break;
       case Purpose.OUTLINE:
          outline = !outline;
          break;
       case Purpose.FILLOPTIONS:
-         int n = (cast(ComboBoxText) w).getActive();
+         int n = fillOptions.getActive();
          if (n == 0)
             return false;
-         if (n == 1 || n == 2)
+         if (n == 1)
          {
             lastOp = push!RGBA(this, altColor, OP_ALTCOLOR);
             setColor(true);
             fillFromPattern = false;
             fill = true;
+            fillType.setText("(C)");
+         }
+         else if (n == 2)
+         {
+            fillFromPattern = false;
+            fill = false;
+            fillType.setText("(N)");
          }
          else if (n == 3)
          {
             updateFillOptions(this);
+            fillOptions.setActive(0);
             return false;
          }
          else
@@ -265,6 +269,7 @@ class FancyText : TextViewItem
             fillFromPattern = true;
             fillUid = others[n-4];
             fill = true;
+            fillType.setText("(P)");
          }
          fillOptions.setActive(0);
          break;

@@ -49,7 +49,7 @@ import gtk.MountOperation;
 import gtkc.gtktypes;
 
 string[] fileNewSa = [ "Layered Composition", "Standalone Items", ];
-string[] cmSa = [ "Append item", "Save Image", "Make Drawing", "Move up", "Move down", "Duplicate", "Cut", "Delete", "Paste" ];
+string[] cmSa = [ "Append item", "Save Image", "Move up", "Move down", "Duplicate", "Cut", "Delete", "Paste" ];
 string[] imSa = [ "Move up", "Move down", "Add item after", "Add item before", "Duplicate", "Copy", "Cut", "Delete", "Paste" ];
 string[] smSa = [ "Duplicate", "Copy", "Cut", "Delete" ];
 string[] rootSa = [ "Append Composition", "Append Standalone Item", "Paste", "Expand All", "Collapse All", "Toggle RHS View", "Fill", "Print Immediate"];
@@ -62,13 +62,13 @@ string[] saveimgSa = [ "PNG", "SVG" ];
 */
 string[] mfrsSa = [ "Generic", "Avery" ];
 string[] allSa = [ "Plain Text", "USPS Address", "Serial Number", "Rich Text", "Fancy Text", "Morphed Text", "Pattern", "PixelImage", "Arrow",
-                   "Bevel", "Circle", "Curve", "Connector", "Corner", "Crescent", "Cross", "Fader", "Mesh", "Moon", "LGradient", "RGradient", "Heart", "Line", "Partition",
+                   "Bevel", "Circle", "Curve", "Connector", "Corners", "Crescent", "Cross", "Fader", "Mesh", "Moon", "LGradient", "RGradient", "Heart", "Line", "Partition",
                    "PointSet", "Polygon", "Polycurve", "Random", "Rectangle", "Regular Polygon", "Separator", "StrokeSet", "Reference", "Triangle", "Container" ];
 
 // All the things that can appear under 'Add/Append Item'
 string[] itemsSa = [ "Text", "Effects", "Geometric", "Image", "Reference", "Shapes", "Drawings" ];
 string[] txtSa = [ "Plain Text", "USPS Address", "Serial Number", "Rich Text", "Fancy Text", "Morphed Text" ];
-string[] effectsSa = [ "Bevel","Brush Dabs", "Color Tilings", "Corner", "Fader", "LGradient", "Line Patterns", "Mesh Patterns", "Noise", "Partition", "Pattern Shim", "Random Patterns", "RGradient", "Separator" ];
+string[] effectsSa = [ "Bevel","Brush Dabs", "Color Tilings", "Corners", "Fader", "LGradient", "Line Patterns", "Mesh Patterns", "Noise", "Partition", "Pattern Shim", "Random Patterns", "RGradient", "Separator" ];
 string[] geoSa = [ "Curve", "Line", "PointSet", "Polygon", "Polycurve", "Regular Polygon", "Regular Polycurve", "StrokeSet"];
 string[] shapesSa = [ "Arrow", "Circle", "Crescent", "Cross", "Heart", "Moon", "Rectangle", "Star", "Triangle" ];
 string[] imgSa = ["PixelImage", "SVGImage"];

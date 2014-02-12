@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <CodeBlocks_layout_file>
-	<ActiveTarget name="Release" />
+	<ActiveTarget name="Debug" />
 	<File name="about.d" open="0" top="0" tabpos="0">
 		<Cursor position="961" topLine="0" />
 	</File>
-	<File name="acomp.d" open="0" top="0" tabpos="4">
-		<Cursor position="20775" topLine="909" />
+	<File name="acomp.d" open="0" top="0" tabpos="3">
+		<Cursor position="21349" topLine="949" />
 	</File>
 	<File name="arrow.d" open="0" top="0" tabpos="2">
 		<Cursor position="0" topLine="0" />
@@ -13,8 +13,8 @@
 	<File name="bevel.d" open="0" top="0" tabpos="1">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="brushdabs.d" open="0" top="0" tabpos="1">
-		<Cursor position="3911" topLine="108" />
+	<File name="brushdabs.d" open="1" top="1" tabpos="0">
+		<Cursor position="4624" topLine="159" />
 	</File>
 	<File name="circle.d" open="0" top="0" tabpos="2">
 		<Cursor position="0" topLine="0" />
@@ -31,8 +31,8 @@
 	<File name="controlsdlg.d" open="0" top="0" tabpos="1">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="controlset.d" open="0" top="0" tabpos="5">
-		<Cursor position="1231" topLine="42" />
+	<File name="controlset.d" open="0" top="0" tabpos="2">
+		<Cursor position="2283" topLine="105" />
 	</File>
 	<File name="corner.d" open="0" top="0" tabpos="1">
 		<Cursor position="0" topLine="0" />
@@ -52,14 +52,14 @@
 	<File name="drawing.d" open="0" top="0" tabpos="1">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="fancytext.d" open="0" top="0" tabpos="1">
-		<Cursor position="0" topLine="0" />
+	<File name="fancytext.d" open="0" top="0" tabpos="5">
+		<Cursor position="4868" topLine="171" />
 	</File>
 	<File name="generic.d" open="0" top="0" tabpos="3">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="graphics.d" open="0" top="0" tabpos="5">
-		<Cursor position="0" topLine="0" />
+	<File name="graphics.d" open="0" top="0" tabpos="0">
+		<Cursor position="2587" topLine="51" />
 	</File>
 	<File name="interfaces.d" open="0" top="0" tabpos="3">
 		<Cursor position="1583" topLine="11" />
@@ -70,11 +70,14 @@
 	<File name="line.d" open="0" top="0" tabpos="2">
 		<Cursor position="0" topLine="0" />
 	</File>
+	<File name="lineset.d" open="0" top="0" tabpos="1">
+		<Cursor position="1814" topLine="40" />
+	</File>
 	<File name="mainwin.d" open="0" top="0" tabpos="0">
 		<Cursor position="1857" topLine="72" />
 	</File>
-	<File name="menus.d" open="0" top="0" tabpos="1">
-		<Cursor position="0" topLine="0" />
+	<File name="menus.d" open="0" top="0" tabpos="0">
+		<Cursor position="862" topLine="27" />
 	</File>
 	<File name="merger.d" open="0" top="0" tabpos="1">
 		<Cursor position="0" topLine="0" />
@@ -88,8 +91,8 @@
 	<File name="morphs.d" open="0" top="0" tabpos="4">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="morphtext.d" open="0" top="0" tabpos="3">
-		<Cursor position="0" topLine="0" />
+	<File name="morphtext.d" open="0" top="0" tabpos="4">
+		<Cursor position="5727" topLine="176" />
 	</File>
 	<File name="pglayout.d" open="0" top="0" tabpos="3">
 		<Cursor position="0" topLine="0" />

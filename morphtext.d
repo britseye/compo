@@ -145,8 +145,7 @@ class MorphText : TextViewItem
    override void extendControls()
    {
       int vp = cSet.cy;
-
-      new InchTool(cSet, 0, ICoord(0, vp), false);
+      new InchTool(cSet, 0, ICoord(0, vp+4), false);
 
       Label l = new Label("Outline thickness");
       cSet.add(l, ICoord(162, vp-18), Purpose.LABEL);
@@ -197,12 +196,15 @@ class MorphText : TextViewItem
       vp += 30;
       CheckButton check = new CheckButton("Outline");
       check.setActive(1);
-      cSet.add(check, ICoord(0, vp), Purpose.OUTLINE);
+      cSet.add(check, ICoord(0, vp+2), Purpose.OUTLINE);
+
+      fillType = new Label("(N)");
+      cSet.add(fillType, ICoord(98, vp+4), Purpose.FILLTYPE);
 
       fillOptions = new ComboBoxText(false);
       fillOptions.appendText("Choose Fill Type");
-      fillOptions.appendText("Solid Color");
-      fillOptions.appendText("Translucent Color");
+      fillOptions.appendText("Color");
+      fillOptions.appendText("None");
       fillOptions.appendText("Refresh Options");
       getFillOptions(this);
       fillOptions.setActive(0);
@@ -236,19 +238,27 @@ class MorphText : TextViewItem
          outline = !outline;
          break;
       case Purpose.FILLOPTIONS:
-         int n = (cast(ComboBoxText) w).getActive();
+         int n = fillOptions.getActive();
          if (n == 0)
             return false;
-         if (n == 1 || n == 2)
+         if (n == 1)
          {
             lastOp = push!RGBA(this, altColor, OP_ALTCOLOR);
             setColor(true);
             fillFromPattern = false;
             fill = true;
+            fillType.setText("(C)");
+         }
+         else if (n == 2)
+         {
+            fillFromPattern = false;
+            fill = false;
+            fillType.setText("(N)");
          }
          else if (n == 3)
          {
             updateFillOptions(this);
+            fillOptions.setActive(0);
             return false;
          }
          else
@@ -256,6 +266,7 @@ class MorphText : TextViewItem
             fillFromPattern = true;
             fillUid = others[n-4];
             fill = true;
+            fillType.setText("(P)");
          }
          fillOptions.setActive(0);
          break;
@@ -473,6 +484,11 @@ class MorphText : TextViewItem
          mdShowing = true;
          b.setLabel("Less");
       }
+   }
+
+   override void hideDialogs()
+   {
+         md.destroy();
    }
 
    void changeMorph()

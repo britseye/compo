@@ -322,7 +322,7 @@ enum
    AC_HEART,
    AC_BARCODE,
    AC_SEPARATOR,
-   AC_CORNER,
+   AC_CORNERS,
    AC_CRESCENT,
    AC_CROSS,
    AC_BEVEL,
@@ -348,7 +348,7 @@ enum
 
 string[] _ACTypeNames = [ "Text", "USPS Address", "Fancy Text", "Morphed Text", "Serial Number", "Rich Text", "Brush Dabs", "Pattern",
                           "PixelImage", "Line", "Rectangle", "Circle", "Curve", "Regular Polygon", "Regular Polycurve", "PointSet", "Polygon", "Polycurve", "Arrow", "Heart", "Barcode",
-                          "Separator", "Corner", "Crescent", "Cross", "Bevel", "Fader", "LGradient", "RGradient",
+                          "Separator", "Corners", "Crescent", "Cross", "Bevel", "Fader", "LGradient", "RGradient",
                           "Random", "Partition", "Reference", "SVGImage", "StrokeSet", "Drawing", "Mesh", "Moon", "Triangle", "Noise", "Color Tilings" ];
 string ACTypeNames(int t)
 {
@@ -410,6 +410,7 @@ class ACBase : CSTarget     // Area Composition base class
    Layout layout;
    DrawingArea da;
    ComboBoxText fillOptions;
+   Label fillType;
    bool fillFromPattern;
    UUID fillUid;
    int renderCalled;

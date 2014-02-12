@@ -24,7 +24,7 @@ import line;
 import separator;
 import bevel;
 import circle;
-import corner;
+import corners;
 import fader;
 import lgradient;
 import rgradient;
@@ -257,8 +257,8 @@ class AppWindow : MainWindow
       case "Curve":
          nt = AC_CURVE;
          break;
-      case "Corner":
-         nt = AC_CORNER;
+      case "Corners":
+         nt = AC_CORNERS;
          break;
       case "Crescent":
          nt = AC_CRESCENT;
@@ -767,8 +767,8 @@ class AppWindow : MainWindow
       case AC_CURVE:
          ni = new Curve(this, p);
          break;
-      case AC_CORNER:
-         ni = new Corner(this, p);
+      case AC_CORNERS:
+         ni = new Corners(this, p);
          break;
       case AC_CRESCENT:
          ni = new Crescent(this, p);
@@ -864,8 +864,8 @@ class AppWindow : MainWindow
          return new Circle(cast(Circle) x);
       case AC_CURVE:
          return new Curve(cast(Curve) x);
-      case AC_CORNER:
-         return new Corner(cast(Corner) x);
+      case AC_CORNERS:
+         return new Corners(cast(Corners) x);
       case AC_CRESCENT:
          return new Crescent(cast(Crescent) x);
       case AC_CROSS:

@@ -28,7 +28,7 @@ import richtext;
 import arrow;
 import bevel;
 import circle;
-import corner;
+import corners;
 import cross;
 import fancytext;
 import fader;
@@ -256,8 +256,8 @@ class Serializer
          return serializeBrushDabs(acb);
       case AC_CIRCLE:
          return serializeCircle(acb);
-      case AC_CORNER:
-         return serializeCorner(acb);
+      case AC_CORNERS:
+         return serializeCorners(acb);
       case AC_CRESCENT:
          return serializeCrescent(acb);
       case AC_CROSS:
@@ -522,9 +522,9 @@ class Serializer
       os.writeString(s);
    }
 
-   void serializeCorner(ACBase acb)
+   void serializeCorners(ACBase acb)
    {
-      Corner o = cast(Corner) acb;
+      Corners o = cast(Corners) acb;
       string s = basics(acb);
       s ~= "baseColor=" ~ o.colorString(false) ~ "\n";
       s ~= "lineWidth=" ~ to!string(o.lineWidth) ~ "\n";
@@ -533,7 +533,10 @@ class Serializer
       s ~= "ch=" ~ to!string(o.ch) ~ "\n";
       s ~= "inset=" ~ to!string(o.inset) ~ "\n";
       s ~= "relto=" ~ to!string(o.relto) ~ "\n";
-      s ~= "which=" ~ to!string(o.which) ~ "\n";
+      s ~= "tl=" ~ to!string(o.tl) ~ "\n";
+      s ~= "tr=" ~ to!string(o.tr) ~ "\n";
+      s ~= "bl=" ~ to!string(o.bl) ~ "\n";
+      s ~= "br=" ~ to!string(o.br) ~ "\n";
       s ~= "\n";
       os.writeString(s);
    }
