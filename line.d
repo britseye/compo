@@ -67,7 +67,8 @@ class Line : LineSet
       lineWidth = other.lineWidth;
       les = other.les;
       center = other.center;
-      oPath = other.oPath.dup;
+      oPath.length = other.oPath.length;
+      oPath[] = other.oPath[];
       xform = other.xform;
       tf = other.tf;
       syncControls();

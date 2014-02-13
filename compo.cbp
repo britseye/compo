@@ -93,9 +93,7 @@
 		<Unit filename="controlset.d">
 			<Option target="Debug" />
 		</Unit>
-		<Unit filename="corner.d">
-			<Option target="Debug" />
-		</Unit>
+		<Unit filename="corners.d" />
 		<Unit filename="crescent.d">
 			<Option target="Debug" />
 		</Unit>

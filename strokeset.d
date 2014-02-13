@@ -130,34 +130,31 @@ class StrokesDlg: Dialog, CSTarget
 
       vp = 5;
       vi = 26;
-      Label l= new Label("Active edge");
-      cs.add(l, ICoord(120, vp), Purpose.LABEL);
+      Label l= new Label("Active stroke");
+      cs.add(l, ICoord(110, vp), Purpose.LABEL);
       MoreLess mol = new MoreLess(cs, 0, ICoord(200, vp), true);
       mol.setIntervals(200, 200);
 
       vp += 20;
       Button b = new Button("Add a Stroke");
-      cs.add(b, ICoord(120, vp), Purpose.ADDSTROKE);
+      cs.add(b, ICoord(110, vp), Purpose.ADDSTROKE);
 
       vp += vi;
       b = new Button("Delete Stroke");
-      cs.add(b, ICoord(120, vp), Purpose.DELEDGE);
+      cs.add(b, ICoord(110, vp), Purpose.DELEDGE);
 
       vp += vi;
       lcb = new Button("To Line");
       lcb.setTooltipText("Switch the stroke between line and curve");
-      cs.add(lcb, ICoord(120, vp), Purpose.LINE2CURVE);
+      cs.add(lcb, ICoord(110, vp), Purpose.LINE2CURVE);
 
       vp += vi;
-      b = new Button("Do");
-      b.setTooltipText("Remember this state");
-      cs.add(b, ICoord(120, vp), Purpose.REMEMBER);
       b = new Button("Undo");
-      cs.add(b, ICoord(150, vp), Purpose.UNDO);
+      cs.add(b, ICoord(110, vp), Purpose.UNDO);
 
       vp += vi+5;
       l = new Label("Opacity");
-      cs.add(l, ICoord(120, vp), Purpose.LABEL);
+      cs.add(l, ICoord(110, vp), Purpose.LABEL);
       new MoreLess(cs, 1, ICoord(200, vp), true);
 
       vp += 17;
@@ -313,12 +310,6 @@ class StrokesDlg: Dialog, CSTarget
 
          po.pcPath[po.current].type = t;
          po.reDraw();
-         return;
-      }
-      if (p == Purpose.REMEMBER)
-      {
-         po.editStack ~= po.pcPath.dup;
-         po.currentStack ~= po.current;
          return;
       }
       if (p == Purpose.UNDO)

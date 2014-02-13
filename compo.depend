@@ -1850,7 +1850,7 @@
 	<glib/Idle.d>
 	<gobject/Value.d>
 
-1392190759 /home/steve/COMPO//menus.d
+1392270466 /home/steve/COMPO//menus.d
 
 1391780106 /home/steve/COMPO//tvitem.d
 
@@ -2025,7 +2025,7 @@
 
 1391676932 /home/steve/COMPO//heart.d
 
-1390804307 /home/steve/COMPO//line.d
+1392279457 /home/steve/COMPO//line.d
 
 1392099545 /home/steve/COMPO//morphtext.d
 
@@ -2033,15 +2033,15 @@
 
 1386240867 /home/steve/COMPO//picture.d
 
-1391676320 /home/steve/COMPO//polygon.d
+1392289200 /home/steve/COMPO//polygon.d
 
-1391608730 /home/steve/COMPO//random.d
+1392274218 /home/steve/COMPO//random.d
 
 1391675501 /home/steve/COMPO//rect.d
 
 1391676440 /home/steve/COMPO//regpoly.d
 
-1390804321 /home/steve/COMPO//separator.d
+1392275577 /home/steve/COMPO//separator.d
 
 1391240015 /home/steve/COMPO//reference.d
 
@@ -2166,7 +2166,7 @@
 	<cairo/Matrix.d>
 	<cairo/Surface.d>
 
-1390804307 source:/home/steve/COMPO/line.d
+1392279457 source:/home/steve/COMPO/line.d
 	<mainwin.d>
 	<constants.d>
 	<acomp.d>
@@ -2371,7 +2371,7 @@
 1384813905 /usr/local/include/d/gtkd-2/gdk/Rectangle.d
 	<gtkc/gdktypes.d>
 
-1392190759 source:/home/steve/COMPO/menus.d
+1392270466 source:/home/steve/COMPO/menus.d
 	<mainwin.d>
 	<config.d>
 	<treeops.d>
@@ -2697,7 +2697,7 @@
 	<gtkc/gobjecttypes.d>
 	<gtkc/gdktypes.d>
 
-1391676320 source:/home/steve/COMPO/polygon.d
+1392289200 source:/home/steve/COMPO/polygon.d
 	<mainwin.d>
 	<container.d>
 	<constants.d>
@@ -2763,7 +2763,7 @@
 1384813905 /usr/local/include/d/gtkd-2/gtk/PaperSize.d
 	<gtkc/gtktypes.d>
 
-1391608730 source:/home/steve/COMPO/random.d
+1392274218 source:/home/steve/COMPO/random.d
 	<container.d>
 	<mainwin.d>
 	<constants.d>
@@ -2918,7 +2918,7 @@
 1384813905 /usr/local/include/d/gtkd-2/gobject/Type.d
 	<gtkc/gobjecttypes.d>
 
-1390804321 source:/home/steve/COMPO/separator.d
+1392275577 source:/home/steve/COMPO/separator.d
 	<mainwin.d>
 	<constants.d>
 	<acomp.d>
@@ -3498,9 +3498,9 @@
 
 1391675308 /home/steve/COMPO//crescent.d
 
-1391676258 /home/steve/COMPO//polycurve.d
+1392291129 /home/steve/COMPO//polycurve.d
 
-1391676258 source:/home/steve/COMPO/polycurve.d
+1392291129 source:/home/steve/COMPO/polycurve.d
 	<mainwin.d>
 	<constants.d>
 	<acomp.d>
@@ -3536,9 +3536,9 @@
 	<gtkc/cairotypes.d>
 	<cairo/Matrix.d>
 
-1391235961 /home/steve/COMPO//strokeset.d
+1392295567 /home/steve/COMPO//strokeset.d
 
-1391235961 source:/home/steve/COMPO/strokeset.d
+1392295298 source:/home/steve/COMPO/strokeset.d
 	<mainwin.d>
 	<container.d>
 	<constants.d>
@@ -3665,9 +3665,9 @@
 	<gtkc/cairotypes.d>
 	<cairo/Matrix.d>
 
-1391235972 /home/steve/COMPO//pointset.d
+1392285907 /home/steve/COMPO//pointset.d
 
-1391235972 source:/home/steve/COMPO/pointset.d
+1392285907 source:/home/steve/COMPO/pointset.d
 	<mainwin.d>
 	<container.d>
 	<constants.d>
@@ -3763,7 +3763,7 @@
 
 1392198554 /home/steve/COMPO//mesh.d
 
-1392198220 source:/home/steve/COMPO/mesh.d
+1392198554 source:/home/steve/COMPO/mesh.d
 	<container.d>
 	<mainwin.d>
 	<constants.d>

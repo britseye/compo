@@ -125,15 +125,12 @@ class PolyEditDlg: Dialog, CSTarget
       cs.add(b, ICoord(120, vp), Purpose.DELEDGE);
 
       vp += 30;
-      b = new Button("Do");
-      b.setTooltipText("Remember this state");
-      cs.add(b, ICoord(120, vp), Purpose.REMEMBER);
       b = new Button("Undo");
-      cs.add(b, ICoord(150, vp), Purpose.UNDO);
+      cs.add(b, ICoord(120, vp), Purpose.UNDO);
 
       vp += 30;
       l = new Label("Opacity");
-      cs.add(l, ICoord(145, vp), Purpose.LABEL);
+      cs.add(l, ICoord(120, vp), Purpose.LABEL);
       new MoreLess(cs, 1, ICoord(200, vp), true);
 
       vp += 17;
@@ -262,12 +259,6 @@ class PolyEditDlg: Dialog, CSTarget
          po.reDraw();
          return;
       }
-      if (p == Purpose.REMEMBER)
-      {
-         po.editStack ~= po.oPath.dup;
-         po.currentStack ~= po.current;
-         return;
-      }
       if (p == Purpose.UNDO)
       {
          int l= po.editStack.length;
@@ -365,7 +356,7 @@ class Polygon : LineSet
       closed = true;
       constructing = true;
       altColor = new RGBA(1,1,1,1);
-      editOpacity = 0.5;
+      editOpacity = 0.8;
       esf = 1;
       zw = 0;
       zh = 0;
@@ -712,11 +703,12 @@ class Polygon : LineSet
    {
       if (constructing)
       {
-         c.setSourceRgba(1,1,1,0.9);
+         c.setSourceRgba(1,1,1,editOpacity);
          c.paint();
          if (oPath.length < 2)
             return;
-         c.setSourceRgb(1,0,0);
+         c.setLineWidth(1);
+         c.setSourceRgb(0,0,0);
          c.moveTo(oPath[0].x, oPath[0].y);
          for (int i = 1; i < oPath.length; i++)
             c.lineTo(oPath[i].x, oPath[i].y);

@@ -13,7 +13,7 @@
 	<File name="bevel.d" open="0" top="0" tabpos="1">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="brushdabs.d" open="1" top="1" tabpos="0">
+	<File name="brushdabs.d" open="0" top="0" tabpos="0">
 		<Cursor position="4624" topLine="159" />
 	</File>
 	<File name="circle.d" open="0" top="0" tabpos="2">
@@ -33,9 +33,6 @@
 	</File>
 	<File name="controlset.d" open="0" top="0" tabpos="2">
 		<Cursor position="2283" topLine="105" />
-	</File>
-	<File name="corner.d" open="0" top="0" tabpos="1">
-		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="crescent.d" open="0" top="0" tabpos="0">
 		<Cursor position="4520" topLine="162" />
@@ -77,7 +74,7 @@
 		<Cursor position="1857" topLine="72" />
 	</File>
 	<File name="menus.d" open="0" top="0" tabpos="0">
-		<Cursor position="862" topLine="27" />
+		<Cursor position="1358" topLine="27" />
 	</File>
 	<File name="merger.d" open="0" top="0" tabpos="1">
 		<Cursor position="0" topLine="0" />
@@ -101,7 +98,7 @@
 		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="polycurve.d" open="0" top="0" tabpos="1">
-		<Cursor position="0" topLine="0" />
+		<Cursor position="7347" topLine="285" />
 	</File>
 	<File name="polygon.d" open="0" top="0" tabpos="3">
 		<Cursor position="8614" topLine="345" />
@@ -132,6 +129,9 @@
 	</File>
 	<File name="sheets.d" open="0" top="0" tabpos="2">
 		<Cursor position="0" topLine="0" />
+	</File>
+	<File name="strokeset.d" open="0" top="0" tabpos="0">
+		<Cursor position="3709" topLine="110" />
 	</File>
 	<File name="svgimage.d" open="0" top="0" tabpos="5">
 		<Cursor position="0" topLine="0" />

@@ -148,11 +148,8 @@ class PolyCurveDlg: Dialog, CSTarget
       cs.add(lcb, ICoord(120, vp), Purpose.LINE2CURVE);
 
       vp += vi;
-      b = new Button("Do");
-      b.setTooltipText("Remember this state");
-      cs.add(b, ICoord(120, vp), Purpose.REMEMBER);
       b = new Button("Undo");
-      cs.add(b, ICoord(150, vp), Purpose.UNDO);
+      cs.add(b, ICoord(120, vp), Purpose.UNDO);
 
       vp += vi+5;
       l = new Label("Opacity");
@@ -315,12 +312,6 @@ class PolyCurveDlg: Dialog, CSTarget
          po.pcPath[po.current].type = t;
          po.dirty = true;
          po.reDraw();
-         return;
-      }
-      if (p == Purpose.REMEMBER)
-      {
-         po.editStack ~= po.pcPath.dup;
-         po.currentStack ~= po.current;
          return;
       }
       if (p == Purpose.UNDO)

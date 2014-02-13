@@ -105,9 +105,6 @@ class Separator : LineSet
       vp += 5;
       new InchTool(cSet, 0, ICoord(0, vp), true);
 
-      vp += 50;
-      new Compass(cSet, 0, ICoord(0, vp), true);
-
       cSet.cy = vp+40;
    }
 

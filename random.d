@@ -80,6 +80,7 @@ class Random: LineSet
       string s = "Random "~to!string(++nextOid);
       super(w, parent, s, AC_RANDOM);
       group = ACGroups.EFFECTS;
+      closed = true;
       hOff = vOff = 0;
       lowerPc = 10;
       upperPc = 40;
@@ -89,6 +90,8 @@ class Random: LineSet
       count = 20;
       reBuild = true;
       tm = new Matrix(&tmData);
+      fill = true;
+      outline = true;
 
       setupControls();
       positionControls(true);
@@ -132,17 +135,8 @@ class Random: LineSet
       Button b = new Button("Regenerate");
       cSet.add(b, ICoord(215, vp+3), Purpose.MORE);
 
-      vp += 40;
-      CheckButton check = new CheckButton("Fill with color");
-      check.setActive(1);
-      fill = true;
-      cSet.add(check, ICoord(0, vp), Purpose.FILL);
-
-      b = new Button("Fill Color");
-      cSet.add(b, ICoord(215, vp-5), Purpose.FILLCOLOR);
-
       vp += 25;
-      check = new CheckButton("Print random");
+      CheckButton check = new CheckButton("Print random");
       cSet.add(check, ICoord(213, vp), Purpose.PRINTRANDOM);
 
       cSet.cy = vp+25;
@@ -308,16 +302,11 @@ class Random: LineSet
       double b = baseColor.blue();
       if (element == 0)
       {
+         altColor.alpha(0.5);
          foreach (ShapeInfo t; si)
          {
             c.arc(hOff+t.c2, vOff+t.c3, t.c1*height, 0, 2*PI);
-            if (fill)
-            {
-               c.setSourceRgba(altColor.red, altColor.green, altColor.blue, 0.5);
-               c.fillPreserve();
-            }
-            c.setSourceRgb(r,g,b);
-            c.stroke();
+            strokeAndFill(c, lineWidth, outline, fill);
          }
       }
       else if (element == 1)
@@ -344,17 +333,12 @@ class Random: LineSet
             c.curveTo(hOff+t[1].x, vOff+t[1].y,     hOff+t[2].x, vOff+t[2].y,     hOff+t[3].x, vOff+t[3].y);
             c.curveTo(hOff+t[4].x, vOff+t[4].y,    hOff+t[5].x, vOff+t[5].y,     hOff+t[6].x, vOff+t[6].y);
             c.closePath();
-            if (fill)
-            {
-               c.setSourceRgba(altColor.red, altColor.green, altColor.blue, 1);
-               c.fillPreserve();
-            }
-            c.setSourceRgb(0,0,0);
-            c.stroke();
+            strokeAndFill(c, lineWidth, outline, fill);
          }
       }
       else
       {
+         altColor.alpha(0.5);
          foreach (ShapeInfo t; si)
          {
             double x = hOff+t.c1;
@@ -363,17 +347,9 @@ class Random: LineSet
             c.lineTo(x+t.c3*height, y+t.c4*height);
             c.lineTo(x+t.c5*height, y+t.c6*height);
             c.closePath();
-            if (fill)
-            {
-               c.setSourceRgba(altColor.red, altColor.green, altColor.blue, 0.5);
-               c.fillPreserve();
-            }
-            c.setSourceRgb(r,g,b);
-            c.stroke();
+            strokeAndFill(c, lineWidth, outline, fill);
          }
       }
-
-      if (!isMoved) cSet.setDisplay(0, reportPosition());
    }
 
 }

@@ -68,7 +68,7 @@ string[] allSa = [ "Plain Text", "USPS Address", "Serial Number", "Rich Text", "
 // All the things that can appear under 'Add/Append Item'
 string[] itemsSa = [ "Text", "Effects", "Geometric", "Image", "Reference", "Shapes", "Drawings" ];
 string[] txtSa = [ "Plain Text", "USPS Address", "Serial Number", "Rich Text", "Fancy Text", "Morphed Text" ];
-string[] effectsSa = [ "Bevel","Brush Dabs", "Color Tilings", "Corners", "Fader", "LGradient", "Line Patterns", "Mesh Patterns", "Noise", "Partition", "Pattern Shim", "Random Patterns", "RGradient", "Separator" ];
+string[] effectsSa = [ "Bevel","Brush Dabs", "Color Tilings", "Corners", "Fader", "LGradient", "Line Patterns", "Mesh Patterns", "Noise", "Partition", "Random Patterns", "RGradient", "Separator" ];
 string[] geoSa = [ "Curve", "Line", "PointSet", "Polygon", "Polycurve", "Regular Polygon", "Regular Polycurve", "StrokeSet"];
 string[] shapesSa = [ "Arrow", "Circle", "Crescent", "Cross", "Heart", "Moon", "Rectangle", "Star", "Triangle" ];
 string[] imgSa = ["PixelImage", "SVGImage"];

@@ -96,19 +96,20 @@ class PointSetEditDlg: Dialog, CSTarget
       mol.setIntervals(170, 200);
 
       vp += 30;
-      Button b = new Button("Delete Point");
+      Button b = new Button("Add Point");
+      cs.add(b, ICoord(120, vp), Purpose.NEWVERTEX);
+
+      vp += 30;
+      b = new Button("Delete Point");
       cs.add(b, ICoord(120, vp), Purpose.DELEDGE);
 
       vp += 30;
-      b = new Button("Do");
-      b.setTooltipText("Remember this state");
-      cs.add(b, ICoord(120, vp), Purpose.REMEMBER);
       b = new Button("Undo");
-      cs.add(b, ICoord(150, vp), Purpose.UNDO);
+      cs.add(b, ICoord(120, vp), Purpose.UNDO);
 
       vp += 30;
       l = new Label("Opacity");
-      cs.add(l, ICoord(145, vp), Purpose.LABEL);
+      cs.add(l, ICoord(120, vp), Purpose.LABEL);
       new MoreLess(cs, 1, ICoord(200, vp), true);
 
       vp += 17;
@@ -315,6 +316,7 @@ class PointSet : LineSet
       aw.getPosition(px, py);
       md.move(px+4, py+300);
       tm = new Matrix(&tmData);
+      editOpacity=0.8;
 
       setupControls(0);
       cSet.addInfo("Click in the Drawing Area to add points.\nRight-click when finished.");
@@ -547,6 +549,7 @@ class PointSet : LineSet
          t[current+1] = Coord(x, y);
          oPath=t;
       }
+      current = (current == oPath.length-1)? 0: current+1;
       dirty = true;
    }
 
@@ -601,8 +604,11 @@ class PointSet : LineSet
    {
       if (constructing)
       {
+         c.setSourceRgba(1,1,1,editOpacity);
+         c.paint();
+         c.setOperator(CairoOperator.XOR);
          c.setLineWidth(3);
-         c.setSourceRgb(0.8, 0.8, 0.8);
+         c.setSourceRgb(1,1,1);
          for (int i = 0; i < oPath.length; i++)
          {
             c.arc(oPath[i].x, oPath[i].y, lineWidth/2, 0, PI*2);
