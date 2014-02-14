@@ -56,12 +56,15 @@ enum
 class RegularPolycurve : LineSet
 {
    static int nextOid = 0;
-   PathItemR[] pcPath;
+   PathItemR[] pcPath, parkPath;
    int sides, activeCP, symmetry;
    bool editMode;
    double target, maxTarget, joinRadius, joinAngle;
    double cp1Radius, cp1Angle, cp2Radius, cp2Angle, cp1ARadius, cp1AAngle, cp2ARadius, cp2AAngle;
+   double sho, svo;
    Label numSides;
+   Button vb;
+   CairoFillRule cfr;
 
    override void syncControls()
    {
@@ -154,6 +157,7 @@ class RegularPolycurve : LineSet
       altColor = new RGBA(1,1,1,1);
       les  = true;
       fill = false;
+      cfr = CairoFillRule.EVEN_ODD;
       if (width > height)
       {
          target = 0.25*height;
@@ -203,7 +207,7 @@ class RegularPolycurve : LineSet
       new MoreLess(cSet, 1, ICoord(305, vp-18), true);
 
       ComboBoxText cbb = new ComboBoxText(false);
-      cbb.setTooltipText("Select the form of the 'edges'");
+      cbb.setTooltipText("Select the form of the 'lobes or edges'");
       cbb.setSizeRequest(100, -1);
       cbb.appendText("Single Symmetric Curve");
       cbb.appendText("Single Asymmetric Curve");
@@ -264,10 +268,8 @@ class RegularPolycurve : LineSet
       l.setTooltipText("This tool determines the angular position\nof the selected control point(s).");
       cSet.add(l, ICoord(78, vp), Purpose.LABEL);
       new MoreLess(cSet, 4, ICoord(118, vp), true);
-
-      CheckButton check = new CheckButton("Edit mode");
-      check.setTooltipText("Click here to see a simplified view\nof the curve(s) over a the first\n'edge' of the polycurve.");
-      cSet.add(check, ICoord(0, vp+20), Purpose.REDRAW);
+      CheckButton cb = new CheckButton("Switch Fill Rule");
+      cSet.add(cb, ICoord(0, vp+20), Purpose.ANTI);
 
       l = new Label("Alt Angle");
       l.setTooltipText("This angle determines the end point\nof the first Bezier curve when 2 are used.");
@@ -277,6 +279,10 @@ class RegularPolycurve : LineSet
       l.setTooltipText("This radius determines the end point\nof the first Bezier curve when 2 are used.");
       cSet.add(l, ICoord(165, vp+20), Purpose.LABEL);
       new MoreLess(cSet, 6, ICoord(275, vp+20), true);
+
+      vb = new Button("SS View");
+      vb.setTooltipText("Click here to see a simplified view\nof the curve(s) over a the first\nlobe of a polycurve.");
+      cSet.add(vb, ICoord(280, vp+40), Purpose.REDRAW);
 
       vp += 35;
       new InchTool(cSet, 0, ICoord(0, vp+5), true);
@@ -306,6 +312,20 @@ class RegularPolycurve : LineSet
       }
       if (p == Purpose.REDRAW)
       {
+         if (editMode)
+         {
+            hOff = sho;
+            vOff = svo;
+            pcPath = parkPath;
+            vb.setLabel("SS View");
+         }
+         else
+         {
+            sho = hOff;
+            svo = vOff;
+            parkPath = pcPath.dup;
+            vb.setLabel("Actual");
+         }
          editMode = !editMode;
          return true;
       }
@@ -341,6 +361,14 @@ class RegularPolycurve : LineSet
             cSet.enable(Purpose.ACPBOTH);
          }
          constructBase();
+         return true;
+      }
+      else if (p == Purpose.ANTI)
+      {
+         if (cfr == CairoFillRule.EVEN_ODD)
+            cfr = CairoFillRule.WINDING;
+         else
+            cfr = CairoFillRule.EVEN_ODD;
          return true;
       }
       else
@@ -799,22 +827,12 @@ class RegularPolycurve : LineSet
       if (compoundTransform())
          c.transform(tm);
       c.translate(-center.x, -center.y);
-/*
-      double theta = (PI*2)/sides;
-      double a = 0;
-      c.moveTo(center.x+target*cos(a), center.y+target*sin(a));
-      for (int i = 1; i < sides; i++)
-      {
-         a += theta;
-         c.lineTo(center.x+target*cos(a), center.y+target*sin(a));
-      }
-      c.closePath();
-      c.stroke();
-*/
+
       c.moveTo(pcPath[0].start.x, pcPath[0].start.y);
       for (int i = 0; i < pcPath.length; i++)
          c.curveTo(pcPath[i].cp1.x, pcPath[i].cp1.y, pcPath[i].cp2.x, pcPath[i].cp2.y, pcPath[i].end.x, pcPath[i].end.y);
       c.closePath();
+      c.setFillRule(cfr);
       strokeAndFill(c, lineWidth, outline, fill);
 
    }
@@ -827,6 +845,7 @@ class RegularPolycurve : LineSet
       double a0 = 0;
       double theta=2*PI/6;
       c.setLineWidth(0.5);
+      c.translate(hOff, vOff);
 
       Coord start = Coord(target*cos(0), target*sin(0));
       Coord end = Coord(target*cos(theta), target*sin(theta));
@@ -874,6 +893,7 @@ class RegularPolycurve : LineSet
       double theta = 2*PI/6;
       double ha = theta/2;
       c.setLineWidth(0.5);
+      c.translate(hOff, vOff);
 
       Coord start = Coord(target*cos(0), target*sin(0));
       Coord cp1 = Coord(cp1Radius*cos(cp1Angle), cp1Radius*sin(cp1Angle));

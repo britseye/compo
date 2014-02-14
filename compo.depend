@@ -2043,7 +2043,7 @@
 
 1392275577 /home/steve/COMPO//separator.d
 
-1391240015 /home/steve/COMPO//reference.d
+1392371123 /home/steve/COMPO//reference.d
 
 1384813905 /usr/local/include/d/gtkd-2/gio/MemoryInputStream.d
 	<gtkc/giotypes.d>
@@ -2816,7 +2816,7 @@
 	<gtkc/cairotypes.d>
 	<cairo/Matrix.d>
 
-1391240015 source:/home/steve/COMPO/reference.d
+1392370723 source:/home/steve/COMPO/reference.d
 	<mainwin.d>
 	<acomp.d>
 	<common.d>
@@ -3538,7 +3538,7 @@
 
 1392295567 /home/steve/COMPO//strokeset.d
 
-1392295298 source:/home/steve/COMPO/strokeset.d
+1392295567 source:/home/steve/COMPO/strokeset.d
 	<mainwin.d>
 	<container.d>
 	<constants.d>
@@ -3703,9 +3703,9 @@
 	<gtkc/cairotypes.d>
 	<cairo/Matrix.d>
 
-1391676379 /home/steve/COMPO//regpc.d
+1392362597 /home/steve/COMPO//regpc.d
 
-1391676379 source:/home/steve/COMPO/regpc.d
+1392362597 source:/home/steve/COMPO/regpc.d
 	<mainwin.d>
 	<config.d>
 	<constants.d>

@@ -115,13 +115,14 @@ class Reference : ACBase
       cbb.appendText("Use File");
       getLocalCtrs();
       cbb.setActive(0);
-      cbb.setSizeRequest(100, -1);
-      cSet.add(cbb, ICoord(167, vp-2), Purpose.LOCALCTR);
+      cbb.setSizeRequest(194, -1);
+      cSet.add(cbb, ICoord(150, vp-2), Purpose.LOCALCTR);
 
-      b = new Button("Refresh");
-      cSet.add(b, ICoord(280, vp), Purpose.REDRAW);
+      b = new Button("Refresh List");
+      b.setSizeRequest(100, -1);
+      cSet.add(b, ICoord(187, vp+32), Purpose.REDRAW);
 
-      vp += 35;
+      vp += 62;
       ComboBoxText cbb1 = new ComboBoxText(false);
       cbb1.appendText("Scale");
       cbb1.appendText("Stretch-H");
@@ -133,8 +134,8 @@ class Reference : ACBase
       cbb1.appendText("Flip-V");
       cbb1.setActive(0);
       cbb1.setSizeRequest(100, -1);
-      cSet.add(cbb1, ICoord(167, vp), Purpose.XFORMCB);
-      new MoreLess(cSet, 0, ICoord(275, vp+5), true);
+      cSet.add(cbb1, ICoord(187, vp), Purpose.XFORMCB);
+      new MoreLess(cSet, 0, ICoord(290, vp+5), true);
 
       new InchTool(cSet, 0, ICoord(0, vp), true);
 
