@@ -1426,7 +1426,7 @@
 	<cairo/Context.d>
 	<cairo/Matrix.d>
 
-1391928639 source:/home/steve/COMPO/about.d
+1392470700 source:/home/steve/COMPO/about.d
 	<std/conv.d>
 	<gtk/Dialog.d>
 	<gtk/AboutDialog.d>
@@ -1544,7 +1544,7 @@
 
 1391686482 /home/steve/COMPO//common.d
 
-1392189234 /home/steve/COMPO//controlset.d
+1392531437 /home/steve/COMPO//controlset.d
 
 1392468549 /home/steve/COMPO//container.d
 
@@ -1864,7 +1864,7 @@
 1384813905 /usr/local/include/d/gtkd-2/gobject/Value.d
 	<gtkc/gobjecttypes.d>
 
-1392189234 source:/home/steve/COMPO/controlset.d
+1392531437 source:/home/steve/COMPO/controlset.d
 	<types.d>
 	<interfaces.d>
 	<tvitem.d>
@@ -2033,7 +2033,7 @@
 
 1386240867 /home/steve/COMPO//picture.d
 
-1392289200 /home/steve/COMPO//polygon.d
+1392545102 /home/steve/COMPO//polygon.d
 
 1392274218 /home/steve/COMPO//random.d
 
@@ -2697,7 +2697,7 @@
 	<gtkc/gobjecttypes.d>
 	<gtkc/gdktypes.d>
 
-1392289200 source:/home/steve/COMPO/polygon.d
+1392545102 source:/home/steve/COMPO/polygon.d
 	<mainwin.d>
 	<container.d>
 	<constants.d>
@@ -3500,9 +3500,9 @@
 
 1391675308 /home/steve/COMPO//crescent.d
 
-1392454664 /home/steve/COMPO//polycurve.d
+1392546156 /home/steve/COMPO//polycurve.d
 
-1392454664 source:/home/steve/COMPO/polycurve.d
+1392546084 source:/home/steve/COMPO/polycurve.d
 	<mainwin.d>
 	<constants.d>
 	<acomp.d>

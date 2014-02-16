@@ -157,17 +157,18 @@ class PolyEditDlg: Dialog, CSTarget
       {
          sides = po.oPath.length;
          po.lastCurrent = po.current;
+         int n = po.open? 2: 1;
          if (more)
          {
-            if (po.current < sides-1)
+            if (po.current < sides-n)
                po.current++;
             else
-               po.current=0;
+               po.current = 0;
          }
          else
          {
             if (po.current == 0)
-               po.current = sides-1;
+               po.current = sides-n;
             else
                po.current--;
          }
@@ -299,7 +300,7 @@ class Polygon : LineSet
    Coord topLeft, bottomRight;
    int[] currentStack;
    double editOpacity;
-   bool constructing, editing;
+   bool constructing, editing, open;
    int current, next, prev, lastCurrent, lastActive;
    PolyEditDlg md;
    int activeCoords;
@@ -381,6 +382,8 @@ class Polygon : LineSet
    override void extendControls()
    {
       int vp = cSet.cy;
+      CheckButton cb = new CheckButton("Open");
+      cSet.add(cb, ICoord(240, vp-67), Purpose.OPEN);
 
       ComboBoxText cbb = new ComboBoxText(false);
       cbb.setTooltipText("Select transformation to apply");
@@ -414,14 +417,6 @@ class Polygon : LineSet
       cSet.setInfo("Click the Edit button to move, add, or delete points");
    }
 
-   void setComplete()
-   {
-      center = figureCenter();
-      constructing = false;
-      cSet.enable(Purpose.REDRAW);
-      cSet.setInfo("Click the Edit button to move, add, or delete edges");
-   }
-
    override void hideDialogs()
    {
       if (editing)
@@ -440,7 +435,15 @@ class Polygon : LineSet
          lastOp = push!Path_t(this, oPath, OP_REDRAW);
          editing = !editing;
          switchMode();
-         focusLayout();
+         return true;
+      case Purpose.OPEN:
+         open = !open;
+         if (open)
+            cSet.disable(Purpose.FILLTYPE);
+         else
+            cSet.enable(Purpose.FILLTYPE);
+         current = 0;
+         figureNextPrev();
          return true;
       default:
          return false;
@@ -520,6 +523,14 @@ class Polygon : LineSet
       return d;
    }
 
+   void setComplete()
+   {
+      center = figureCenter();
+      constructing = false;
+      cSet.enable(Purpose.REDRAW);
+      cSet.setInfo("Click the Edit button to move, add, or delete edges");
+   }
+
    override bool buttonPress(Event e, Widget w)
    {
       GdkModifierType state;
@@ -544,20 +555,31 @@ class Polygon : LineSet
          }
          else if (e.button.button == 3)
          {
-            if (oPath.length < 3)
+            if (open)
             {
-               aw.popupMsg("You must draw at least two sides before you close the polygon", MessageType.WARNING);
-               return true;
+               if (oPath.length < 2)
+               {
+                  aw.popupMsg("You should add at least one line segment before you finish", MessageType.WARNING);
+                  return true;
+               }
             }
-            if (state & GdkModifierType.CONTROL_MASK)
+            else
             {
-               double x0 = oPath[0].x;
-               oPath[oPath.length-1].x = x0;
-            }
-            else if (state & GdkModifierType.SHIFT_MASK)
-            {
-               double y0 = oPath[0].y;
-               oPath[oPath.length-1].y = y0;
+               if (oPath.length < 3)
+               {
+                  aw.popupMsg("You must draw at least two sides before you close the polygon", MessageType.WARNING);
+                  return true;
+               }
+               if (state & GdkModifierType.CONTROL_MASK)
+               {
+                  double x0 = oPath[0].x;
+                  oPath[oPath.length-1].x = x0;
+               }
+               else if (state & GdkModifierType.SHIFT_MASK)
+               {
+                  double y0 = oPath[0].y;
+                  oPath[oPath.length-1].y = y0;
+               }
             }
             setComplete();
             dirty = true;
@@ -577,6 +599,8 @@ class Polygon : LineSet
             int last = oPath.length-1;
             foreach (int i, Coord c; oPath)
             {
+               if (open && i >= last)
+                  break;
                Coord nextv;
                if (i == last)
                   nextv = oPath[0];
@@ -715,7 +739,7 @@ class Polygon : LineSet
          c.stroke();
          return;
       }
-      if (oPath.length <  3)
+      if (oPath.length <  2)
          return;
 
       c.translate(hOff+center.x, vOff+center.y);
@@ -732,7 +756,10 @@ class Polygon : LineSet
       {
          c.lineTo(oPath[i].x, oPath[i].y);
       }
-      c.closePath();
+      if (!open)
+         c.closePath();
+      if (open)
+         fill = false;
       strokeAndFill(c, lineWidth, outline, fill);
    }
 
@@ -798,7 +825,7 @@ class Polygon : LineSet
    {
       int l = oPath.length;
       if (current == 0)
-         prev = l-1;
+         prev = open? -1: l-1;
       else
          prev = current-1;
       if (current == l-1)
@@ -819,7 +846,7 @@ class Polygon : LineSet
       c.moveTo(oPath[0].x, oPath[0].y);
       for (int i = 1; i < oPath.length; i++)
          c.lineTo(oPath[i].x, oPath[i].y);
-      if (oPath.length > 2)
+      if (!open && oPath.length > 2)
          c.closePath();
       c.stroke();
       figureNextPrev();
@@ -828,10 +855,13 @@ class Polygon : LineSet
       c.moveTo(oPath[current].x, oPath[current].y);
       c.lineTo(oPath[next].x, oPath[next].y);
       c.stroke();
-      c.setSourceRgb(0,1,0);
-      c.moveTo(oPath[prev].x, oPath[prev].y);
-      c.lineTo(oPath[current].x, oPath[current].y);
-      c.stroke();
+      if (prev != -1)
+      {
+         c.setSourceRgb(0,1,0);
+         c.moveTo(oPath[prev].x, oPath[prev].y);
+         c.lineTo(oPath[current].x, oPath[current].y);
+         c.stroke();
+      }
    }
 
    override void render(Context c)

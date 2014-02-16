@@ -114,6 +114,7 @@ enum Purpose
    ANTI,
    FORFILL,
    FULLDATA,
+   OPEN,
 
    R_SPINBUTTONS = 4000,
 
@@ -1231,7 +1232,7 @@ class MOLLineThick: PseudoWidget
       cs.add(da, ICoord(cx, cy), Purpose.MOL, initialState, true);
 
       txt = new Label("0.5");
-      cs.add(txt, ICoord(cx+40, cy), Purpose.LINEWIDTH, initialState, true);
+      cs.add(txt, ICoord(cx+35, cy), Purpose.LINEWIDTH, initialState, true);
    }
 
    override void csInstruction(string name, int type, string sval, int ival, double dval)
