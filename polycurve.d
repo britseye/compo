@@ -668,7 +668,6 @@ class Polycurve : LineSet
       {
          if (e.button.button == 3)
          {
-//writeln("CLICKED");
             Coord m = Coord(e.button.x, e.button.y);
             double cogoffx = 0, cogoffy = 0;
             double minsep = double.max;

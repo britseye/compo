@@ -8,7 +8,7 @@
 		<Cursor position="21349" topLine="949" />
 	</File>
 	<File name="arrow.d" open="0" top="0" tabpos="2">
-		<Cursor position="0" topLine="0" />
+		<Cursor position="5985" topLine="194" />
 	</File>
 	<File name="bevel.d" open="0" top="0" tabpos="1">
 		<Cursor position="0" topLine="0" />
@@ -32,7 +32,7 @@
 		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="controlset.d" open="0" top="0" tabpos="2">
-		<Cursor position="2283" topLine="105" />
+		<Cursor position="2283" topLine="81" />
 	</File>
 	<File name="crescent.d" open="0" top="0" tabpos="0">
 		<Cursor position="4520" topLine="162" />
@@ -108,6 +108,12 @@
 	</File>
 	<File name="rect.d" open="0" top="0" tabpos="4">
 		<Cursor position="0" topLine="0" />
+	</File>
+	<File name="reference.d" open="1" top="1" tabpos="0">
+		<Cursor position="2534" topLine="87" />
+	</File>
+	<File name="regpc.d" open="0" top="0" tabpos="0">
+		<Cursor position="10817" topLine="334" />
 	</File>
 	<File name="regpoly.d" open="0" top="0" tabpos="1">
 		<Cursor position="0" topLine="0" />

@@ -355,7 +355,11 @@ class Deserializer
 
       Container that = readComposition(r);
       if (that !is null)
+      {
          r.that = that;
+         if (r.that.type == AC_CONTAINER)
+            (cast(Container) r.that).noBG = true;
+      }
    }
 
    void deserializeDrawing(Drawing d)

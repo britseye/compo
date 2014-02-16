@@ -1043,7 +1043,16 @@ class ACBase : CSTarget     // Area Composition base class
       ColorSelectionDialog csd = new ColorSelectionDialog("Choose a Color");
       ColorSelection cs = csd.getColorSelection();
       cs.setHasOpacityControl (1);
-      cs.setCurrentRgba(baseColor);
+      if (alt)
+      {
+         cs.setCurrentRgba(altColor);
+         cs.setCurrentAlpha(to!ushort(altColor.alpha*ushort.max));
+      }
+      else
+      {
+         cs.setCurrentRgba(baseColor);
+         cs.setCurrentAlpha(to!ushort(baseColor.alpha*ushort.max));
+      }
       int response = csd.run();
       if (response != ResponseType.OK)
       {

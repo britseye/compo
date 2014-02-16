@@ -38,5 +38,3 @@ class COMPOAbout: AboutDialog
       destroy();
    }
 }
-
-

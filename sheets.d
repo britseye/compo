@@ -19,6 +19,7 @@ import avery;
 import generic;
 import types;
 import mainwin;
+import common;
 
 import gdk.RGBA;
 import gtk.Widget;
@@ -35,6 +36,7 @@ import gtk.CheckButton;
 import gtk.Frame;
 import gtk.EditableIF;
 import gtk.Entry;
+import gtk.MenuItem;
 import gtkc.gtktypes;
 import cairo.Context;
 
@@ -186,7 +188,7 @@ class SheetDetailsDlg: Dialog
 class GridDlg: Dialog
 {
    AppWindow aw;
-   string cfn;
+   string cfn, sheetName;
    Layout layout;
    DrawingArea da;
    TextView tv;
@@ -262,13 +264,19 @@ class GridDlg: Dialog
       if (rt == ResponseType.OK)
       {
          writeSheet();
+         if (!editing)
+         {
+            MenuItem mi = new MenuItem(&aw.mm.ssHandler, "User: "~sheetName);
+            aw.mm.udefMenu.append(mi);
+            mi.show();
+         }
       }
       destroy();
    }
 
    void addGadgets()
    {
-      int vp = 10;
+      int vp = 10, sizeRequest = 80;
       Label t = new Label("All grid sheets are designed as Portrait. COMPO will deal with rotating them.");
       t.show();
       layout.put(t, 10, vp);
@@ -298,17 +306,17 @@ class GridDlg: Dialog
       layout.put(t, 10, vp);
       cols = new Entry();
       cols.addOnChanged(&entryChanged);
-      cols.setSizeRequest(100, -1);
+      cols.setWidthChars(12);
       cols.show();
       layout.put(cols, 150, vp);
       t = new Label("Number of rows:");
       t.show();
-      layout.put(t, 290, vp);
+      layout.put(t, 280, vp);
       rows = new Entry();
       rows.addOnChanged(&entryChanged);
-      rows.setSizeRequest(100, -1);
+      rows.setWidthChars(12);
       rows.show();
-      layout.put(rows, 420, vp);
+      layout.put(rows, 410, vp);
 
       vp += 30;
       t = new Label("Width:");
@@ -316,17 +324,17 @@ class GridDlg: Dialog
       layout.put(t, 10, vp);
       wide = new Entry();
       wide.addOnChanged(&entryChanged);
-      wide.setSizeRequest(100, -1);
+      wide.setWidthChars(12);
       wide.show();
       layout.put(wide, 150, vp);
       t = new Label("Height:");
       t.show();
-      layout.put(t, 290, vp);
+      layout.put(t, 280, vp);
       high = new Entry();
       high.addOnChanged(&entryChanged);
-      high.setSizeRequest(100, -1);
+      high.setWidthChars(12);
       high.show();
-      layout.put(high, 420, vp);
+      layout.put(high, 410, vp);
 
       vp += 30;
       t = new Label("Left margin:");
@@ -334,17 +342,17 @@ class GridDlg: Dialog
       layout.put(t, 10, vp);
       leftx = new Entry();
       leftx.addOnChanged(&entryChanged);
-      leftx.setSizeRequest(100, -1);
+      leftx.setWidthChars(12);
       leftx.show();
       layout.put(leftx, 150, vp);
       t = new Label("Top margin:");
       t.show();
-      layout.put(t, 290, vp);
+      layout.put(t, 280, vp);
       topy = new Entry();
       topy.addOnChanged(&entryChanged);
-      topy.setSizeRequest(100, -1);
+      topy.setWidthChars(12);
       topy.show();
-      layout.put(topy, 420, vp);
+      layout.put(topy, 410, vp);
 
       vp += 30;
       t = new Label("Horizontal stride:");
@@ -352,17 +360,17 @@ class GridDlg: Dialog
       layout.put(t, 10, vp);
       xstep = new Entry();
       xstep.addOnChanged(&entryChanged);
-      xstep.setSizeRequest(100, -1);
+      xstep.setWidthChars(12);
       xstep.show();
       layout.put(xstep, 150, vp);
       t = new Label("Vertical stride:");
       t.show();
-      layout.put(t, 290, vp);
+      layout.put(t, 280, vp);
       ystep = new Entry();
       ystep.addOnChanged(&entryChanged);
-      ystep.setSizeRequest(100, -1);
+      ystep.setWidthChars(12);
       ystep.show();
-      layout.put(ystep, 420, vp);
+      layout.put(ystep, 410, vp);
 
       vp += 30;
       t = new Label("Name of sheet:");
@@ -370,16 +378,16 @@ class GridDlg: Dialog
       layout.put(t, 10, vp);
       name = new Entry();
       name.addOnChanged(&entryChanged);
-      name.setSizeRequest(100, -1);
+      name.setWidthChars(12);
       name.show();
       layout.put(name, 150, vp);
       t = new Label("Purpose reminder:");
       t.show();
-      layout.put(t, 290, vp);
+      layout.put(t, 280, vp);
       purpose = new Entry();
-      purpose.setSizeRequest(100, -1);
+      purpose.setWidthChars(12);
       purpose.show();
-      layout.put(purpose, 420, vp);
+      layout.put(purpose, 410, vp);
 
       vp += 40;
       Button b = new Button("Check Entries");
@@ -606,6 +614,7 @@ class GridDlg: Dialog
          report("The name you have entered is already in use. You can save, but if you do you will overwrite the existing design.", true);
          return;
       }
+      sheetName = s;
       ns.id = s;
       s = purpose.getText();
       ns.description = s;
@@ -704,7 +713,7 @@ class SequenceDlg: Dialog
    Layout layout;
    DrawingArea da;
    TextView tv;
-   RGBA red, black;
+   RGBA red, green, black, selectedColor;
    Widget save;
    Label ci;
    int pos;
@@ -712,20 +721,31 @@ class SequenceDlg: Dialog
    CheckButton isRound;
    Button add, remove, prev, next, vdate;
    LSRect[] rects;
+   LSRect r;
    int tpw, tph;
    Sheet ns;
    string fileName;
-   bool editing;
+   string sheetName;
+   bool editing, adding, pending;
 
    this(AppWindow w, Sheet s)
    {
+      editing = true;
       this(w);
       setTitle("Editing a Custom Grid Sheet");
-      editing = true;
       ns = loadSheet(w, s.id);
       rects = ns.layout.s.rects;
       name.setText(to!string(ns.id));
       purpose.setText(to!string(ns.description));
+      setInfo(1, rects.length);
+      xpos.setText(to!string(rects[0].x));
+      ypos.setText(to!string(rects[0].y));
+      wide.setText(to!string(rects[0].w));
+      high.setText(to!string(rects[0].h));
+      add.setSensitive(1);
+      remove.setSensitive(1);
+      prev.setSensitive(1);
+      next.setSensitive(1);
    }
 
    this(AppWindow w)
@@ -740,6 +760,8 @@ class SequenceDlg: Dialog
       pos = 1;
       black = new RGBA(0,0,0,1);
       red = new RGBA(1,0,0,1);
+      green = new RGBA(0,1,0,1);
+      selectedColor = black;
       setSizeRequest(760, 390);
       if (aw.config.iso)
       {
@@ -760,11 +782,6 @@ class SequenceDlg: Dialog
       vb.packStart(layout, 1, 1, 0);
       layout.show();
       addGadgets();
-      rects.length = 1;
-      rects[0].x = 0.0;
-      rects[0].y = 0.0;
-      rects[0].w = 0.0;
-      rects[0].h = 0.0;
       add.setSensitive(0);
       remove.setSensitive(0);
       prev.setSensitive(0);
@@ -777,6 +794,12 @@ class SequenceDlg: Dialog
       if (rt == ResponseType.OK)
       {
          writeSheet();
+         if (!editing)
+         {
+            MenuItem mi = new MenuItem(&aw.mm.ssHandler, "User: "~sheetName);
+            aw.mm.udefMenu.append(mi);
+            mi.show();
+         }
       }
       destroy();
    }
@@ -785,8 +808,13 @@ class SequenceDlg: Dialog
    {
       int vp = 10;
       string s = "measurements in decimal " ~ (aw.config.iso? "mm.": "inches.");
-      Label t = new Label("All sequence sheets are designed as Portrait. COMPO will deal with rotating them. "
-                          "Specify each separate area\n in turn, then add it - " ~ s);
+      string s2 = "All sequence sheets are designed as Portrait. COMPO will deal with rotating them.\n";
+      if (editing)
+         s2 ~= "Edit as required, then validate. Use 'Add' to append an item to the list - ";
+      else
+         s2 ~= "Specify each separate area in turn, validate it, then add it - ";
+      s2 ~= s;
+      Label t = new Label(s2);
       t.show();
       layout.put(t, 10, vp);
 
@@ -804,36 +832,32 @@ class SequenceDlg: Dialog
       t.show();
       layout.put(t, 10, vp);
       xpos = new Entry();
-      xpos.setSizeRequest(100, -1);
-      xpos.setText("0.0");
+      xpos.setWidthChars(14);
       xpos.show();
       layout.put(xpos, 150, vp);
       t = new Label("Y position:");
       t.show();
       layout.put(t, 290, vp);
       ypos = new Entry();
-      ypos.setText("0.0");
-      ypos.setSizeRequest(100, -1);
+      ypos.setWidthChars(14);
       ypos.show();
-      layout.put(ypos, 420, vp);
+      layout.put(ypos, 400, vp);
 
       vp += 30;
       t = new Label("Width:");
       t.show();
       layout.put(t, 10, vp);
       wide = new Entry();
-      wide.setText("0.0");
-      wide.setSizeRequest(100, -1);
+      wide.setWidthChars(14);
       wide.show();
       layout.put(wide, 150, vp);
       t = new Label("Height:");
       t.show();
       layout.put(t, 290, vp);
       high = new Entry();
-      high.setText("0.0");
-      high.setSizeRequest(100, -1);
+      high.setWidthChars(14);
       high.show();
-      layout.put(high, 420, vp);
+      layout.put(high, 400, vp);
 
       vp += 25;
       isRound = new CheckButton("Item is round");
@@ -862,7 +886,8 @@ class SequenceDlg: Dialog
       vdate.show();
       layout.put(vdate, 240, vp);
 
-      ci = new Label("Editing #1 of 1");
+      ci = new Label("");
+      setInfo(1, rects.length);
       ci.show();
       layout.put(ci, 350, vp);
 
@@ -914,31 +939,38 @@ class SequenceDlg: Dialog
 
    bool drawCallback(Context c, Widget widget)
    {
+      void drawOne(LSRect lsr)
+      {
+         LSRect tr = normalize(lsr);
+         if (tr.round)
+         {
+            c.arc(tr.x+tr.w/2, tr.y+tr.h/2, tr.w/2, 0, 2*PI);
+         }
+         else
+         {
+            c.moveTo(tr.x, tr.y);
+            c.lineTo(tr.x+tr.w, tr.y);
+            c.lineTo(tr.x+tr.w, tr.y+tr.h);
+            c.lineTo(tr.x, tr.y+tr.h);
+            c.closePath();
+         }
+         c.stroke();
+      }
 
       c.setSourceRgba(1,1,1,1);
       c.paint();
       c.setLineWidth(0.5);
       foreach (int i, LSRect cr; rects)
       {
-         if (i == pos-1)
-            c.setSourceRgb(1, 0, 0);
-         else
-            c.setSourceRgb(0, 0, 0);
-         LSRect r = normalize(cr);
-         if (r.round)
-         {
-            c.arc(r.x+r.w/2, r.y+r.h/2, r.w/2, 0, 2*PI);
-         }
-         else
-         {
-            c.moveTo(r.x, r.y);
-            c.lineTo(r.x+r.w, r.y);
-            c.lineTo(r.x+r.w, r.y+r.h);
-            c.lineTo(r.x, r.y+r.h);
-            c.closePath();
-         }
-         c.stroke();
+         c.setSourceRgb(0, 0, 0);
+         drawOne(cr);
       }
+      if (pending)
+      {
+         c.setSourceRgb(selectedColor.red, selectedColor.green, selectedColor.blue);
+         drawOne(r);
+      }
+      selectedColor = black;
       return true;
    }
 
@@ -955,44 +987,62 @@ class SequenceDlg: Dialog
       da.queueDraw();
    }
 
+   void setInfo(int pos, int n)
+   {
+      if (editing)
+         ci.setText("Editing #"~to!string(pos)~" of "~to!string(n));
+      else
+         ci.setText("Creating item "~to!string(pos));
+   }
+
    void bPressed(Button b)
    {
       string label = b.getLabel();
-      LSRect r;
       double t;
       switch (label)
       {
       case "Add":
       {
+         if (editing)
+         {
+            adding = true;
+            setInfo(rects.length+1, rects.length);
+         }
+         else
+         {
+            rects.length = rects.length+1;
+            rects[rects.length-1] = r;
+            pos = rects.length;
+            setInfo(pos+1, rects.length);
+         }
+         pending = false;
          r.round = false;
          r.x = 0.0;
          r.y = 0.0;
          r.w = 0.0;
          r.h = 0.0;
-         rects ~= r;
-         pos = rects.length;
-         xpos.setText("0.0");
-         ypos.setText("0.0");
-         wide.setText("0.0");
-         high.setText("0.0");
+         xpos.setText("");
+         ypos.setText("");
+         wide.setText("");
+         high.setText("");
          add.setSensitive(0);
+         remove.setSensitive(0);
          prev.setSensitive(0);
          next.setSensitive(0);
-         ci.setText("Editing #"~to!string(pos)~" of "~to!string(rects.length));
+         selectedColor = black;
+         da.queueDraw();
       }
       break;
       case "Remove":
       {
          if (rects.length == 1)
          {
-            xpos.setText("0.0");
-            ypos.setText("0.0");
-            wide.setText("0.0");
-            high.setText("0.0");
+            xpos.setText("");
+            ypos.setText("");
+            wide.setText("");
+            high.setText("");
             add.setSensitive(0);
-            prev.setSensitive(0);
-            next.setSensitive(0);
-            ci.setText("Editing #"~to!string(pos)~" of 1");
+            setInfo(pos, 1);
          }
          int apos = pos-1;
          if (apos == rects.length-1)
@@ -1013,7 +1063,7 @@ class SequenceDlg: Dialog
          wide.setText(to!string(rects[apos].w));
          high.setText(to!string(rects[apos].h));
          da.queueDraw();
-         ci.setText("Editing #"~to!string(pos)~" of "~to!string(rects.length));
+         setInfo(pos, rects.length);
       }
       break;
       case "Prev":
@@ -1026,7 +1076,7 @@ class SequenceDlg: Dialog
          ypos.setText(to!string(rects[apos].y));
          wide.setText(to!string(rects[apos].w));
          high.setText(to!string(rects[apos].h));
-         ci.setText("Editing #"~to!string(pos)~" of "~to!string(rects.length));
+         setInfo(pos, rects.length);
          da.queueDraw();
       }
       break;
@@ -1040,17 +1090,19 @@ class SequenceDlg: Dialog
          ypos.setText(to!string(rects[apos].y));
          wide.setText(to!string(rects[apos].w));
          high.setText(to!string(rects[apos].h));
-         ci.setText("Editing #"~to!string(pos)~" of "~to!string(rects.length));
+         setInfo(pos, rects.length);
          da.queueDraw();
       }
       break;
       case "Validate":
       {
-         LSRect* cr = &rects[pos-1];
+         pending = true;
+         selectedColor = red;
          string s = xpos.getText();
          if (!s.length)
          {
             report("You have not entered a value for X position", true);
+            da.queueDraw();
             return;
          }
          if (!getDecimal(xpos, s, t))
@@ -1058,23 +1110,26 @@ class SequenceDlg: Dialog
             report("The entry for X position is not a valid decimal number.", true);
             return;
          }
-         cr.x = t;
+         r.x = t;
          s = ypos.getText();
          if (!s.length)
          {
             report("You have not entered a value for Y position", true);
+            da.queueDraw();
             return;
          }
          if (!getDecimal(ypos, s, t))
          {
             report("The entry for Y position is not a valid decimal number.", true);
+            da.queueDraw();
             return;
          }
-         cr.y = t;
+         r.y = t;
          s = wide.getText();
          if (!s.length)
          {
             report("You have not entered a value for Width", true);
+            da.queueDraw();
             return;
          }
          if (!getDecimal(wide, s, t))
@@ -1082,23 +1137,26 @@ class SequenceDlg: Dialog
             report("The entry for Width is not a valid decimal number.", true);
             return;
          }
-         cr.w = t;
+         r.w = t;
          s = high.getText();
          if (!s.length)
          {
             report("You have not entered a value for Height", true);
+            da.queueDraw();
             return;
          }
          if (!getDecimal(high, s, t))
          {
             report("The entry for Height is not a valid decimal number.", true);
+            da.queueDraw();
             return;
          }
-         cr.h = t;
+         r.h = t;
          string rv = checkRect(r);
          if (rv !is null)
          {
             report(rv, true);
+            da.queueDraw();
             return;
          }
 
@@ -1109,12 +1167,39 @@ class SequenceDlg: Dialog
                report("You have specified the item to be round, but the width is not equal to the height!", true);
                return;
             }
-            cr.round = true;
+            r.round = true;
          }
-         add.setSensitive(1);
-         next.setSensitive(1);
-         prev.setSensitive(1);
-         report("Item validate", false);
+         //next.setSensitive(1);
+         //prev.setSensitive(1);
+         if (editing && !adding)
+         {
+            rects[pos-1] = r;
+            report("Item updated", false);
+            selectedColor = black;
+         }
+         else
+         {
+            if (adding)
+            {
+               rects.length = rects.length+1;
+               pos = rects.length;
+               rects[pos-1] = r;
+               report("Item validated and added", false);
+               setInfo(pos, rects.length);
+               selectedColor = black;
+               add.setSensitive(1);
+               remove.setSensitive(1);
+               prev.setSensitive(1);
+               next.setSensitive(1);
+            }
+            else
+            {
+               report("Item validated", false);
+               add.setSensitive(1);
+               selectedColor = green;
+            }
+         }
+         adding = false;
          da.queueDraw();
       }
       break;
@@ -1128,16 +1213,17 @@ class SequenceDlg: Dialog
       string s = name.getText();
       if (!s.length)
       {
-         report("You have not entered a name for the custom grid", true);
+         report("You have not entered a name for the custom sequence", true);
          return;
       }
+      sheetName = s;
       string fileName = expandTilde("~/.COMPO/userdef/");
       if (aw.config.iso)
          fileName ~= "ISO/";
       else
          fileName ~= "US/";
       fileName ~= s;
-      if (exists(cast(char[]) fileName))
+      if (!editing && exists(cast(char[]) fileName))
       {
          name.overrideColor(name.getStateFlags(), red);
          report("The name you have entered is already in use. You can save, but you will overwrite the existing design.", true);
@@ -1499,5 +1585,24 @@ class SheetLib
       Sheet t =  all[i];
       realizeSheet(&t);
       return t;
+   }
+
+   string[] getMenuForUser()
+   {
+      string xlate(string fp)
+      {
+         string[] a =fp.split("/");
+         string s = a[$-1];
+         return "User: "~s;
+      }
+
+      string[] list;
+      string path = "userdef/"~(aw.config.iso? "ISO": "US");
+      string cfp = getConfigPath(path);
+      foreach (string fp; dirEntries(cfp, SpanMode.depth))
+      {
+         list ~= xlate(fp);
+      }
+      return list;
    }
 }

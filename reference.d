@@ -99,6 +99,8 @@ class Reference : ACBase
          if (x.name == thatName)
          {
             that = x;
+            if (that.type == AC_CONTAINER)
+               (cast(Container) that).noBG = true;
             break;
          }
       }

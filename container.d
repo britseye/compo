@@ -47,7 +47,7 @@ class Container: ACBase
 
    double zsf;
    Coord cvo;
-   bool cZoomed;
+   bool cZoomed, noBG;
 
    override void syncControls()
    {
@@ -123,7 +123,7 @@ class Container: ACBase
       new InchTool(cSet, 0, ICoord(0, vp), true);
 
       vp += 35;
-      Label l = new Label("Left-click the composition container in the LHS\ntree view to add layers to this composition.");
+      Label l = new Label("Right-click the composition container in the LHS\ntree view to add layers to this composition.");
       cSet.add(l, ICoord(0, vp), Purpose.LABEL);
 
       cSet.cy = vp+35;
@@ -298,10 +298,12 @@ class Container: ACBase
 
    override void render(Context c)
    {
-      //c.save();
-      c.setSourceRgba(baseColor.red, baseColor.green, baseColor.blue, baseColor.alpha);
-      c.paint();
-      //c.restore();
+      if (!noBG)
+      {
+         c.setSourceRgba(baseColor.red, baseColor.green, baseColor.blue, baseColor.alpha);
+         c.paint();
+      }
+
       if (decorate)
          decorateSheet(c);
       foreach (ACBase x; children)

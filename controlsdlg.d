@@ -26,7 +26,6 @@ import gobject.Value;
 
 extern(C) bool teFocusFunc(void* vp)
 {
-   writeln("teFocusFunc");
    ACBase acb = cast(ACBase) vp;
    if (acb.getGroup()== ACGroups.TEXT)
    {

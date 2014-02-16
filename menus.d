@@ -392,6 +392,8 @@ class MainMenu: MenuBar
    MenuItem fileMenuItem;
    MItems[] mmItems;
    GdkAtom cbAtom;
+   string[] udefList;
+   Menu udefMenu;
 
    void disable(int md)
    {
@@ -1073,6 +1075,7 @@ class MainMenu: MenuBar
 
    MenuItem createMfrsMenu()
    {
+      string[] list;
       MenuItem[] mits;
 
       Menu mfrs = new Menu();
@@ -1085,7 +1088,7 @@ class MainMenu: MenuBar
       {
          x = new MenuItem(s);
          mits ~= x;
-         string[] list = sheetLib.getMenuForMfr(s);
+         list = sheetLib.getMenuForMfr(s);
          string[] tl;
          foreach (string ts; list)
          {
@@ -1100,7 +1103,9 @@ class MainMenu: MenuBar
       }
 
       x = new MenuItem("_User");
-      x.setSubmenu(createMenu(&ssHandler, [ "User: GridExample", "User: SequenceExample" ]));
+      udefList = sheetLib.getMenuForUser();
+      udefMenu = createMenu(&ssHandler, udefList);
+      x.setSubmenu(udefMenu);
       mfrs.append(x);
 
       x = new SeparatorMenuItem();
