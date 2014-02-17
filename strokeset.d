@@ -73,7 +73,7 @@ class StrokesDlg: Dialog, CSTarget
       super(title, o.aw, DialogFlags.DESTROY_WITH_PARENT, sa, rta);
       this.addOnDelete(&catchClose);
       po = o;
-      sides = po.pcPath.length;
+      sides = cast(int) po.pcPath.length;
       layout = new Layout(null, null);
       cs=new ControlSet(this);
       VBox vb = getContentArea();
@@ -179,7 +179,7 @@ class StrokesDlg: Dialog, CSTarget
    {
       if (instance == 0)
       {
-         sides = po.pcPath.length;
+         sides = cast(int) po.pcPath.length;
          po.lastCurrent = po.current;
          if (more)
          {
@@ -314,7 +314,7 @@ class StrokesDlg: Dialog, CSTarget
       }
       if (p == Purpose.UNDO)
       {
-         int l= po.editStack.length;
+         size_t l= po.editStack.length;
          if (l)
          {
             po.pcPath = po.editStack[l-1];
@@ -518,7 +518,7 @@ class StrokeSet : LineSet
       double hr = cast(double) width/oldW;
       double vr = cast(double) height/oldH;
       tm.initScale(hr, vr);
-      for (int i = 0; i < pcPath.length; i++)
+      for (size_t i = 0; i < pcPath.length; i++)
       {
          tm.transformPoint(pcPath[i].end.x, pcPath[i].end.y);
          tm.transformPoint(pcPath[i].cp1.x, pcPath[i].cp1.y);
@@ -821,7 +821,7 @@ class StrokeSet : LineSet
       if (constructing)
       {
          c.setSourceRgb(0.8, 0.8, 0.8);
-         for (int i = 0; i < pcPath.length; i++)
+         for (size_t i = 0; i < pcPath.length; i++)
          {
             c.moveTo(pcPath[i].start.x, pcPath[i].start.y);
             c.curveTo(pcPath[i].cp1.x, pcPath[i].cp1.y, pcPath[i].cp2.x, pcPath[i].cp2.y, pcPath[i].end.x, pcPath[i].end.y);
@@ -840,7 +840,7 @@ class StrokeSet : LineSet
       c.setLineJoin(les? CairoLineJoin.MITER: CairoLineJoin.ROUND);
       c.setSourceRgb(baseColor.red, baseColor.green, baseColor.blue);
 
-      for (int i = 0; i < pcPath.length; i++)
+      for (size_t i = 0; i < pcPath.length; i++)
       {
          c.moveTo(pcPath[i].start.x, pcPath[i].start.y);
          rSegTo(c, pcPath[i]);
@@ -923,9 +923,9 @@ class StrokeSet : LineSet
 
    void figureNextPrev()
    {
-      int l = pcPath.length;
+      size_t l = pcPath.length;
       if (current == 0)
-         prev = l-1;
+         prev = cast(int)(l-1);
       else
          prev = current-1;
       if (current == l-1)
@@ -965,7 +965,7 @@ class StrokeSet : LineSet
       double lw = 1;
       if(zoomed) lw /= esf;
       c.setLineWidth(lw);
-      for (int i = 0; i < pcPath.length; i++)
+      for (size_t i = 0; i < pcPath.length; i++)
       {
          c.moveTo(pcPath[i].start.x, pcPath[i].start.y);
          eSegTo(c, pcPath[i]);

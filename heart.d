@@ -121,7 +121,7 @@ class Heart: LineSet
    void constructBase()
    {
       oPath = crd.dup;
-      for (int i = 0; i < oPath.length; i++)
+      for (size_t i = 0; i < oPath.length; i++)
       {
          oPath[i].x *= unit;
          oPath[i].y *= unit;

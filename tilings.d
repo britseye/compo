@@ -300,16 +300,16 @@ class Tilings: ACBase
       {
          colorGen.seed(colorSeed);
 
-         for (int i = 0; i < colors.length; i++)
+         for (size_t i = 0; i < colors.length; i++)
          {
-            int n = uniform(0, pca.length, colorGen);
+            size_t n = uniform(0, pca.length, colorGen);
             colors[i] = pca[n];
          }
          return;
       }
       cSrc.setSeed(colorSeed);
       cSrc.setShadeBand(shade);
-      for (int i = 0; i < colors.length; i++)
+      for (size_t i = 0; i < colors.length; i++)
          colors[i] = cSrc.getColor();
    }
 

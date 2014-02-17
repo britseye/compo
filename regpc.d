@@ -804,7 +804,7 @@ class RegularPolycurve : LineSet
             j++;
          }
       }
-      for (int i = 0; i < pcPath.length; i++)
+      for (size_t i = 0; i < pcPath.length; i++)
       {
          pcPath[i].start.x += center.x;
          pcPath[i].start.y += center.y;
@@ -829,7 +829,7 @@ class RegularPolycurve : LineSet
       c.translate(-center.x, -center.y);
 
       c.moveTo(pcPath[0].start.x, pcPath[0].start.y);
-      for (int i = 0; i < pcPath.length; i++)
+      for (size_t i = 0; i < pcPath.length; i++)
          c.curveTo(pcPath[i].cp1.x, pcPath[i].cp1.y, pcPath[i].cp2.x, pcPath[i].cp2.y, pcPath[i].end.x, pcPath[i].end.y);
       c.closePath();
       c.setFillRule(cfr);

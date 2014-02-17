@@ -72,7 +72,7 @@ class PolyCurveDlg: Dialog, CSTarget
       super(title, o.aw, DialogFlags.DESTROY_WITH_PARENT, sa, rta);
       this.addOnDelete(&catchClose);
       po = o;
-      sides = po.pcPath.length;
+      sides = cast(int) po.pcPath.length;
       layout = new Layout(null, null);
       cs=new ControlSet(this);
       VBox vb = getContentArea();
@@ -178,7 +178,7 @@ class PolyCurveDlg: Dialog, CSTarget
    {
       if (instance == 0)
       {
-         sides = po.pcPath.length;
+         sides = cast(int) po.pcPath.length;
          po.lastCurrent = po.current;
          int n = po.open? 2: 1;
          if (more)
@@ -317,7 +317,7 @@ class PolyCurveDlg: Dialog, CSTarget
       }
       if (p == Purpose.UNDO)
       {
-         int l= po.editStack.length;
+         size_t l = po.editStack.length;
          if (l)
          {
             po.pcPath = po.editStack[l-1];
@@ -704,10 +704,10 @@ class Polycurve : LineSet
             double cogoffx = 0, cogoffy = 0;
             double minsep = double.max;
             int best = 0;
-            int last = pcPath.length;
+            size_t last = pcPath.length;
             if (open)
                last--;
-            foreach (int i, PathItem pi; pcPath)
+            foreach (size_t i, PathItem pi; pcPath)
             {
                if (i >= last)
                   break;
@@ -715,7 +715,7 @@ class Polycurve : LineSet
                double d = scaledDistance(ccog, m);
                if (d < minsep)
                {
-                  best = i;
+                  best = cast(int) i;
                   minsep = d;
                }
             }
@@ -974,10 +974,10 @@ class Polycurve : LineSet
       c.setLineWidth(lineWidth);
       c.setLineJoin(les? CairoLineJoin.MITER: CairoLineJoin.ROUND);
       c.moveTo(pcPath[0].start.x, pcPath[0].start.y);
-      int lim = pcPath.length;
+      size_t lim = pcPath.length;
       if (open)
          lim--;
-      for (int i = 0; i < lim; i++)
+      for (size_t i = 0; i < lim; i++)
          rSegTo(c, pcPath[i]);
       if (!open)
          c.closePath();
@@ -989,7 +989,7 @@ class Polycurve : LineSet
    void adjustPI(double dx, double dy)
    {
       edits++;
-      int len = pcPath.length;
+      size_t len = pcPath.length;
       if (current != lastCurrent || activeCoords != lastActive )
       {
          editStack ~= pcPath.dup;
@@ -1079,9 +1079,9 @@ class Polycurve : LineSet
 
    void figureNextPrev()
    {
-      int l = pcPath.length;
+      size_t l = pcPath.length;
       if (current == 0)
-         prev = open? -1: l-1;
+         prev = open? -1: cast(int)(l-1);
       else
          prev = current-1;
       if (current == l-1)
@@ -1100,7 +1100,7 @@ class Polycurve : LineSet
       if(zoomed) lw /= esf;
       c.setLineWidth(lw);
       c.moveTo(pcPath[0].start.x, pcPath[0].start.y);
-      int lim = pcPath.length;
+      size_t lim = pcPath.length;
       if (open)
          lim--;
       for (int i = 0; i < lim; i++)

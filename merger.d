@@ -725,14 +725,14 @@ class Merger
                return null;
             }
          }
-         int pos = md.spec.indexOf(colSpec);
+         size_t pos = md.spec.indexOf(colSpec);
          temp.isFixed = true;
          temp.fixed = md.spec[lastPos..pos].idup;
          lfa ~= temp;
          temp.isFixed = false;
          temp.colno = index;
          lfa ~= temp;
-         lastPos = pos+colSpec.length;
+         lastPos = cast(int)(pos+colSpec.length);
       }
       if (lastPos < md.spec.length)
       {

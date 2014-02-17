@@ -218,7 +218,7 @@ class AveryISO : Portfolio
 
    int sheetCount()
    {
-      return sheets.length;
+      return cast(int) sheets.length;
    }
    Sheet* sheetPtr()
    {
@@ -669,7 +669,7 @@ class AveryUS : Portfolio
 
    int sheetCount()
    {
-      return sheets.length;
+      return cast(int) sheets.length;
    }
    Sheet* sheetPtr()
    {

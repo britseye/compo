@@ -48,7 +48,7 @@ class BrushDabs : ACBase
    PartColor[8] pca;
    Dab base;
    Dab[] dabs;
-   uint nDabs;
+   size_t nDabs;
    ColorSource cSrc;
    uint colorSeed, shapeSeed;
    int shade;

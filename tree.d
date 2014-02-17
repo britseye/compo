@@ -81,7 +81,7 @@ class ACTreeModel : TreeModel
    override int getIter(TreeIter iter, TreePath path)
    {
       int[] indices = path.getIndices();
-      int len = indices.length;
+      size_t len = indices.length;
 
       ACBase target, current = root;
       ACBase[] cl = current.children;
@@ -142,7 +142,7 @@ class ACTreeModel : TreeModel
       }
 
       TreePath path = new TreePath();
-      for (int i = seq.length-1; i >= 0; i--)
+      for (int i = cast(int) seq.length-1; i >= 0; i--)
       {
          path.appendIndex(seq[i]);
       }
@@ -203,8 +203,8 @@ class ACTreeModel : TreeModel
          throw new Exception("Tree iterator refers to tree store root");
       ACBase parent = item.parent;
       ACBase[] a = parent.children;
-      int len = a.length;
-      for (int i = 0; i < a.length; i++)
+      size_t len = a.length;
+      for (size_t i = 0; i < a.length; i++)
       {
          if (a[i] is item)
          {
@@ -280,10 +280,10 @@ class ACTreeModel : TreeModel
    {
       /* special case: if iter == NULL, return number of top-level rows */
       if ( iter is null )
-         return root.children.length;
+         return cast(int) root.children.length;
 
       ACBase item = cast(ACBase) iter.userData;
-      return item.children.length;
+      return cast(int) item.children.length;
    }
 
 
@@ -350,7 +350,7 @@ class ACTreeModel : TreeModel
       root.children ~= nc;
       nc.parent = root;
       TreePath tp = new TreePath();
-      tp.appendIndex(root.children.length-1);
+      tp.appendIndex(cast(int) root.children.length-1);
 
       TreeIter iter = new TreeIter();
       iter.userData = cast(void*) nc;

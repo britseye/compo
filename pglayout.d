@@ -274,11 +274,11 @@ class PageLayout: Layout
    {
       x /= 0.78;
       y /= 0.78;
-      for (int i = 0; i < rects.length; i++)
+      for (size_t i = 0; i < rects.length; i++)
       {
          CRect r = rects[i];
          if (x >= r.x && x < r.x+r.w && y >= r.y && y < r.y+r.h)
-            return i;
+            return cast(int) i;
       }
       return -1;
    }
@@ -313,10 +313,10 @@ class PageLayout: Layout
    bool drawCallback(Context plc, Widget widget)
    {
       plc.scale(0.78, 0.78);
-      int n = marked.length;
+      size_t n = marked.length;
 
       // Render the marked items
-      for (int i = 0; i < n; i++)
+      for (size_t i = 0; i < n; i++)
       {
          if (marked[i] !is null)
          {
@@ -828,7 +828,7 @@ class PageLayout: Layout
 
    void renderToPrinter(Context c)
    {
-      for (int i = 0; i < marked.length; i++)
+      for (size_t i = 0; i < marked.length; i++)
       {
          if (marked[i] !is null)
          {

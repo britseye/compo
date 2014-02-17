@@ -230,7 +230,7 @@ class LineSet : ACBase
 
    void centerPath()
    {
-      for (int i = 0; i < oPath.length; i++)
+      for (size_t i = 0; i < oPath.length; i++)
       {
          oPath[i].x -= center.x;
          oPath[i].y -= center.y;
@@ -240,7 +240,7 @@ class LineSet : ACBase
    void transformPath(bool mValid)
    {
       rPath = oPath.dup;
-      for (int i = 0; i < rPath.length; i++)
+      for (size_t i = 0; i < rPath.length; i++)
       {
          if (mValid)
             tm.transformPoint(rPath[i].x, rPath[i].y);

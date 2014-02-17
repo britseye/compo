@@ -225,7 +225,7 @@ class Serial : TextViewItem
          return text;
       if (text.length < padLength)
       {
-         int d = padLength-text.length;
+         int d = padLength-cast(int)text.length;
          text = padding[0..d]~text;
       }
       return text;

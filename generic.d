@@ -45,8 +45,9 @@ class GenericISO : Portfolio
 
    int sheetCount()
    {
-      return sheets.length;
+      return cast(int) sheets.length;
    }
+
    Sheet* sheetPtr()
    {
       return &sheets[0];
@@ -88,7 +89,7 @@ class GenericUS : Portfolio
 
    int sheetCount()
    {
-      return sheets.length;
+      return cast(int) sheets.length;
    }
    Sheet* sheetPtr()
    {

@@ -169,7 +169,7 @@ class AppWindow : MainWindow
       tm.root.children ~= copy;
 
       treeOps.notifyInsertion(copy);
-      for (int i = 0; i < sourceCtr.children.length; i++)
+      for (size_t i = 0; i < sourceCtr.children.length; i++)
       {
          ACBase x =cloneItem(sourceCtr.children[i]);
          x.parent = copy;

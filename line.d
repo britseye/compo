@@ -141,7 +141,7 @@ class Line : LineSet
       double hr = cast(double) width/oldW;
       double vr = cast(double) height/oldH;
       tm.initScale(hr, vr);
-      for (int i = 0; i < oPath.length; i++)
+      for (size_t i = 0; i < oPath.length; i++)
       {
          tm.transformPoint(oPath[i].x, oPath[i].y);
       }

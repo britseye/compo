@@ -737,7 +737,7 @@ class SequenceDlg: Dialog
       rects = ns.layout.s.rects;
       name.setText(to!string(ns.id));
       purpose.setText(to!string(ns.description));
-      setInfo(1, rects.length);
+      setInfo(1, cast(int) rects.length);
       xpos.setText(to!string(rects[0].x));
       ypos.setText(to!string(rects[0].y));
       wide.setText(to!string(rects[0].w));
@@ -887,7 +887,7 @@ class SequenceDlg: Dialog
       layout.put(vdate, 240, vp);
 
       ci = new Label("");
-      setInfo(1, rects.length);
+      setInfo(1, cast(int)rects.length);
       ci.show();
       layout.put(ci, 350, vp);
 
@@ -1002,18 +1002,17 @@ class SequenceDlg: Dialog
       switch (label)
       {
       case "Add":
-      {
          if (editing)
          {
             adding = true;
-            setInfo(rects.length+1, rects.length);
+            setInfo(cast(int)rects.length+1, cast(int)rects.length);
          }
          else
          {
             rects.length = rects.length+1;
             rects[rects.length-1] = r;
-            pos = rects.length;
-            setInfo(pos+1, rects.length);
+            pos = cast(int)rects.length;
+            setInfo(pos+1, cast(int)rects.length);
          }
          pending = false;
          r.round = false;
@@ -1031,8 +1030,7 @@ class SequenceDlg: Dialog
          next.setSensitive(0);
          selectedColor = black;
          da.queueDraw();
-      }
-      break;
+         break;
       case "Remove":
       {
          if (rects.length == 1)
@@ -1063,7 +1061,7 @@ class SequenceDlg: Dialog
          wide.setText(to!string(rects[apos].w));
          high.setText(to!string(rects[apos].h));
          da.queueDraw();
-         setInfo(pos, rects.length);
+         setInfo(pos, cast(int)rects.length);
       }
       break;
       case "Prev":
@@ -1076,7 +1074,7 @@ class SequenceDlg: Dialog
          ypos.setText(to!string(rects[apos].y));
          wide.setText(to!string(rects[apos].w));
          high.setText(to!string(rects[apos].h));
-         setInfo(pos, rects.length);
+         setInfo(pos, cast(int)rects.length);
          da.queueDraw();
       }
       break;
@@ -1090,7 +1088,7 @@ class SequenceDlg: Dialog
          ypos.setText(to!string(rects[apos].y));
          wide.setText(to!string(rects[apos].w));
          high.setText(to!string(rects[apos].h));
-         setInfo(pos, rects.length);
+         setInfo(pos, cast(int) rects.length);
          da.queueDraw();
       }
       break;
@@ -1182,10 +1180,10 @@ class SequenceDlg: Dialog
             if (adding)
             {
                rects.length = rects.length+1;
-               pos = rects.length;
+               pos = cast(int)rects.length;
                rects[pos-1] = r;
                report("Item validated and added", false);
-               setInfo(pos, rects.length);
+               setInfo(pos, cast(int)rects.length);
                selectedColor = black;
                add.setSensitive(1);
                remove.setSensitive(1);
@@ -1463,7 +1461,7 @@ Sheet loadSheet(AppWindow aw, string name)
       seq.count = scount;
       int n = 0;
 
-      for (int i = 9; i < lines.length; i++, n++)
+      for (size_t i = 9; i < lines.length; i++, n++)
       {
          LSRect r;
          if (lines[i].length == 0)
@@ -1526,7 +1524,7 @@ class SheetLib
    {
       int n = p.sheetCount();
       Sheet* sp = p.sheetPtr();
-      int j = all.length;
+      size_t j = all.length;
       all.length = all.length+n;
       for (int i = 0; i < n; i++, sp++, j++)
       {
@@ -1538,8 +1536,8 @@ class SheetLib
          all[j] = *sp;
          string key = sp.mfr~": "~sp.id ;
          mfrParts[sp.mfr] ~= sp.id~" - "~sp.description;
-         specific[key] = j;
-         byCats[sp.category][key] = j;
+         specific[key] = cast(int) j;
+         byCats[sp.category][key] = cast(int) j;
       }
    }
 

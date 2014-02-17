@@ -126,7 +126,7 @@ class CSVArray: MergeSource
             }
          }
       }
-      cols = atemp.length;
+      cols = cast(int) atemp.length;
       result ~= atemp;
    }
 

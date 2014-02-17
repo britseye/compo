@@ -223,7 +223,7 @@ class ControlSet
       }
       WidgetInfo ci = WidgetInfo(w, p, si, id);
       wia ~= ci;
-      windex[id] = wia.length-1;
+      windex[id] = cast(int) wia.length-1;
    }
 
    void addInfo(string info)
@@ -261,7 +261,7 @@ class ControlSet
 
    void move(int dx, int dy)
    {
-      for (int i = 0; i < wia.length; i++)
+      for (size_t i = 0; i < wia.length; i++)
       {
          wia[i].wpos.x += dx;
          wia[i].wpos.y += dy;

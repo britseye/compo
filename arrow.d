@@ -200,7 +200,7 @@ class Arrow : LineSet
       oPath[6] = Coord(-30*size, 5*size);
       center.x = 0.5*width;
       center.y = 0.5*height;
-      for (int i = 0; i < oPath.length; i++)
+      for (size_t i = 0; i < oPath.length; i++)
       {
          oPath[i].x += center.x;
          oPath[i].y += center.y;
@@ -240,7 +240,7 @@ class Arrow : LineSet
       c.setLineWidth(0);
       c.setLineJoin(les? CairoLineJoin.MITER: CairoLineJoin.ROUND);
       c.moveTo(oPath[0].x, oPath[0].y);
-      for (int i = 1; i < oPath.length; i++)
+      for (size_t i = 1; i < oPath.length; i++)
          c.lineTo(oPath[i].x, oPath[i].y);
       c.closePath();
       strokeAndFill(c, lineWidth, outline, fill);

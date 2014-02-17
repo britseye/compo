@@ -204,9 +204,9 @@ taken seriously, as opposed to being accidental.
       TagProperty[] tpa;
       TagProperty tp;
 
-      for (int i = 0; i < pda.length; i++)
+      for (size_t i = 0; i < pda.length; i++)
       {
-         getValidProperty(i, tt, &tp);
+         getValidProperty(cast(int)i, tt, &tp);
          // Throw away the invalid ones
          if (tp.type == PType.VOID)
             continue;
@@ -329,7 +329,7 @@ class TextBlock
           pgLayout.setFontDescription(pgfd);
        PgAttributeList pgal = new PgAttributeList();
        string plaintext;
-       if (PgAttribute.parseMarkup (text, text.length, 0, pgal, plaintext, null))
+       if (PgAttribute.parseMarkup (text, cast(int) text.length, 0, pgal, plaintext, null))
        {
           instantiated = true;
           pgLayout.setText(plaintext);

@@ -780,9 +780,9 @@ class ACBase : CSTarget     // Area Composition base class
       }
       else
       {
-         int len = parent.children.length+1;
+         size_t len = parent.children.length+1;
          parent.children.length = len;
-         for (int j = len-1; j > pos; j--)
+         for (size_t j = len-1; j > pos; j--)
             parent.children[j] = parent.children[j-1];
          parent.children[pos] = child;
       }
@@ -791,7 +791,7 @@ class ACBase : CSTarget     // Area Composition base class
    static int insertChild(ACBase refChild, ACBase newChild, bool rel)
    {
       ACBase p = refChild.parent;
-      int i;
+      size_t i;
       for (i = 0; i < p.children.length; i++)
       {
          if (p.children[i] is refChild)
@@ -799,27 +799,27 @@ class ACBase : CSTarget     // Area Composition base class
       }
       if (i >= p.children.length)
          return -1;  // Or throw an exception!
-      int len = p.children.length+1;
+      size_t len = p.children.length+1;
       p.children.length = len;
       if (rel)       // insert after
       {
-         for (int j = len-1; j > i+1; j--)
+         for (size_t j = len-1; j > i+1; j--)
             p.children[j] = p.children[j-1];
          p.children[i+1] = newChild;
       }
       else          // insert before
       {
-         for (int j = len-1; j > i; j--)
+         for (size_t j = len-1; j > i; j--)
             p.children[j] = p.children[j-1];
          p.children[i] = newChild;
       }
-      return i;
+      return cast(int) i;
    }
 
    static void moveChild(ACBase child, bool up)
    {
       ACBase p = child.parent;
-      int i;
+      size_t i;
       for (i = 0; i < p.children.length; i++)
       {
          if (p.children[i] is child)
@@ -855,7 +855,7 @@ class ACBase : CSTarget     // Area Composition base class
       ACBase p = child.parent;
       bool inCtr = (p.type == AC_CONTAINER);
       bool isCto = (w.cto is child);
-      int len = p.children.length;
+      size_t len = p.children.length;
       if (len == 1)
       {
          // Removing last child  from container, ot last item from tree
@@ -879,7 +879,7 @@ class ACBase : CSTarget     // Area Composition base class
          }
          return;
       }
-      int i;
+      size_t i;
       for (i = 0; i < len; i++)
       {
          if (p.children[i] is child)
@@ -887,7 +887,7 @@ class ACBase : CSTarget     // Area Composition base class
       }
       if (i < len-1)
       {
-         for (int j = i; j < len-1; j++)
+         for (size_t j = i; j < len-1; j++)
             p.children[j] = p.children[j+1];
       }
       p.children.length = len-1;

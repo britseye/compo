@@ -134,7 +134,7 @@ class PointSetEditDlg: Dialog, CSTarget
    {
       if (instance == 0)
       {
-         int sides = po.oPath.length;
+         int sides = cast(int) po.oPath.length;
          po.lastCurrent = po.current;
          if (more)
          {
@@ -233,7 +233,7 @@ class PointSetEditDlg: Dialog, CSTarget
       }
       if (p == Purpose.UNDO)
       {
-         int l= po.editStack.length;
+         size_t l= po.editStack.length;
          if (l)
          {
             po.oPath = po.editStack[l-1];
@@ -609,7 +609,7 @@ class PointSet : LineSet
          c.setOperator(CairoOperator.XOR);
          c.setLineWidth(3);
          c.setSourceRgb(1,1,1);
-         for (int i = 0; i < oPath.length; i++)
+         for (size_t i = 0; i < oPath.length; i++)
          {
             c.arc(oPath[i].x, oPath[i].y, lineWidth/2, 0, PI*2);
             c.strokePreserve();
@@ -625,7 +625,7 @@ class PointSet : LineSet
 
       c.setLineWidth(0);
       c.setSourceRgb(baseColor.red, baseColor.green, baseColor.blue);
-      for (int i = 0; i < oPath.length; i++)
+      for (size_t i = 0; i < oPath.length; i++)
       {
          c.arc(oPath[i].x, oPath[i].y, lineWidth, 0, PI*2);
          c.strokePreserve();
@@ -678,7 +678,7 @@ class PointSet : LineSet
       c.paint();
       c.setSourceRgb(0,0,0);
       c.setLineWidth(3);
-      for (int i = 0; i < oPath.length; i++)
+      for (size_t i = 0; i < oPath.length; i++)
       {
          c.arc(center.x+oPath[i].x, center.y+oPath[i].y, lineWidth/2, 0, PI*2);
          c.strokePreserve();

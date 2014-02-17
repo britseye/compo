@@ -63,7 +63,7 @@ class COMPOSrc: MergeSource
    void parseFirstLine()
    {
       string[] atemp = cast(string[]) split(line, delim);
-      cols = atemp.length;
+      cols = cast(int)atemp.length;
       result ~= atemp;
    }
 
@@ -75,7 +75,7 @@ class COMPOSrc: MergeSource
          if (line is null || line.length == 0)
             return result;
          string[] atemp = cast(string[]) split(line, delim);
-         int k = atemp.length;
+         size_t k = atemp.length;
          if (k > cols)
          {
             errMsg = "Too many items in row";

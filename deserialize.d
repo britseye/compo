@@ -145,7 +145,7 @@ class Deserializer
       return tf;
    }
 
-   private ubyte[] readBytes(uint n)
+   private ubyte[] readBytes(size_t n)
    {
       ubyte[] a;
       a.length = n;
@@ -172,7 +172,7 @@ class Deserializer
          throw new DSException(ln, line, "Bad path");
       Coord[] ca;
       ca.length = sa.length/2;
-      for (int i = 0; i < sa.length; i += 2)
+      for (size_t i = 0; i < sa.length; i += 2)
       {
          ca[i/2].x = to!double(sa[i]);
          ca[i/2].y = to!double(sa[i+1]);
@@ -209,7 +209,7 @@ class Deserializer
    {
       PartColor[] pca;
       string[] ia = s.split(",");
-      for (int i = 0; i < ia.length; i++)
+      for (size_t i = 0; i < ia.length; i++)
       {
          PartColor pc;
          string[] sa = ia[i].split(";");
@@ -254,7 +254,7 @@ class Deserializer
       }
       else
          fileName = fn;
-      int pos = fileName.lastIndexOf("/");
+      size_t pos = fileName.lastIndexOf("/");
       if (pos > 0)
       {
          aw.cfn = fileName[pos+1..$];

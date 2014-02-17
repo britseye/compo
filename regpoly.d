@@ -230,7 +230,7 @@ class RegularPolygon : LineSet
       double hr = cast(double) width/oldW;
       double vr = cast(double) height/oldH;
       tm.initScale(hr, vr);
-      for (int i = 0; i < oPath.length; i++)
+      for (size_t i = 0; i < oPath.length; i++)
       {
          tm.transformPoint(oPath[i].x, oPath[i].y);
       }
@@ -271,7 +271,7 @@ class RegularPolygon : LineSet
       c.translate(-center.x, -center.y);
 
       c.moveTo(oPath[0].x, oPath[0].y);
-      for (int i = 1; i < oPath.length; i++)
+      for (size_t i = 1; i < oPath.length; i++)
          c.lineTo(oPath[i].x, oPath[i].y);
       c.closePath();
       strokeAndFill(c, lineWidth, outline, fill);

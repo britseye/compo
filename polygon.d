@@ -67,7 +67,7 @@ class PolyEditDlg: Dialog, CSTarget
       super(title, o.aw, DialogFlags.DESTROY_WITH_PARENT, sa, rta);
       this.addOnDelete(&catchClose);
       po = o;
-      sides = po.oPath.length;
+      sides = cast(int) po.oPath.length;
       layout = new Layout(null, null);
       cs=new ControlSet(this);
       VBox vb = getContentArea();
@@ -155,7 +155,7 @@ class PolyEditDlg: Dialog, CSTarget
    {
       if (instance == 0)
       {
-         sides = po.oPath.length;
+         sides = cast(int) po.oPath.length;
          po.lastCurrent = po.current;
          int n = po.open? 2: 1;
          if (more)
@@ -262,7 +262,7 @@ class PolyEditDlg: Dialog, CSTarget
       }
       if (p == Purpose.UNDO)
       {
-         int l= po.editStack.length;
+         size_t l= po.editStack.length;
          if (l)
          {
             po.oPath = po.editStack[l-1];
@@ -491,7 +491,7 @@ class Polygon : LineSet
       double hr = cast(double) width/oldW;
       double vr = cast(double) height/oldH;
       tm.initScale(hr, vr);
-      for (int i = 0; i < oPath.length; i++)
+      for (size_t i = 0; i < oPath.length; i++)
       {
          tm.transformPoint(oPath[i].x, oPath[i].y);
       }
@@ -596,7 +596,7 @@ class Polygon : LineSet
             Coord m = Coord(e.button.x, e.button.y);
             double minsep = double.max;
             int best = 0;
-            int last = oPath.length-1;
+            size_t last = oPath.length-1;
             foreach (int i, Coord c; oPath)
             {
                if (open && i >= last)
@@ -734,7 +734,7 @@ class Polygon : LineSet
          c.setLineWidth(1);
          c.setSourceRgb(0,0,0);
          c.moveTo(oPath[0].x, oPath[0].y);
-         for (int i = 1; i < oPath.length; i++)
+         for (size_t i = 1; i < oPath.length; i++)
             c.lineTo(oPath[i].x, oPath[i].y);
          c.stroke();
          return;
@@ -823,9 +823,9 @@ class Polygon : LineSet
 
    void figureNextPrev()
    {
-      int l = oPath.length;
+      size_t l = oPath.length;
       if (current == 0)
-         prev = open? -1: l-1;
+         prev = open? -1: cast(int)(l-1);
       else
          prev = current-1;
       if (current == l-1)
@@ -844,7 +844,7 @@ class Polygon : LineSet
       if (zoomed) lw /= esf;
       c.setLineWidth(lw);
       c.moveTo(oPath[0].x, oPath[0].y);
-      for (int i = 1; i < oPath.length; i++)
+      for (size_t i = 1; i < oPath.length; i++)
          c.lineTo(oPath[i].x, oPath[i].y);
       if (!open && oPath.length > 2)
          c.closePath();

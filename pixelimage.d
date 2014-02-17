@@ -306,7 +306,7 @@ class PixelImage : ACBase
          return;
       }
       string s;
-      int p = fileName.lastIndexOf('/');
+      size_t p = fileName.lastIndexOf('/');
       if (p >= 0)
          s = fileName[p+1..$];
       else
