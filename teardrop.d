@@ -5,7 +5,7 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 // Written in the D programming language
-module heart;
+module teardrop;
 
 import mainwin;
 import constants;
@@ -29,11 +29,14 @@ import cairo.Context;
 import cairo.Matrix;
 import cairo.Surface;
 
-class Heart: LineSet
+class Teardrop: LineSet
 {
    static int nextOid = 0;
-   static Coord[7] crd = [ Coord(0, 0.666), Coord(-1.2, -0.1), Coord(-0.5, -1.1), Coord(0, -0.333),
-                           Coord(0.5, -1.1), Coord(1.2, -0.1), Coord(0, 0.666) ];
+   static immutable double m = 0.55191502449/2;
+   static immutable Coord[13] crd = [ Coord(0.5, 0.4), Coord(0.5, 0.4+m), Coord(m, 0.9), Coord(0, 0.9),
+                           Coord(-m, 0.9), Coord(-0.5, 0.4+m), Coord(-0.5, 0.4),
+                           Coord(-0.5, 0.1), Coord(-0.05, -0.2), Coord(0, -0.8),
+                           Coord(0.05, -0.2), Coord(0.5, 0.1), Coord(0.5, 0.4)];
    double unit;
 
    override void syncControls()
@@ -49,7 +52,7 @@ class Heart: LineSet
       cSet.setHostName(name);
    }
 
-   this(Heart other)
+   this(Teardrop other)
    {
       this(other.aw, other.parent);
       hOff = other.hOff;
@@ -67,8 +70,8 @@ class Heart: LineSet
 
    this(AppWindow w, ACBase parent)
    {
-      string s = "Heart "~to!string(++nextOid);
-      super(w, parent, s, AC_HEART);
+      string s = "Teardrop "~to!string(++nextOid);
+      super(w, parent, s, AC_TEARDROP);
       group = ACGroups.SHAPES;
       closed = true;
       hOff = vOff = 0;
@@ -76,7 +79,7 @@ class Heart: LineSet
       center = Coord(0.5*width, 0.5*height);
       lineWidth = 0.5;
       fill = false;
-      unit = width > height? height*0.6666: width*0.6666;
+      unit = width > height? height*0.5: width*0.5;
       constructBase();
       xform = 0;
       tm = new Matrix(&tmData);
@@ -171,6 +174,8 @@ class Heart: LineSet
       c.moveTo(oPath[0].x, oPath[0].y);
       c.curveTo(oPath[1].x, oPath[1].y, oPath[2].x, oPath[2].y, oPath[3].x, oPath[3].y);
       c.curveTo(oPath[4].x, oPath[4].y, oPath[5].x, oPath[5].y, oPath[6].x, oPath[6].y);
+      c.curveTo(oPath[7].x, oPath[7].y, oPath[8].x, oPath[8].y, oPath[9].x, oPath[9].y);
+      c.curveTo(oPath[10].x, oPath[10].y, oPath[11].x, oPath[11].y, oPath[12].x, oPath[12].y);
       c.closePath();
       strokeAndFill(c, lineWidth, outline, fill);
    }

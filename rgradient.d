@@ -149,12 +149,18 @@ class RGradient: ACBase
       cbb.appendText("Linear");
       cbb.appendText("Bezier");
       cbb.setActive(0);
-      cSet.add(cbb, ICoord(195, vp), Purpose.XFORMCB);
+      cSet.add(cbb, ICoord(195, vp), Purpose.PATTERN);
 
       vp += 30;
       cb = new CheckButton("Reverse fade");
       cSet.add(cb, ICoord(0, vp), Purpose.FADELEFT);
       cSet.cy = vp+30;
+   }
+
+   override void afterDeserialize()
+   {
+      cSet.setComboIndex(Purpose.PATTERN, gType);
+      setupStops();
    }
 
    override void preResize(int oldW, int oldH)
@@ -174,6 +180,10 @@ class RGradient: ACBase
          break;
       case Purpose.FADELEFT:
          revfade = !revfade;
+         dirty = true;
+         break;
+      case Purpose.PATTERN:
+         gType = (cast(ComboBoxText) w).getActive();
          dirty = true;
          break;
       default:
@@ -423,6 +433,11 @@ class RGradient: ACBase
 
    override void render(Context c)
    {
+      if (dirty)
+      {
+         setupStops();
+         dirty = false;
+      }
       createPattern();
       double r = baseColor.red();
       double g = baseColor.green();

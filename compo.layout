@@ -5,7 +5,7 @@
 		<Cursor position="961" topLine="0" />
 	</File>
 	<File name="acomp.d" open="0" top="0" tabpos="3">
-		<Cursor position="21349" topLine="949" />
+		<Cursor position="6957" topLine="307" />
 	</File>
 	<File name="arrow.d" open="0" top="0" tabpos="2">
 		<Cursor position="5985" topLine="194" />
@@ -71,16 +71,16 @@
 		<Cursor position="1814" topLine="40" />
 	</File>
 	<File name="mainwin.d" open="0" top="0" tabpos="0">
-		<Cursor position="1857" topLine="72" />
+		<Cursor position="25147" topLine="1043" />
 	</File>
 	<File name="menus.d" open="0" top="0" tabpos="0">
-		<Cursor position="1358" topLine="27" />
+		<Cursor position="3163" topLine="27" />
 	</File>
 	<File name="merger.d" open="0" top="0" tabpos="1">
 		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="mesh.d" open="0" top="0" tabpos="0">
-		<Cursor position="11861" topLine="415" />
+		<Cursor position="8372" topLine="298" />
 	</File>
 	<File name="morphdlgs.d" open="0" top="0" tabpos="2">
 		<Cursor position="0" topLine="0" />
@@ -144,6 +144,9 @@
 	</File>
 	<File name="tb2pm.d" open="0" top="0" tabpos="3">
 		<Cursor position="0" topLine="0" />
+	</File>
+	<File name="teardrop.d" open="1" top="1" tabpos="0">
+		<Cursor position="748" topLine="8" />
 	</File>
 	<File name="text.d" open="0" top="0" tabpos="3">
 		<Cursor position="0" topLine="0" />

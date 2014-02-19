@@ -52,6 +52,10 @@ import brushdabs;
 import noise;
 import mesh;
 import tilings;
+import teardrop;
+import yinyang;
+import shield;
+import partition;
 
 import std.stdio;
 import std.conv;
@@ -152,6 +156,13 @@ class Deserializer
       if (n)
          si.readExact(&a[0], n);
       return a;
+   }
+
+   UUID getUid(string s)
+   {
+      if (s == "")
+         s = "00000000-0000-0000-0000-000000000000";
+      return parseUUID(s);
    }
 
    private Coord s2Coord(string s, size_t ln)
@@ -599,6 +610,10 @@ class Deserializer
          child = new MorphText(aw, parent, true);
          setupMorphText(cast(MorphText) child);
          break;
+      case AC_PARTITION:
+         child = new Partition(aw, parent);
+         setupPartition(cast(Partition) child);
+         break;
       case AC_PATTERN:
          child = new Pattern(aw, parent);
          setupPattern(cast(Pattern) child);
@@ -652,13 +667,25 @@ class Deserializer
          child = new Separator(aw, parent);
          setupSeparator(cast(Separator) child);
          break;
+      case AC_SHIELD:
+         child = new Shield(aw, parent);
+         setupShield(cast(Shield) child);
+         break;
       case AC_TILINGS:
          child = new Tilings(aw, parent);
          setupTilings(cast(Tilings) child);
          break;
+      case AC_TEARDROP:
+         child = new Teardrop(aw, parent);
+         setupTeardrop(cast(Teardrop) child);
+         break;
       case AC_TRIANGLE:
          child = new Triangle(aw, parent);
          setupTriangle(cast(Triangle) child);
+         break;
+      case AC_YINYANG:
+         child = new YinYang(aw, parent);
+         setupYinYang(cast(YinYang) child);
          break;
       case AC_DRAWING:
          child = new Drawing(aw, parent);
@@ -835,6 +862,10 @@ class Deserializer
       x.fill = to!bool(val);
       getNV(__LINE__, "outline");
       x.outline = to!bool(val);
+      getNV(__LINE__, "fillFromPattern");
+      x.fillFromPattern = to!bool(val);
+      getNV(__LINE__, "fillUid");
+      x.fillUid = parseUUID(val);
       getNV(__LINE__, "text_length");
       int n = to!int(val);
       string text = cast(string) readBytes(n);
@@ -863,6 +894,10 @@ class Deserializer
       x.fill = to!bool(val);
       getNV(__LINE__, "outline");
       x.outline = to!bool(val);
+      getNV(__LINE__, "fillFromPattern");
+      x.fillFromPattern = to!bool(val);
+      getNV(__LINE__, "fillUid");
+      x.fillUid = parseUUID(val);
       getNV(__LINE__, "olt");
       x.olt = to!double(val);
       getNV(__LINE__, "tf");
@@ -896,6 +931,10 @@ class Deserializer
       x.fill = to!bool(val);
       getNV(__LINE__, "outline");
       x.outline = to!bool(val);
+      getNV(__LINE__, "fillFromPattern");
+      x.fillFromPattern = to!bool(val);
+      getNV(__LINE__, "fillUid");
+      x.fillUid = parseUUID(val);
       getNV(__LINE__, "center");
       x.center = s2Coord(val, __LINE__);
       getNV(__LINE__, "oPath");
@@ -963,6 +1002,10 @@ class Deserializer
       x.fill = to!bool(val);
       getNV(__LINE__, "outline");
       x.outline = to!bool(val);
+      getNV(__LINE__, "fillFromPattern");
+      x.fillFromPattern = to!bool(val);
+      getNV(__LINE__, "fillUid");
+      x.fillUid = parseUUID(val);
       x.afterDeserialize();
    }
 
@@ -1010,6 +1053,10 @@ class Deserializer
       x.fill = to!bool(val);
       getNV(__LINE__, "outline");
       x.outline = to!bool(val);
+      getNV(__LINE__, "fillFromPattern");
+      x.fillFromPattern = to!bool(val);
+      getNV(__LINE__, "fillUid");
+      x.fillUid = parseUUID(val);
       getNV(__LINE__, "center");
       x.center = s2Coord(val, __LINE__);
       getNV(__LINE__, "r0");
@@ -1041,6 +1088,10 @@ class Deserializer
       x.fill = to!bool(val);
       getNV(__LINE__, "outline");
       x.outline = to!bool(val);
+      getNV(__LINE__, "fillFromPattern");
+      x.fillFromPattern = to!bool(val);
+      getNV(__LINE__, "fillUid");
+      x.fillUid = parseUUID(val);
       getNV(__LINE__, "center");
       x.center = s2Coord(val, __LINE__);
       getNV(__LINE__, "oPath");
@@ -1064,9 +1115,9 @@ class Deserializer
 
       getNV(__LINE__, "baseColor");
       x.baseColor = makeColor(val);
-      getNV(__LINE__, "topLeft");
+      getNV(__LINE__, "rw");
       x.rw = to!double(val);
-      getNV(__LINE__, "bottomRight");
+      getNV(__LINE__, "rh");
       x.rh = to!double(val);
       getNV(__LINE__, "opacity");
       x.opacity = to!double(val);
@@ -1087,8 +1138,6 @@ class Deserializer
       x.altColor = makeColor(val);
       getNV(__LINE__, "unit");
       x.unit = to!double(val);
-      getNV(__LINE__, "tf");
-      x.tf = makeTransform(val);
       getNV(__LINE__, "lineWidth");
       x.lineWidth = to!double(val);
       getNV(__LINE__, "xform");
@@ -1097,6 +1146,12 @@ class Deserializer
       x.fill = to!bool(val);
       getNV(__LINE__, "outline");
       x.outline = to!bool(val);
+      getNV(__LINE__, "fillFromPattern");
+      x.fillFromPattern = to!bool(val);
+      getNV(__LINE__, "fillUid");
+      x.fillUid = parseUUID(val);
+      getNV(__LINE__, "tf");
+      x.tf = makeTransform(val);
       x.afterDeserialize();
    }
 
@@ -1126,6 +1181,8 @@ class Deserializer
       x.fw = to!double(val);
       getNV(__LINE__, "fp");
       x.fp = to!double(val);
+      getNV(__LINE__, "angle");
+      x.angle = to!double(val);
       getNV(__LINE__, "maxOpacity");
       x.maxOpacity = to!double(val);
       getNV(__LINE__, "gType");
@@ -1135,7 +1192,7 @@ class Deserializer
       getNV(__LINE__, "revfade");
       x.revfade = to!bool(val);
       getNV(__LINE__, "orient");
-      x.orient = to!bool(val);
+      x.orient = to!int(val);
       x.afterDeserialize();
    }
 
@@ -1143,8 +1200,16 @@ class Deserializer
    {
       basics(x);
 
+      getNV(__LINE__, "pca");
+      x.pca[] = s2PartColorArray(val,__LINE__)[];
+      getNV(__LINE__, "diagonal");
+      x.diagonal = to!double(val);
       getNV(__LINE__, "pattern");
       x.pattern = to!int(val);
+      getNV(__LINE__, "instanceSeed");
+      x.instanceSeed = to!uint(val);
+      getNV(__LINE__, "tf");
+      x.tf = makeTransform(val);
       x.afterDeserialize();
    }
 
@@ -1166,6 +1231,10 @@ class Deserializer
       x.fill = to!bool(val);
       getNV(__LINE__, "outline");
       x.outline = to!bool(val);
+      getNV(__LINE__, "fillFromPattern");
+      x.fillFromPattern = to!bool(val);
+      getNV(__LINE__, "fillUid");
+      x.fillUid = parseUUID(val);
       getNV(__LINE__, "day");
       x.day = to!int(val);
       x.afterDeserialize();
@@ -1188,12 +1257,35 @@ class Deserializer
       x.afterDeserialize();
    }
 
+   void setupPartition(Partition x)
+   {
+      basics(x);
+
+      getNV(__LINE__, "baseColor");
+      x.baseColor = makeColor(val);
+      getNV(__LINE__, "lineWidth");
+      x.lineWidth = to!double(val);
+      getNV(__LINE__, "x");
+      x.x = to!double(val);
+      getNV(__LINE__, "y");
+      x.y = to!double(val);
+      getNV(__LINE__, "choice");
+      x.choice = to!int(val);
+      getNV(__LINE__, "outline");
+      x.outline = to!bool(val);
+      getNV(__LINE__, "vertical");
+      x.vertical = to!bool(val);
+      x.afterDeserialize();
+   }
+
    void setupPattern(Pattern x)
    {
       basics(x);
 
       getNV(__LINE__, "baseColor");
       x.baseColor = makeColor(val);
+      getNV(__LINE__, "lineWidth");
+      x.lineWidth = to!double(val);
       getNV(__LINE__, "rows");
       x.rows = to!int(val);
       getNV(__LINE__, "cols");
@@ -1202,6 +1294,8 @@ class Deserializer
       x.unit = to!double(val);
       getNV(__LINE__, "choice");
       x.choice = to!int(val);
+      getNV(__LINE__, "tf");
+      x.tf = makeTransform(val);
       x.afterDeserialize();
    }
 
@@ -1281,6 +1375,10 @@ class Deserializer
       x.fill = to!bool(val);
       getNV(__LINE__, "outline");
       x.outline = to!bool(val);
+      getNV(__LINE__, "fillFromPattern");
+      x.fillFromPattern = to!bool(val);
+      getNV(__LINE__, "fillUid");
+      x.fillUid = parseUUID(val);
       getNV(__LINE__, "center");
       x.center = s2Coord(val, __LINE__);
       getNV(__LINE__, "activeCoords");
@@ -1364,6 +1462,10 @@ class Deserializer
       x.fill = to!bool(val);
       getNV(__LINE__, "outline");
       x.outline = to!bool(val);
+      getNV(__LINE__, "fillFromPattern");
+      x.fillFromPattern = to!bool(val);
+      getNV(__LINE__, "fillUid");
+      x.fillUid = parseUUID(val);
       getNV(__LINE__, "center");
       x.center = s2Coord(val, __LINE__);
       getNV(__LINE__, "oPath");
@@ -1389,9 +1491,9 @@ class Deserializer
       getNV(__LINE__, "element");
       x.element = to!int(val);
       getNV(__LINE__, "lower");
-      x.lower = to!int(val);
+      x.lower = to!double(val);
       getNV(__LINE__, "upper");
-      x.upper = to!int(val);
+      x.upper = to!double(val);
       getNV(__LINE__, "printRandom");
       x.printRandom = to!bool(val);
       x.si.length = x.count;
@@ -1431,6 +1533,10 @@ class Deserializer
       x.fill = to!bool(val);
       getNV(__LINE__, "outline");
       x.outline = to!bool(val);
+      getNV(__LINE__, "fillFromPattern");
+      x.fillFromPattern = to!bool(val);
+      getNV(__LINE__, "fillUid");
+      x.fillUid = parseUUID(val);
       getNV(__LINE__, "ar");
       x.ar = to!double(val);
       getNV(__LINE__, "rr");
@@ -1458,6 +1564,10 @@ class Deserializer
       x.fill = to!bool(val);
       getNV(__LINE__, "outline");
       x.outline = to!bool(val);
+      getNV(__LINE__, "fillFromPattern");
+      x.fillFromPattern = to!bool(val);
+      getNV(__LINE__, "fillUid");
+      x.fillUid = parseUUID(val);
       getNV(__LINE__, "isStar");
       x.isStar = to!bool(val);
       getNV(__LINE__, "radius");
@@ -1491,6 +1601,10 @@ class Deserializer
       x.fill = to!bool(val);
       getNV(__LINE__, "outline");
       x.outline = to!bool(val);
+      getNV(__LINE__, "fillFromPattern");
+      x.fillFromPattern = to!bool(val);
+      getNV(__LINE__, "fillUid");
+      x.fillUid = parseUUID(val);
       getNV(__LINE__, "target");
       x.target = to!double(val);
       /*
@@ -1560,6 +1674,35 @@ class Deserializer
       x.afterDeserialize();
    }
 
+   void setupShield(Shield x)
+   {
+      basics(x);
+
+      getNV(__LINE__, "baseColor");
+      x.baseColor = makeColor(val);
+      getNV(__LINE__, "altColor");
+      x.altColor = makeColor(val);
+      getNV(__LINE__, "unit");
+      x.unit = to!double(val);
+      getNV(__LINE__, "style");
+      x.style = to!int(val);
+      getNV(__LINE__, "lineWidth");
+      x.lineWidth = to!double(val);
+      getNV(__LINE__, "xform");
+      x.xform = to!int(val);
+      getNV(__LINE__, "fill");
+      x.fill = to!bool(val);
+      getNV(__LINE__, "outline");
+      x.outline = to!bool(val);
+      getNV(__LINE__, "fillFromPattern");
+      x.fillFromPattern = to!bool(val);
+      getNV(__LINE__, "fillUid");
+      x.fillUid = parseUUID(val);
+      getNV(__LINE__, "tf");
+      x.tf = makeTransform(val);
+      x.afterDeserialize();
+   }
+
    void setupTilings(Tilings x)
    {
       basics(x);
@@ -1585,6 +1728,33 @@ class Deserializer
       x.afterDeserialize();
    }
 
+   void setupTeardrop(Teardrop x)
+   {
+      basics(x);
+
+      getNV(__LINE__, "baseColor");
+      x.baseColor = makeColor(val);
+      getNV(__LINE__, "altColor");
+      x.altColor = makeColor(val);
+      getNV(__LINE__, "unit");
+      x.unit = to!double(val);
+      getNV(__LINE__, "lineWidth");
+      x.lineWidth = to!double(val);
+      getNV(__LINE__, "xform");
+      x.xform = to!int(val);
+      getNV(__LINE__, "fill");
+      x.fill = to!bool(val);
+      getNV(__LINE__, "outline");
+      x.outline = to!bool(val);
+      getNV(__LINE__, "fillFromPattern");
+      x.fillFromPattern = to!bool(val);
+      getNV(__LINE__, "fillUid");
+      x.fillUid = parseUUID(val);
+      getNV(__LINE__, "tf");
+      x.tf = makeTransform(val);
+      x.afterDeserialize();
+   }
+
    void setupTriangle(Triangle x)
    {
       basics(x);
@@ -1601,6 +1771,10 @@ class Deserializer
       x.fill = to!bool(val);
       getNV(__LINE__, "outline");
       x.outline = to!bool(val);
+      getNV(__LINE__, "fillFromPattern");
+      x.fillFromPattern = to!bool(val);
+      getNV(__LINE__, "fillUid");
+      x.fillUid = parseUUID(val);
       getNV(__LINE__, "center");
       x.center = s2Coord(val, __LINE__);
       getNV(__LINE__, "oPath");
@@ -1615,6 +1789,29 @@ class Deserializer
       x.ttype = to!int(val);
       getNV(__LINE__, "poo");
       x.fill = to!bool(val);
+      x.afterDeserialize();
+   }
+
+   void setupYinYang(YinYang x)
+   {
+      basics(x);
+
+      getNV(__LINE__, "baseColor");
+      x.baseColor = makeColor(val);
+      getNV(__LINE__, "altColor");
+      x.altColor = makeColor(val);
+      getNV(__LINE__, "unit");
+      x.unit = to!double(val);
+      getNV(__LINE__, "lineWidth");
+      x.lineWidth = to!double(val);
+      getNV(__LINE__, "xform");
+      x.xform = to!int(val);
+      getNV(__LINE__, "fill");
+      x.fill = to!bool(val);
+      getNV(__LINE__, "outline");
+      x.outline = to!bool(val);
+      getNV(__LINE__, "tf");
+      x.tf = makeTransform(val);
       x.afterDeserialize();
    }
 

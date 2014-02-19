@@ -45,7 +45,6 @@ class Partition: ACBase
       HILLNDALE
    }
 
-   double bt;
    double lineWidth;
    double x, y;
    int choice;
@@ -64,7 +63,6 @@ class Partition: ACBase
       hOff = other.hOff;
       vOff = other.vOff;
       baseColor = other.baseColor.copy();
-      bt = other.bt;
       lineWidth = other.lineWidth;
       syncControls();
    }
@@ -75,7 +73,6 @@ class Partition: ACBase
       super(w, parent, s, AC_PARTITION);
       group = ACGroups.EFFECTS;
       hOff = vOff = 0;
-      bt = 10.0;
       lineWidth = 0.5;
       x = 0.25*width;
       y = 0.75*height;

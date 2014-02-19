@@ -70,7 +70,7 @@ string[] itemsSa = [ "Text", "Effects", "Geometric", "Image", "Reference", "Shap
 string[] txtSa = [ "Plain Text", "USPS Address", "Serial Number", "Rich Text", "Fancy Text", "Morphed Text" ];
 string[] effectsSa = [ "Bevel","Brush Dabs", "Color Tilings", "Corners", "Fader", "LGradient", "Line Patterns", "Mesh Patterns", "Noise", "Partition", "Random Patterns", "RGradient", "Separator" ];
 string[] geoSa = [ "Curve", "Line", "PointSet", "Polygon", "Polycurve", "Regular Polygon", "Regular Polycurve", "StrokeSet"];
-string[] shapesSa = [ "Arrow", "Circle", "Crescent", "Cross", "Heart", "Moon", "Rectangle", "Star", "Triangle" ];
+string[] shapesSa = [ "Arrow", "Circle", "Crescent", "Cross", "Heart", "Moon", "Rectangle", "Shield", "Star", "Teardrop", "Triangle", "YinYang" ];
 string[] imgSa = ["PixelImage", "SVGImage"];
 string[] drawingsSa = ["Cat", "Puppy", "Dove", "Fish", "Whale", "Tree"];
 

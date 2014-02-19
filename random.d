@@ -135,7 +135,7 @@ class Random: LineSet
       Button b = new Button("Regenerate");
       cSet.add(b, ICoord(215, vp+3), Purpose.MORE);
 
-      vp += 25;
+      vp += 30;
       CheckButton check = new CheckButton("Print random");
       cSet.add(check, ICoord(213, vp), Purpose.PRINTRANDOM);
 

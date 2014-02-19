@@ -241,6 +241,7 @@
 		<Unit filename="tb2pm.d">
 			<Option target="Debug" />
 		</Unit>
+		<Unit filename="teardrop.d" />
 		<Unit filename="text.d">
 			<Option target="Debug" />
 		</Unit>

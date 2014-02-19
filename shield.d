@@ -5,7 +5,7 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 // Written in the D programming language
-module heart;
+module shield;
 
 import mainwin;
 import constants;
@@ -29,12 +29,22 @@ import cairo.Context;
 import cairo.Matrix;
 import cairo.Surface;
 
-class Heart: LineSet
+class Shield: LineSet
 {
+   enum {PLAIN, POINTED, FANCY }
    static int nextOid = 0;
-   static Coord[7] crd = [ Coord(0, 0.666), Coord(-1.2, -0.1), Coord(-0.5, -1.1), Coord(0, -0.333),
-                           Coord(0.5, -1.1), Coord(1.2, -0.1), Coord(0, 0.666) ];
+   static Coord[10] plain = [ Coord(-1, -1.25), Coord(-0.5, -1.1), Coord(0.5, -1.1), Coord(1, -1.25),
+                             Coord(1, 0), Coord(1.2, 1.25), Coord(0, 1.25),
+                             Coord(-1.2, 1.25), Coord(-1, 0), Coord(-1, -1.25) ];
+   static Coord[10] pointed = [ Coord(-1, -1.25), Coord(-0.5, -1.1), Coord(0.5, -1.1), Coord(1, -1.25),
+                             Coord(1, 0), Coord(1.1, 1.0), Coord(0, 1.25),
+                             Coord(-1.1, 1.0), Coord(-1, 0), Coord(-1, -1.25) ];
+   static Coord[13] fancy = [ Coord(-1, -1.25), Coord(-0.75, -1.1), Coord(-0.25, -1.1), Coord(0, -1.3),
+                             Coord(0.25, -1.1), Coord(0.75, -1.1), Coord(1, -1.25),
+                             Coord(1, 0), Coord(1.1, 1.0), Coord(0, 1.25),
+                             Coord(-1.1, 1.0), Coord(-1, 0), Coord(-1, -1.25) ];
    double unit;
+   int style;
 
    override void syncControls()
    {
@@ -49,7 +59,7 @@ class Heart: LineSet
       cSet.setHostName(name);
    }
 
-   this(Heart other)
+   this(Shield other)
    {
       this(other.aw, other.parent);
       hOff = other.hOff;
@@ -62,13 +72,14 @@ class Heart: LineSet
       tf = other.tf;
       fill = other.fill;
       outline = other.outline;
+      style = other.style;
       syncControls();
    }
 
    this(AppWindow w, ACBase parent)
    {
-      string s = "Heart "~to!string(++nextOid);
-      super(w, parent, s, AC_HEART);
+      string s = "Shield "~to!string(++nextOid);
+      super(w, parent, s, AC_SHIELD);
       group = ACGroups.SHAPES;
       closed = true;
       hOff = vOff = 0;
@@ -76,10 +87,11 @@ class Heart: LineSet
       center = Coord(0.5*width, 0.5*height);
       lineWidth = 0.5;
       fill = false;
-      unit = width > height? height*0.6666: width*0.6666;
+      unit = width > height? height*0.3: width*0.3;
       constructBase();
       xform = 0;
       tm = new Matrix(&tmData);
+      style = PLAIN;
 
       setupControls();
       outline = true;
@@ -96,8 +108,16 @@ class Heart: LineSet
       new InchTool(cSet, 0, ICoord(0, vp), true);
 
       ComboBoxText cbb = new ComboBoxText(false);
+      cbb.setSizeRequest(104, -1);
+      cbb.appendText("Plain");
+      cbb.appendText("Pointed");
+      cbb.appendText("Scalloped");
+      cbb.setActive(0);
+      cSet.add(cbb, ICoord(190, vp), Purpose.PATTERN);
+
+      cbb = new ComboBoxText(false);
       cbb.setTooltipText("Select transformation to apply");
-      cbb.setSizeRequest(100, -1);
+      cbb.setSizeRequest(104, -1);
       cbb.appendText("Scale");
       cbb.appendText("Stretch-H");
       cbb.appendText("Stretch-V");
@@ -107,10 +127,15 @@ class Heart: LineSet
       cbb.appendText("Flip-H");
       cbb.appendText("Flip-V");
       cbb.setActive(0);
-      cSet.add(cbb, ICoord(190, vp), Purpose.XFORMCB);
-      new MoreLess(cSet, 1, ICoord(295, vp), true);
+      cSet.add(cbb, ICoord(190, vp+30), Purpose.XFORMCB);
+      new MoreLess(cSet, 1, ICoord(295, vp+35), true);
 
-      cSet.cy = vp+40;
+      cSet.cy = vp+70;
+   }
+
+   override void afterDeserialize()
+   {
+      constructBase();
    }
 
    override void preResize(int oldW, int oldH)
@@ -122,9 +147,29 @@ class Heart: LineSet
       vOff *= vr;
    }
 
+   override bool specificNotify(Widget w, Purpose wid)
+   {
+      focusLayout();
+      switch (wid)
+      {
+      case Purpose.PATTERN:
+         style = (cast(ComboBoxText) w).getActive();
+         constructBase();
+         break;
+      default:
+         return false;
+      }
+      return true;
+   }
+
    void constructBase()
    {
-      oPath = crd.dup;
+      if (style == 0)
+         oPath = plain.dup;
+      else if (style == POINTED)
+         oPath = pointed.dup;
+      else
+         oPath = fancy.dup;
       for (size_t i = 0; i < oPath.length; i++)
       {
          oPath[i].x *= unit;
@@ -167,10 +212,21 @@ class Heart: LineSet
       if (compoundTransform())
          c.transform(tm);
       c.translate(-center.x, -center.y);
-
-      c.moveTo(oPath[0].x, oPath[0].y);
-      c.curveTo(oPath[1].x, oPath[1].y, oPath[2].x, oPath[2].y, oPath[3].x, oPath[3].y);
-      c.curveTo(oPath[4].x, oPath[4].y, oPath[5].x, oPath[5].y, oPath[6].x, oPath[6].y);
+      if (style == FANCY)
+      {
+         c.moveTo(oPath[0].x, oPath[0].y);
+         c.curveTo(oPath[1].x, oPath[1].y, oPath[2].x, oPath[2].y, oPath[3].x, oPath[3].y);
+         c.curveTo(oPath[4].x, oPath[4].y, oPath[5].x, oPath[5].y, oPath[6].x, oPath[6].y);
+         c.curveTo(oPath[7].x, oPath[7].y, oPath[8].x, oPath[8].y, oPath[9].x, oPath[9].y);
+         c.curveTo(oPath[10].x, oPath[10].y, oPath[11].x, oPath[11].y, oPath[12].x, oPath[12].y);
+      }
+      else
+      {
+         c.moveTo(oPath[0].x, oPath[0].y);
+         c.curveTo(oPath[1].x, oPath[1].y, oPath[2].x, oPath[2].y, oPath[3].x, oPath[3].y);
+         c.curveTo(oPath[4].x, oPath[4].y, oPath[5].x, oPath[5].y, oPath[6].x, oPath[6].y);
+         c.curveTo(oPath[7].x, oPath[7].y, oPath[8].x, oPath[8].y, oPath[9].x, oPath[9].y);
+      }
       c.closePath();
       strokeAndFill(c, lineWidth, outline, fill);
    }

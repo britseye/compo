@@ -36,8 +36,8 @@ class LGradient: ACBase
    Coord start, end, cp1, cp2;
    int nStops;
    double maxOpacity;
-   bool revfade, orient, showGuides;
-   int gType;
+   bool revfade, showGuides;
+   int gType, orient;
    Pattern pat;
    Label ov;
 
@@ -141,6 +141,13 @@ class LGradient: ACBase
       cSet.add(cb, ICoord(120, vp), Purpose.SHOWMARKERS);
 
       cSet.cy = vp+50;
+   }
+
+   override void afterDeserialize()
+   {
+      cSet.setComboIndex(Purpose.PATTERN, gType);
+      setOrientation(orient);
+      setupStops();
    }
 
    override void preResize(int oldW, int oldH)
@@ -249,6 +256,7 @@ class LGradient: ACBase
    {
       if (p == Purpose.TORIENT)
       {
+         orient = iv;
          setOrientation(iv);
          dirty = true;
          aw.dirty = true;
@@ -569,14 +577,12 @@ class LGradient: ACBase
    {
       if (dirty)
       {
+         setOrientation(orient);
          setupStops();
          dirty = false;
       }
       createPattern();
       addStops(baseColor.red, baseColor.green, baseColor.blue);
-      // for testing
-      //c.setSourceRgb(0,0,0);
-      //c.paint();
 
       c.setSource(pat);
       c.moveTo(lpX, lpY);

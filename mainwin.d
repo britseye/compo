@@ -63,6 +63,9 @@ import triangle;
 import brushdabs;
 import noise;
 import tilings;
+import teardrop;
+import yinyang;
+import shield;
 
 import std.stdio;
 import std.conv;
@@ -314,6 +317,9 @@ class AppWindow : MainWindow
       case "Separator":
          nt = AC_SEPARATOR;
          break;
+      case "Shield":
+         nt = AC_SHIELD;
+         break;
       case "SVGImage":
          nt = AC_SVGIMAGE;
          break;
@@ -329,8 +335,14 @@ class AppWindow : MainWindow
       case "Mesh Patterns":
          nt = AC_MESH;
          break;
+      case "Teardrop":
+         nt = AC_TEARDROP;
+         break;
       case "Triangle":
          nt = AC_TRIANGLE;
+         break;
+      case "YinYang":
+         nt = AC_YINYANG;
          break;
       default:
          break;
@@ -818,8 +830,17 @@ class AppWindow : MainWindow
       case AC_TILINGS:
          ni = new Tilings(this, p);
          break;
+      case AC_TEARDROP:
+         ni = new Teardrop(this, p);
+         break;
       case AC_TRIANGLE:
          ni = new Triangle(this, p);
+         break;
+      case AC_YINYANG:
+         ni = new YinYang(this, p);
+         break;
+      case AC_SHIELD:
+         ni = new Shield(this, p);
          break;
       default:
          return null;
@@ -910,8 +931,14 @@ class AppWindow : MainWindow
          return new Mesh(cast(Mesh) x);
       case AC_TILINGS:
          return new Tilings(cast(Tilings) x);
+      case AC_TEARDROP:
+         return new Teardrop(cast(Teardrop) x);
       case AC_TRIANGLE:
          return new Triangle(cast(Triangle) x);
+      case AC_YINYANG:
+         return new YinYang(cast(YinYang) x);
+      case AC_SHIELD:
+         return new Shield(cast(Shield) x);
       default:
          break;
       }

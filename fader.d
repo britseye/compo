@@ -97,7 +97,7 @@ class Fader: ACBase
       cSet.add(l, ICoord(195, vp), Purpose.LABEL);
       new MoreLess(cSet, 0, ICoord(260, vp), true);
       ov = new Label(to!string(opacity));
-      cSet.add(ov, ICoord(300, vp), Purpose.LABEL);
+      cSet.add(ov, ICoord(300, vp), Purpose.OPACITY);
 
       vp += 30;
       CheckButton cb = new CheckButton("Show Outline");
@@ -124,6 +124,14 @@ class Fader: ACBase
       new InchTool(cSet, 0, ICoord(0, vp+5), true);
 
       cSet.cy = vp+40;
+   }
+
+   override void afterDeserialize()
+   {
+      string t = to!string(opacity);
+      if (t.length > 4)
+      t = t[0..4];
+      ov.setText(t);
    }
 
    override void preResize(int oldW, int oldH)

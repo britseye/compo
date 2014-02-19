@@ -1,5 +1,5 @@
 
-//          Copyright Steve Teale 2011.
+//          Copyright Steve Teale 2011-2014.
 // Distributed under the Boost Software License, Version 1.0.
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
@@ -26,7 +26,6 @@ import gtk.SpinButton;
 import gdk.RGBA;
 import cairo.Context;
 
-// A do-nothing graphical object to serve as template for real graphical objects
 class Separator : LineSet
 {
    static int nextOid = 0;
@@ -129,18 +128,20 @@ class Separator : LineSet
    override void onCSMoreLess(int instance, bool more, bool far)
    {
       focusLayout();
-      int n = more? 1: -1;
+      double d = more? 2: -2;
       if (far)
-         n *= 10;
+         d *= 5;
       if (horizontal)
       {
          lastOp = pushC!Coord(this, hEnd, OP_HSIZE);
-         hEnd.x += n;
+         hStart.x -= d/2;
+         hEnd.x += d/2;
       }
       else
       {
          lastOp = pushC!Coord(this, vEnd, OP_VSIZE);
-         vEnd.y += n;
+         vStart.y -= d/2;
+         vEnd.y += d/2;
       }
       aw.dirty = true;
       reDraw();

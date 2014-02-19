@@ -58,6 +58,10 @@ import brushdabs;
 import noise;
 import mesh;
 import tilings;
+import teardrop;
+import yinyang;
+import shield;
+import partition;
 
 import gtk.FileChooserDialog;
 import gtk.FileFilter;
@@ -280,6 +284,8 @@ class Serializer
          return serializeNoise(acb);
       case AC_MORPHTEXT:
          return serializeMorphText(acb);
+      case AC_PARTITION:
+         return serializePartition(acb);
       case AC_PATTERN:
          return serializePattern(acb);
       case AC_PIXBUF:
@@ -304,12 +310,18 @@ class Serializer
          return serializeRegularPolycurve(acb);
       case AC_SEPARATOR:
          return serializeSeparator(acb);
+      case AC_SHIELD:
+         return serializeShield(acb);
       case AC_STROKESET:
          return serializeStrokeSet(acb);
       case AC_TILINGS:
          return serializeTilings(acb);
+      case AC_TEARDROP:
+         return serializeTeardrop(acb);
       case AC_TRIANGLE:
          return serializeTriangle(acb);
+      case AC_YINYANG:
+         return serializeYinYang(acb);
       case AC_REFERENCE:
          return serializeReference(acb);
       case AC_DRAWING:
@@ -431,6 +443,8 @@ class Serializer
       s ~= "olt=" ~ to!string(o.olt) ~ "\n";
       s ~= "fill=" ~ to!string(o.fill) ~ "\n";
       s ~= "outline=" ~ to!string(o.outline) ~"\n";
+      s ~= "fillFromPattern=" ~ to!string(o.fillFromPattern) ~ "\n";
+      s ~= "fillUid=" ~ o.fillUid.toString() ~ "\n";
       string t = o.tb.getText();
       s ~= "text_length=" ~ to!string(t.length) ~ "\n";
       s ~= t;
@@ -448,6 +462,8 @@ class Serializer
       s ~= "baseColor=" ~ o.colorString(false) ~ "\n";
       s ~= "altColor=" ~ o.colorString(true) ~ "\n";
       s ~= "fill=" ~ to!string(o.fill) ~ "\n";
+      s ~= "fillFromPattern=" ~ to!string(o.fillFromPattern) ~ "\n";
+      s ~= "fillUid=" ~ o.fillUid.toString() ~ "\n";
       s ~= "outline=" ~ to!string(o.outline) ~"\n";
       s ~= "olt=" ~ to!string(o.olt) ~ "\n";
       s ~= "tf=" ~ transform2S(o.tf) ~ "\n";
@@ -471,6 +487,8 @@ class Serializer
       s ~= "hw=" ~ to!string(o.hw) ~ "\n";
       s ~= "fill=" ~ to!string(o.fill) ~ "\n";
       s ~= "outline=" ~ to!string(o.outline) ~"\n";
+      s ~= "fillFromPattern=" ~ to!string(o.fillFromPattern) ~ "\n";
+      s ~= "fillUid=" ~ o.fillUid.toString() ~ "\n";
       s ~= "center=" ~ coord2S(o.center) ~ "\n";
       s ~= "oPath=" ~ path2S(o.oPath) ~ "\n";
       s ~= "tf=" ~ transform2S(o.tf) ~ "\n";
@@ -518,6 +536,8 @@ class Serializer
       s ~= "tf=" ~ transform2S(o.tf) ~ "\n";
       s ~= "fill=" ~ to!string(o.fill) ~ "\n";
       s ~= "outline=" ~ to!string(o.outline) ~"\n";
+      s ~= "fillFromPattern=" ~ to!string(o.fillFromPattern) ~ "\n";
+      s ~= "fillUid=" ~ o.fillUid.toString() ~ "\n";
       s ~= "\n";
       os.writeString(s);
    }
@@ -551,6 +571,8 @@ class Serializer
       s ~= "les=" ~ to!string(o.les) ~ "\n";
       s ~= "fill=" ~ to!string(o.fill) ~ "\n";
       s ~= "outline=" ~ to!string(o.outline) ~"\n";
+      s ~= "fillFromPattern=" ~ to!string(o.fillFromPattern) ~ "\n";
+      s ~= "fillUid=" ~ o.fillUid.toString() ~ "\n";
       s ~= "center=" ~ coord2S(o.center) ~ "\n";
       s ~= "r0=" ~ to!string(o.r0) ~ "\n";
       s ~= "r1=" ~ to!string(o.r1) ~ "\n";
@@ -571,6 +593,8 @@ class Serializer
       s ~= "les=" ~ to!string(o.les) ~ "\n";
       s ~= "fill=" ~ to!string(o.fill) ~ "\n";
       s ~= "outline=" ~ to!string(o.outline) ~"\n";
+      s ~= "fillFromPattern=" ~ to!string(o.fillFromPattern) ~ "\n";
+      s ~= "fillUid=" ~ o.fillUid.toString() ~ "\n";
       s ~= "center=" ~ coord2S(o.center) ~ "\n";
       s ~= "oPath=" ~ path2S(o.oPath) ~ "\n";
       s ~= "tf=" ~ transform2S(o.tf) ~ "\n";
@@ -603,11 +627,12 @@ class Serializer
       s ~= "baseColor=" ~ o.colorString(false) ~ "\n";
       s ~= "altColor=" ~ o.colorString(true) ~ "\n";
       s ~= "unit=" ~ to!string(o.unit) ~ "\n";
-      s ~= "tf=" ~ transform2S(o.tf) ~ "\n";
       s ~= "lineWidth=" ~ to!string(o.lineWidth) ~ "\n";
       s ~= "xform=" ~ to!string(o.xform) ~ "\n";
       s ~= "fill=" ~ to!string(o.fill) ~ "\n";
       s ~= "outline=" ~ to!string(o.outline) ~ "\n";
+      s ~= "fillFromPattern=" ~ to!string(o.fillFromPattern) ~ "\n";
+      s ~= "fillUid=" ~ o.fillUid.toString() ~ "\n";
       s ~= "tf=" ~ transform2S(o.tf) ~ "\n";
       s ~= "\n";
       os.writeString(s);
@@ -631,8 +656,9 @@ class Serializer
       LGradient o = cast(LGradient) acb;
       string s = basics(acb);
       s ~= "baseColor=" ~ o.colorString(false) ~ "\n";
-      s ~= "rw=" ~ to!string(o.fw) ~ "\n";
-      s ~= "rh=" ~ to!string(o.fp) ~ "\n";
+      s ~= "fw=" ~ to!string(o.fw) ~ "\n";
+      s ~= "fp=" ~ to!string(o.fp) ~ "\n";
+      s ~= "angle=" ~ to!string(o.angle) ~ "\n";
       s ~= "maxOpacity=" ~ to!string(o.maxOpacity) ~ "\n";
       s ~= "gType=" ~ to!string(o.gType) ~ "\n";
       s ~= "nStops=" ~ to!string(o.nStops) ~ "\n";
@@ -646,7 +672,11 @@ class Serializer
    {
       Mesh o = cast(Mesh) acb;
       string s = basics(acb);
+      s ~= "pca=" ~ partColorArray2S(o.pca) ~ "\n";
+      s ~= "diagonal=" ~ to!string(o.diagonal) ~ "\n";
       s ~= "pattern=" ~ to!string(o.pattern) ~ "\n";
+      s ~= "instanceSeed=" ~ to!string(o.instanceSeed) ~ "\n";
+      s ~= "tf=" ~ transform2S(o.tf) ~ "\n";
       s ~= "\n";
       os.writeString(s);
    }
@@ -662,6 +692,8 @@ class Serializer
       s ~= "tf=" ~ transform2S(o.tf) ~ "\n";
       s ~= "fill=" ~ to!string(o.fill) ~ "\n";
       s ~= "outline=" ~ to!string(o.outline) ~"\n";
+      s ~= "fillFromPattern=" ~ to!string(o.fillFromPattern) ~ "\n";
+      s ~= "fillUid=" ~ o.fillUid.toString() ~ "\n";
       s ~= "day=" ~ to!string(o.day) ~"\n";
       s ~= "\n";
       os.writeString(s);
@@ -680,15 +712,32 @@ class Serializer
       os.writeString(s);
    }
 
+   void serializePartition(ACBase acb)
+   {
+      Partition o = cast(Partition) acb;
+      string s = basics(acb);
+      s ~= "baseColor=" ~ o.colorString(false) ~ "\n";
+      s ~= "lineWidth=" ~ to!string(o.lineWidth) ~ "\n";
+      s ~= "x=" ~ to!string(o.x) ~ "\n";
+      s ~= "y=" ~ to!string(o.y) ~ "\n";
+      s ~= "choice=" ~ to!string(o.choice) ~ "\n";
+      s ~= "outline=" ~ to!string(o.outline) ~ "\n";
+      s ~= "vertical=" ~ to!string(o.vertical) ~ "\n";
+      s ~= "\n\n";
+      os.writeString(s);
+   }
+
    void serializePattern(ACBase acb)
    {
       Pattern o = cast(Pattern) acb;
       string s = basics(acb);
       s ~= "baseColor=" ~ o.colorString(false) ~ "\n";
+      s ~= "lineWidth=" ~ to!string(o.lineWidth) ~ "\n";
       s ~= "rows=" ~ to!string(o.rows) ~ "\n";
       s ~= "cols=" ~ to!string(o.cols) ~ "\n";
       s ~= "unit=" ~ to!string(o.unit) ~ "\n";
       s ~= "choice=" ~ to!string(o.choice) ~ "\n";
+      s ~= "tf=" ~ transform2S(o.tf) ~ "\n";
       s ~= "\n\n";
       os.writeString(s);
    }
@@ -769,6 +818,8 @@ class Serializer
       s ~= "les=" ~ to!string(o.les) ~ "\n";
       s ~= "fill=" ~ to!string(o.fill) ~ "\n";
       s ~= "outline=" ~ to!string(o.outline) ~"\n";
+      s ~= "fillFromPattern=" ~ to!string(o.fillFromPattern) ~ "\n";
+      s ~= "fillUid=" ~ o.fillUid.toString() ~ "\n";
       s ~= "center=" ~ coord2S(o.center) ~ "\n";
       s ~= "oPath=" ~ path2S(o.oPath) ~ "\n";
       s ~= "tf=" ~ transform2S(o.tf) ~ "\n";
@@ -786,6 +837,8 @@ class Serializer
       s ~= "les=" ~ to!string(o.les) ~ "\n";
       s ~= "fill=" ~ to!string(o.fill) ~ "\n";
       s ~= "outline=" ~ to!string(o.outline) ~"\n";
+      s ~= "fillFromPattern=" ~ to!string(o.fillFromPattern) ~ "\n";
+      s ~= "fillUid=" ~ o.fillUid.toString() ~ "\n";
       s ~= "center=" ~ coord2S(o.center) ~ "\n";
       s ~= "activeCoords=" ~ to!string(o.activeCoords) ~ "\n";
       s ~= "current=" ~ to!string(o.current) ~ "\n";
@@ -853,6 +906,8 @@ class Serializer
       s ~= "rounded=" ~ to!string(o.rounded) ~ "\n";
       s ~= "fill=" ~ to!string(o.fill) ~ "\n";
       s ~= "outline=" ~ to!string(o.outline) ~"\n";
+      s ~= "fillFromPattern=" ~ to!string(o.fillFromPattern) ~ "\n";
+      s ~= "fillUid=" ~ o.fillUid.toString() ~ "\n";
       s ~= "ar=" ~ to!string(o.ar) ~ "\n";
       s ~= "rr=" ~ to!string(o.rr) ~ "\n";
       s ~= "tf=" ~ transform2S(o.tf) ~ "\n";
@@ -871,6 +926,8 @@ class Serializer
       s ~= "sides=" ~ to!string(o.sides) ~ "\n";
       s ~= "fill=" ~ to!string(o.fill) ~ "\n";
       s ~= "outline=" ~ to!string(o.outline) ~ "\n";
+      s ~= "fillFromPattern=" ~ to!string(o.fillFromPattern) ~ "\n";
+      s ~= "fillUid=" ~ o.fillUid.toString() ~ "\n";
       s ~= "isStar=" ~ to!string(o.isStar) ~ "\n";
       s ~= "radius=" ~ to!string(o.radius) ~ "\n";
       s ~= "center=" ~ coord2S(o.center) ~ "\n";
@@ -892,6 +949,8 @@ class Serializer
       s ~= "sides=" ~ to!string(o.sides) ~ "\n";
       s ~= "fill=" ~ to!string(o.fill) ~ "\n";
       s ~= "outline=" ~ to!string(o.outline) ~ "\n";
+      s ~= "fillFromPattern=" ~ to!string(o.fillFromPattern) ~ "\n";
+      s ~= "fillUid=" ~ o.fillUid.toString() ~ "\n";
       s ~= "target=" ~ to!string(o.target) ~ "\n";
       /*
       s ~= "inner=" ~ to!string(o.inner) ~ "\n";
@@ -940,6 +999,25 @@ class Serializer
       os.writeString(s);
    }
 
+   void serializeShield(ACBase acb)
+   {
+      Shield o = cast(Shield) acb;
+      string s = basics(acb);
+      s ~= "baseColor=" ~ o.colorString(false) ~ "\n";
+      s ~= "altColor=" ~ o.colorString(true) ~ "\n";
+      s ~= "unit=" ~ to!string(o.unit) ~ "\n";
+      s ~= "style=" ~ to!string(o.style) ~ "\n";
+      s ~= "lineWidth=" ~ to!string(o.lineWidth) ~ "\n";
+      s ~= "xform=" ~ to!string(o.xform) ~ "\n";
+      s ~= "fill=" ~ to!string(o.fill) ~ "\n";
+      s ~= "outline=" ~ to!string(o.outline) ~ "\n";
+      s ~= "fillFromPattern=" ~ to!string(o.fillFromPattern) ~ "\n";
+      s ~= "fillUid=" ~ o.fillUid.toString() ~ "\n";
+      s ~= "tf=" ~ transform2S(o.tf) ~ "\n";
+      s ~= "\n";
+      os.writeString(s);
+   }
+
    void serializeTilings(ACBase acb)
    {
       Tilings o = cast(Tilings) acb;
@@ -957,6 +1035,24 @@ class Serializer
       os.writeString(s);
    }
 
+   void serializeTeardrop(ACBase acb)
+   {
+      Teardrop o = cast(Teardrop) acb;
+      string s = basics(acb);
+      s ~= "baseColor=" ~ o.colorString(false) ~ "\n";
+      s ~= "altColor=" ~ o.colorString(true) ~ "\n";
+      s ~= "unit=" ~ to!string(o.unit) ~ "\n";
+      s ~= "lineWidth=" ~ to!string(o.lineWidth) ~ "\n";
+      s ~= "xform=" ~ to!string(o.xform) ~ "\n";
+      s ~= "fill=" ~ to!string(o.fill) ~ "\n";
+      s ~= "outline=" ~ to!string(o.outline) ~ "\n";
+      s ~= "fillFromPattern=" ~ to!string(o.fillFromPattern) ~ "\n";
+      s ~= "fillUid=" ~ o.fillUid.toString() ~ "\n";
+      s ~= "tf=" ~ transform2S(o.tf) ~ "\n";
+      s ~= "\n";
+      os.writeString(s);
+   }
+
    void serializeTriangle(ACBase acb)
    {
       Triangle o = cast(Triangle) acb;
@@ -967,12 +1063,30 @@ class Serializer
       s ~= "les=" ~ to!string(o.les) ~ "\n";
       s ~= "fill=" ~ to!string(o.fill) ~ "\n";
       s ~= "outline=" ~ to!string(o.outline) ~"\n";
+      s ~= "fillFromPattern=" ~ to!string(o.fillFromPattern) ~ "\n";
+      s ~= "fillUid=" ~ o.fillUid.toString() ~ "\n";
       s ~= "center=" ~ coord2S(o.center) ~ "\n";
       s ~= "oPath=" ~ path2S(o.oPath) ~ "\n";
       s ~= "tf=" ~ transform2S(o.tf) ~ "\n";
       s ~= "w=" ~ to!string(o.w) ~ "\n";
       s ~= "h=" ~ to!string(o.h) ~ "\n";
       s ~= "ttype=" ~ to!string(o.ttype) ~ "\n";
+      s ~= "\n";
+      os.writeString(s);
+   }
+
+   void serializeYinYang(ACBase acb)
+   {
+      YinYang o = cast(YinYang) acb;
+      string s = basics(acb);
+      s ~= "baseColor=" ~ o.colorString(false) ~ "\n";
+      s ~= "altColor=" ~ o.colorString(true) ~ "\n";
+      s ~= "unit=" ~ to!string(o.unit) ~ "\n";
+      s ~= "lineWidth=" ~ to!string(o.lineWidth) ~ "\n";
+      s ~= "xform=" ~ to!string(o.xform) ~ "\n";
+      s ~= "fill=" ~ to!string(o.fill) ~ "\n";
+      s ~= "outline=" ~ to!string(o.outline) ~ "\n";
+      s ~= "tf=" ~ transform2S(o.tf) ~ "\n";
       s ~= "\n";
       os.writeString(s);
    }
