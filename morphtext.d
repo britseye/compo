@@ -51,7 +51,7 @@ class MorphText : TextViewItem
    Morpher morpher;
    CairoPath* morphed;
    RGBA saveAltColor;
-   bool fill, outline, doXform;
+   bool doXform;
    double olt;
    MorphDlg md;
    bool mdShowing;
@@ -224,6 +224,14 @@ class MorphText : TextViewItem
       lastOp = push!ParamBlock(this, mp, OP_PARAMS);
    }
 
+   override void deserializeComplete()
+   {
+      if (fillType is null)
+         return;
+      updateFillOptions(this);
+      updateFillUI();
+   }
+
    override bool specificNotify(Widget w, Purpose wid)
    {
       switch (wid)
@@ -269,6 +277,7 @@ class MorphText : TextViewItem
             fillType.setText("(P)");
          }
          fillOptions.setActive(0);
+         updateFillUI();
          break;
       case Purpose.MORE:
          if (mdShowing)

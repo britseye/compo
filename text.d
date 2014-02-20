@@ -7,7 +7,6 @@
 // Written in the D programming language
 module text;
 
-import container;
 import mainwin;
 import acomp;
 import tvitem;

@@ -7,7 +7,6 @@
 // Written in the D programming language
 module random;
 
-import container;
 import mainwin;
 import constants;
 import acomp;

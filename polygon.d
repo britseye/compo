@@ -77,6 +77,7 @@ class PolyEditDlg: Dialog, CSTarget
    }
 
    string onCSInch(int instance, int direction, bool coarse) { return ""; }
+   void onCSInchFill(int instance, int direction, bool coarse) {}
    void onCSLineWidth(double lw) {}
    void onCSSaveSelection() {}
    void onCSTextParam(Purpose p, string sval, int ival) {}
@@ -397,17 +398,23 @@ class Polygon : LineSet
       cbb.appendText("Flip-H");
       cbb.appendText("Flip-V");
       cbb.setActive(0);
-      cSet.add(cbb, ICoord(175, vp-35), Purpose.XFORMCB);
-      new MoreLess(cSet, 0, ICoord(285, vp-30), true);
+      cSet.add(cbb, ICoord(175, vp-45), Purpose.XFORMCB);
+      new MoreLess(cSet, 0, ICoord(285, vp-40), true);
 
       new InchTool(cSet, 0, ICoord(0, vp), true);
 
       Button b = new Button("Edit");
       b.setSizeRequest(70, -1);
       b.setSensitive(0);
-      cSet.add(b, ICoord(203, vp+2), Purpose.REDRAW);
+      cSet.add(b, ICoord(203, vp-10), Purpose.REDRAW);
 
-      cSet.cy = vp+40;
+      vp += 21;
+      b = new Button("Reflect");
+      b.setSizeRequest(70, -1);
+      b.setSensitive(0);
+      cSet.add(b, ICoord(203, vp), Purpose.REFLECT);
+
+      cSet.cy = vp+35;
    }
 
    override void afterDeserialize()
@@ -435,6 +442,10 @@ class Polygon : LineSet
          lastOp = push!Path_t(this, oPath, OP_REDRAW);
          editing = !editing;
          switchMode();
+         return true;
+      case Purpose.REFLECT:
+         lastOp = push!Path_t(this, oPath, OP_REDRAW);
+         reflect();
          return true;
       case Purpose.OPEN:
          open = !open;
@@ -523,11 +534,32 @@ class Polygon : LineSet
       return d;
    }
 
+   void reflect()
+   {
+      Coord s = oPath[0], e = oPath[$-1];
+      double m = (e.y-s.y)/(e.x-s.x);
+      double c = s.y-m*s.x;
+
+      Coord mp(Coord p)
+      {
+         double d = (p.x + (p.y - c)*m)/(1 + m*m);
+         return Coord(2*d-p.x, 2*d*m - p.y + 2*c);
+      }
+      Coord[] half2;
+      half2.length = oPath.length-2;
+      for (size_t i = oPath.length-2, j = 0; i > 0; i--, j++)
+      {
+         half2[j] = mp(oPath[i]);
+      }
+      oPath ~= half2;
+   }
+
    void setComplete()
    {
       center = figureCenter();
       constructing = false;
       cSet.enable(Purpose.REDRAW);
+      cSet.enable(Purpose.REFLECT);
       cSet.setInfo("Click the Edit button to move, add, or delete edges");
    }
 

@@ -129,6 +129,12 @@ class Container: ACBase
       cSet.cy = vp+35;
    }
 
+   override void deserializeComplete()
+   {
+      foreach (ACBase child; children)
+         child.deserializeComplete();
+   }
+
    int getNextId() { return ++nextChildId; }
 
    override void onCSNotify(Widget w, Purpose wid)
@@ -200,6 +206,35 @@ class Container: ACBase
       aw.dirty = true;
       reDraw();
       return "";
+   }
+
+   void inchAll(int direction, bool coarse)
+   {
+      int any;
+      foreach (ACBase child; children)
+      {
+         double d = coarse? 5.0: 0.5;
+         switch (direction)
+         {
+         case 0:
+            child.hOff -= d;
+            break;
+         case 1:
+            child.vOff -= d;
+            break;
+         case 2:
+            child.hOff += d;
+            break;
+         case 3:
+            child.vOff += d;
+            break;
+         default:
+            break;
+         }
+         any++;
+      }
+      if (any)
+         aw.dirty = true;
    }
 
    override void onChildChanged()

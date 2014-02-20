@@ -7,6 +7,7 @@
 // Written in the D programming language
 module controlset;
 
+import acomp;
 import types;
 import interfaces;
 import tvitem;
@@ -65,6 +66,7 @@ enum Purpose
    UNDO,
    REFRESH,
    XCOLOR,
+   REFLECT,
 
    R_RADIOBUTTONS = 1000,
    LESROUND,
@@ -800,7 +802,7 @@ class InchTool: PseudoWidget
    int direction;
    uint interval;
    uint sensitive;
-   bool coarse;
+   bool coarse, moveFill;
 
    this(ControlSet cset, int id, ICoord position, bool initialState = true)
    {
@@ -884,6 +886,7 @@ class InchTool: PseudoWidget
       GdkModifierType state;
       e.getState(state);
       coarse = (state & GdkModifierType.SHIFT_MASK)? true: false;
+      moveFill = (state & GdkModifierType.CONTROL_MASK)? true: false;
       interval = coarse? 100: 50;
       if (x < 12 && y > 12 && y < 22)  // left
       {
@@ -933,7 +936,10 @@ class InchTool: PseudoWidget
          t = new Timeout(interval, &doMove, false);
          tstate = 2;
       }
-      setDisplay(target.onCSInch(thisId, direction, coarse));
+      if (moveFill)
+         target.onCSInchFill(thisId, direction, coarse);
+      else
+         setDisplay(target.onCSInch(thisId, direction, coarse));
       return true;
    }
 }

@@ -5,10 +5,10 @@
 		<Cursor position="961" topLine="0" />
 	</File>
 	<File name="acomp.d" open="0" top="0" tabpos="3">
-		<Cursor position="6957" topLine="307" />
+		<Cursor position="28115" topLine="1237" />
 	</File>
 	<File name="arrow.d" open="0" top="0" tabpos="2">
-		<Cursor position="5985" topLine="194" />
+		<Cursor position="4626" topLine="133" />
 	</File>
 	<File name="bevel.d" open="0" top="0" tabpos="1">
 		<Cursor position="0" topLine="0" />
@@ -32,7 +32,7 @@
 		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="controlset.d" open="0" top="0" tabpos="2">
-		<Cursor position="2283" topLine="81" />
+		<Cursor position="7142" topLine="325" />
 	</File>
 	<File name="crescent.d" open="0" top="0" tabpos="0">
 		<Cursor position="4520" topLine="162" />
@@ -44,13 +44,16 @@
 		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="deserialize.d" open="0" top="0" tabpos="3">
-		<Cursor position="0" topLine="0" />
+		<Cursor position="41415" topLine="1468" />
 	</File>
 	<File name="drawing.d" open="0" top="0" tabpos="1">
 		<Cursor position="0" topLine="0" />
 	</File>
+	<File name="fader.d" open="0" top="0" tabpos="0">
+		<Cursor position="3166" topLine="105" />
+	</File>
 	<File name="fancytext.d" open="0" top="0" tabpos="5">
-		<Cursor position="4868" topLine="171" />
+		<Cursor position="10453" topLine="401" />
 	</File>
 	<File name="generic.d" open="0" top="0" tabpos="3">
 		<Cursor position="0" topLine="0" />
@@ -58,29 +61,32 @@
 	<File name="graphics.d" open="0" top="0" tabpos="0">
 		<Cursor position="2587" topLine="51" />
 	</File>
+	<File name="heart.d" open="0" top="0" tabpos="0">
+		<Cursor position="4026" topLine="125" />
+	</File>
 	<File name="interfaces.d" open="0" top="0" tabpos="3">
 		<Cursor position="1583" topLine="11" />
 	</File>
 	<File name="lgradient.d" open="0" top="0" tabpos="1">
-		<Cursor position="0" topLine="0" />
+		<Cursor position="8874" topLine="293" />
 	</File>
 	<File name="line.d" open="0" top="0" tabpos="2">
 		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="lineset.d" open="0" top="0" tabpos="1">
-		<Cursor position="1814" topLine="40" />
+		<Cursor position="1814" topLine="100" />
 	</File>
 	<File name="mainwin.d" open="0" top="0" tabpos="0">
-		<Cursor position="25147" topLine="1043" />
+		<Cursor position="25587" topLine="1061" />
 	</File>
 	<File name="menus.d" open="0" top="0" tabpos="0">
-		<Cursor position="3163" topLine="27" />
+		<Cursor position="3153" topLine="27" />
 	</File>
 	<File name="merger.d" open="0" top="0" tabpos="1">
 		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="mesh.d" open="0" top="0" tabpos="0">
-		<Cursor position="8372" topLine="298" />
+		<Cursor position="900" topLine="75" />
 	</File>
 	<File name="morphdlgs.d" open="0" top="0" tabpos="2">
 		<Cursor position="0" topLine="0" />
@@ -90,6 +96,12 @@
 	</File>
 	<File name="morphtext.d" open="0" top="0" tabpos="4">
 		<Cursor position="5727" topLine="176" />
+	</File>
+	<File name="partition.d" open="0" top="0" tabpos="0">
+		<Cursor position="1473" topLine="27" />
+	</File>
+	<File name="pattern.d" open="0" top="0" tabpos="0">
+		<Cursor position="2200" topLine="63" />
 	</File>
 	<File name="pglayout.d" open="0" top="0" tabpos="3">
 		<Cursor position="0" topLine="0" />
@@ -106,8 +118,11 @@
 	<File name="printing.d" open="0" top="0" tabpos="2">
 		<Cursor position="0" topLine="0" />
 	</File>
+	<File name="random.d" open="0" top="0" tabpos="0">
+		<Cursor position="2640" topLine="89" />
+	</File>
 	<File name="rect.d" open="0" top="0" tabpos="4">
-		<Cursor position="0" topLine="0" />
+		<Cursor position="4253" topLine="162" />
 	</File>
 	<File name="reference.d" open="0" top="0" tabpos="0">
 		<Cursor position="2534" topLine="87" />
@@ -119,7 +134,7 @@
 		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="rgradient.d" open="0" top="0" tabpos="1">
-		<Cursor position="0" topLine="0" />
+		<Cursor position="4062" topLine="125" />
 	</File>
 	<File name="richtext.d" open="0" top="0" tabpos="2">
 		<Cursor position="0" topLine="0" />
@@ -127,14 +142,20 @@
 	<File name="rsvgwrap.d" open="0" top="0" tabpos="2">
 		<Cursor position="0" topLine="0" />
 	</File>
+	<File name="separator.d" open="0" top="0" tabpos="0">
+		<Cursor position="3192" topLine="110" />
+	</File>
 	<File name="serialize.d" open="0" top="0" tabpos="4">
-		<Cursor position="0" topLine="0" />
+		<Cursor position="27993" topLine="864" />
 	</File>
 	<File name="settings.d" open="0" top="0" tabpos="4">
 		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="sheets.d" open="0" top="0" tabpos="2">
 		<Cursor position="0" topLine="0" />
+	</File>
+	<File name="shield.d" open="0" top="0" tabpos="0">
+		<Cursor position="4051" topLine="104" />
 	</File>
 	<File name="strokeset.d" open="0" top="0" tabpos="0">
 		<Cursor position="3709" topLine="110" />
@@ -145,8 +166,8 @@
 	<File name="tb2pm.d" open="0" top="0" tabpos="3">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="teardrop.d" open="1" top="1" tabpos="0">
-		<Cursor position="748" topLine="8" />
+	<File name="teardrop.d" open="0" top="0" tabpos="0">
+		<Cursor position="4248" topLine="106" />
 	</File>
 	<File name="text.d" open="0" top="0" tabpos="3">
 		<Cursor position="0" topLine="0" />
@@ -170,6 +191,9 @@
 		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="uspsib.d" open="0" top="0" tabpos="2">
-		<Cursor position="0" topLine="0" />
+		<Cursor position="13253" topLine="510" />
+	</File>
+	<File name="yinyang.d" open="0" top="0" tabpos="0">
+		<Cursor position="7161" topLine="176" />
 	</File>
 </CodeBlocks_layout_file>

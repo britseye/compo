@@ -83,6 +83,7 @@ class StrokesDlg: Dialog, CSTarget
    }
 
    string onCSInch(int instance, int direction, bool coarse) { return ""; }
+   void onCSInchFill(int instance, int direction, bool coarse) {}
    void onCSLineWidth(double lw) {}
    void onCSSaveSelection() {}
    void onCSTextParam(Purpose p, string sval, int ival) {}

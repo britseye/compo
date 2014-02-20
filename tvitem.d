@@ -14,7 +14,6 @@ import constants;
 import types;
 import common;
 import controlset;
-import container;
 import controlsdlg;
 import tb2pm;
 import morphtext;

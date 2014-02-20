@@ -302,7 +302,7 @@ class Deserializer
          int rootItems = to!int(val);
          int count = 0;
 
-         for (int i = 0; i <rootItems; i++)
+         for (int i = 0; i < rootItems; i++)
             readItem();
 
          aw.cto = aw.tm.root.children[0];
@@ -314,6 +314,12 @@ class Deserializer
 
          aw.setFileName(fileName);
          aw.dirty = false;
+
+         // Let the root items know the file is fully deserialised so they can stitch up
+         // any fill dependencies
+         foreach (ACBase child; aw.tm.root.children)
+            child.deserializeComplete();
+
          return;
       }
       catch (Exception x)

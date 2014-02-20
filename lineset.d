@@ -1,6 +1,7 @@
 module lineset;
 
 import std.stdio;
+import std.conv;
 import std.array;
 import std.format;
 
@@ -28,7 +29,6 @@ class LineSet : ACBase
    Coord[] oPath;
    Coord[] rPath;
    Coord center;
-   bool fill, outline;
 
    cairo_path_t* cpath;
    bool les, closed;
@@ -75,6 +75,7 @@ class LineSet : ACBase
          fillOptions.appendText("Refresh Options");
          getFillOptions(this);
          fillOptions.setActive(0);
+         fillOptions.setTooltipText("Not filled");
          cSet.add(fillOptions, ICoord(120, cSet.cy-5), Purpose.FILLOPTIONS);
          cSet.cy += 30;
       }
@@ -88,6 +89,14 @@ class LineSet : ACBase
          cSet.add(cb, ICoord(210, cSet.cy), Purpose.HIDE, true);
       }
       cSet.setLineWidth(lineWidth);
+   }
+
+   override void deserializeComplete()
+   {
+      if (fillType is null)
+         return;
+      updateFillOptions(this);
+      updateFillUI();
    }
 
    string formatLT(double lt)
@@ -105,11 +114,6 @@ class LineSet : ACBase
          focusLayout();
          lastOp = push!RGBA(this, baseColor, OP_COLOR);
          setColor(false);
-         break;
-      case Purpose.FILLCOLOR:
-         focusLayout();
-         lastOp = push!RGBA(this, altColor, OP_ALTCOLOR);
-         setColor(true);
          break;
       case Purpose.LESROUND:
          if ((cast(RadioButton) w).getActive())
@@ -132,13 +136,11 @@ class LineSet : ACBase
             setColor(true);
             fillFromPattern = false;
             fill = true;
-            fillType.setText("(C)");
          }
          else if (n == 2)
          {
             fillFromPattern = false;
             fill = false;
-            fillType.setText("(N)");
          }
          else if (n == 3)
          {
@@ -151,9 +153,9 @@ class LineSet : ACBase
             fillFromPattern = true;
             fillUid = others[n-4];
             fill = true;
-            fillType.setText("(P)");
          }
          fillOptions.setActive(0);
+         updateFillUI();
          break;
       case Purpose.XFORMCB:
          xform = (cast(ComboBoxText) w).getActive();

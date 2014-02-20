@@ -7,7 +7,6 @@
 // Written in the D programming language
 module noise;
 
-import container;
 import mainwin;
 import constants;
 import acomp;
@@ -112,6 +111,7 @@ class Noise : LineSet
 
    override void render(Context c)
    {
+      c.translate(hOff, vOff);
       c.setSourceRgb(baseColor.red, baseColor.green, baseColor.blue);
       c.setLineWidth(lineWidth);
       c.setLineCap(CairoLineCap.ROUND);

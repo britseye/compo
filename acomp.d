@@ -415,7 +415,7 @@ class ACBase : CSTarget     // Area Composition base class
    DrawingArea da;
    ComboBoxText fillOptions;
    Label fillType;
-   bool fillFromPattern;
+   bool fill, outline, fillFromPattern;
    UUID fillUid;
    int renderCalled;
    Surface background;
@@ -428,6 +428,7 @@ class ACBase : CSTarget     // Area Composition base class
    double hOff, vOff, lpX, lpY;
    ACBase parent;
    ACBase[] children;
+   ACBase fillObject;
    Entry nameEntry;
    ControlsDlg controlsDlg;
 
@@ -502,6 +503,7 @@ class ACBase : CSTarget     // Area Composition base class
    void onCSCompass(int instance, double angle, bool coarse) {}
    void onCSSaveSelection() {}
    void onCSPalette(PartColor[]) {}
+   void deserializeComplete() {}
 
    final ACBase prevSibling()
    {
@@ -520,6 +522,32 @@ class ACBase : CSTarget     // Area Composition base class
          prev = child;
       }
       return null;
+   }
+
+   final void updateFillUI()
+   {
+      auto writer = appender!string();
+      if (!fill && !fillFromPattern)
+      {
+         fillType.setText("(N)");
+         fillOptions.setTooltipText("Not filled");
+         fillObject = null;
+      }
+      else if (fill && !fillFromPattern)
+      {
+         fillObject = null;
+         fillType.setText("(C)");
+         formattedWrite(writer, "RGBA: %d, %d, %d, %d",
+                        to!int(altColor.red*100), to!int(altColor.green*100), to!int(altColor.blue*100), to!int(altColor.alpha*100));
+         fillOptions.setTooltipText(writer.data);
+      }
+      else
+      {
+         fillObject = aw.getObjectByUid(fillUid);
+         fillType.setText("(P)");
+         formattedWrite(writer, "Pattern: %s - (%s)", fillObject.name, fillUid);
+         fillOptions.setTooltipText(writer.data);
+      }
    }
 
    void pushOp(CheckPoint cp)
@@ -920,7 +948,7 @@ class ACBase : CSTarget     // Area Composition base class
 
    void onChildChanged() {};
 
-   // For keyboard arrow keys
+   // For keyboard arrow keys and moving parts within a container
    void move(int direction, bool far)
    {
       focusLayout();
@@ -979,6 +1007,7 @@ class ACBase : CSTarget     // Area Composition base class
    void onCSLineWidth(double lw) {}
    void onCSMoreLess(int instance, bool more, bool coarse) {}
    void hideDialogs() {};
+
    string onCSInch(int id, int direction, bool coarse)
    {
       focusLayout();
@@ -1011,6 +1040,16 @@ class ACBase : CSTarget     // Area Composition base class
       return reportPosition();
    }
 
+   void onCSInchFill(int id, int direction, bool coarse)
+   {
+      if (fillObject is null)
+         return;
+      if (fillObject.type == AC_CONTAINER)
+         (cast(Container) fillObject).inchAll(direction, coarse);
+      else
+         fillObject.onCSInch(id, direction, coarse);
+      reDraw();
+   }
 
    static string RGBA2hex(RGBA c)
    {

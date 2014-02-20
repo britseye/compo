@@ -27,6 +27,8 @@ interface CSTarget
    // ControlSet. The directions have no logic west, north,
    // east, south.
    string onCSInch(int instance, int direction, bool coarse);
+   // Move the fill object if there is one
+   void onCSInchFill(int instance, int direction, bool coarse);
 
    // There may be several instances of the Compass in a
    // ControlSet. The Compass reports an angle, starting from

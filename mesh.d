@@ -7,7 +7,6 @@
 // Written in the D programming language
 module mesh;
 
-import container;
 import mainwin;
 import constants;
 import acomp;
@@ -489,6 +488,7 @@ class Mesh : ACBase
 
    override void render(Context c)
    {
+      c.translate(hOff, vOff);
       MeshPattern mesh;
       switch (pattern)
       {

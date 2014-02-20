@@ -232,6 +232,7 @@
 		<Unit filename="sheets.d">
 			<Option target="Debug" />
 		</Unit>
+		<Unit filename="shield.d" />
 		<Unit filename="strokeset.d">
 			<Option target="Debug" />
 		</Unit>
@@ -269,6 +270,7 @@
 		<Unit filename="uspsib.d">
 			<Option target="Debug" />
 		</Unit>
+		<Unit filename="yinyang.d" />
 		<Extensions>
 			<code_completion />
 			<debugger />

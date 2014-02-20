@@ -7,7 +7,6 @@
 // Written in the D programming language
 module brushdabs;
 
-import container;
 import mainwin;
 import constants;
 import acomp;

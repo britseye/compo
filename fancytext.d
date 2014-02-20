@@ -81,7 +81,7 @@ class FancyText : TextViewItem
    double angle;
    double olt;
    double lastHo = double.min_normal, lastVo = double.max;
-   bool angleFixed, fill, outline;
+   bool angleFixed;
    RGBA saveAltColor;
    CairoPath* tPath;
    CairoPath pathCopy;
@@ -215,6 +215,14 @@ class FancyText : TextViewItem
       dirty = true;
    }
 
+   override void deserializeComplete()
+   {
+      if (fillType is null)
+         return;
+      updateFillOptions(this);
+      updateFillUI();
+   }
+
    override void preResize(int oldW, int oldH)
    {
       lastHo = double.min_normal, lastVo = double.max;
@@ -272,6 +280,7 @@ class FancyText : TextViewItem
             fillType.setText("(P)");
          }
          fillOptions.setActive(0);
+         updateFillUI();
          break;
       default:
          return false;

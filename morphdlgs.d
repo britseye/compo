@@ -60,6 +60,7 @@ class MorphDlg: Dialog, CSTarget
 
    void onCSNotify(Widget w, Purpose p) {}
    string onCSInch(int instance, int direction, bool coarse) { return ""; }
+   void onCSInchFill(int instance, int direction, bool coarse) {}
    void onCSMoreLess(int instance, bool more, bool coarse) {}
    void onCSCompass(int instance, double angle, bool coarse) {}
    void onCSPalette(PartColor[]) {}

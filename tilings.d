@@ -7,7 +7,6 @@
 // Written in the D programming language
 module tilings;
 
-import container;
 import mainwin;
 import constants;
 import acomp;
@@ -471,6 +470,7 @@ class Tilings: ACBase
 
    override void render(Context c)
    {
+      c.translate(hOff, vOff);
       void apply()
       {
          if (shade == 0)

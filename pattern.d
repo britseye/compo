@@ -14,7 +14,6 @@ import constants;
 import types;
 import controlset;
 import lineset;
-import container;
 
 import std.stdio;
 import std.string;
