@@ -177,6 +177,7 @@ class Serial : TextViewItem
          da.hide();
          dframe.hide();
          te.show();
+         edButton.setLabel("Design");
          cSet.disable(Purpose.FILL);
          cSet.disable(Purpose.INCH, 0);
          cSet.disable(Purpose.MOL,1);
@@ -214,6 +215,7 @@ class Serial : TextViewItem
          cSet.enable(Purpose.INCH, 0);
          cSet.enable(Purpose.MOL,1);
          dframe.show();
+         edButton.setLabel("Edit Text");
          da.show();
       }
       aw.dirty = true;

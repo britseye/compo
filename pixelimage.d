@@ -84,7 +84,7 @@ class PixelImage : ACBase
       group = ACGroups.PIXMAP;
       scaleType = 0;
       sadj = 1.0;
-      scale4Printer = true;
+      scale4Printer = false;
       setupControls();
       positionControls(true);
    }
@@ -116,6 +116,11 @@ class PixelImage : ACBase
       cSet.cy = vp+50;
    }
 
+   override void afterDeserialize()
+   {
+      setScaling();
+   }
+
    override bool specificNotify(Widget w, Purpose wid)
    {
       switch (wid)
@@ -127,6 +132,7 @@ class PixelImage : ACBase
       case Purpose.SCALEPROP:
          if ((cast(RadioButton) w).getActive())
          {
+            hOff = vOff = 0;
             scaleType = 0;
             setScaling();
             return true;
@@ -135,6 +141,7 @@ class PixelImage : ACBase
       case Purpose.SCALEFIT:
          if ((cast(RadioButton) w).getActive())
          {
+            hOff = vOff = 0;
             scaleType = 1;
             setScaling();
             return true;
@@ -143,6 +150,7 @@ class PixelImage : ACBase
       case Purpose.SCALENON:
          if ((cast(RadioButton) w).getActive())
          {
+            hOff = vOff = 0;
             scaleType = 2;
             setScaling();
             return true;
@@ -338,10 +346,23 @@ class PixelImage : ACBase
 
    override void render(Context c)
    {
+      c.translate(hOff, vOff);
       if (pxb is null)
          return;
       double sx = scaleX*sadj, sy = scaleY*sadj;
-      rpxb = pxb.scaleSimple(to!int(pw*sx), to!int(ph*sy), GdkInterpType.HYPER);
+      double w, h;
+      if (scaleType != 2)
+      {
+         rpxb = pxb.scaleSimple(to!int(pw*sx), to!int(ph*sy), GdkInterpType.HYPER);
+         w = width;
+         h = height;
+      }
+      else
+      {
+         rpxb = pxb;
+         w = pw;
+         h = ph;
+      }
 
       if (svgFlag)
       {
@@ -356,23 +377,15 @@ class PixelImage : ACBase
          mc.paint();
          // GTK+3 essentially moved the previous Cairo method into gdk.Cairo
          setSourcePixbuf(mc, rpxb, hOff, vOff);
-         mc.moveTo(lpX, lpY);
-         mc.lineTo(lpX, lpY+height);
-         mc.lineTo(lpX+width, lpY+height);
-         mc.lineTo(lpX+width, lpY);
-         mc.closePath();
+         mc.rectangle(0, 0, w, h);
          mc.fill();
          c.setSourceSurface(mask, 0, 0);
          c.paint();
       }
       else
       {
-         setSourcePixbuf(c, rpxb, hOff, vOff);
-         c.moveTo(lpX, lpY);
-         c.lineTo(lpX, lpY+height);
-         c.lineTo(lpX+width, lpY+height);
-         c.lineTo(lpX+width, lpY);
-         c.closePath();
+         setSourcePixbuf(c, rpxb, 0, 0);
+         c.rectangle(0, 0, w, h);
          c.fill();
       }
    }

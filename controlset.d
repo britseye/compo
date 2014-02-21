@@ -50,6 +50,7 @@ enum Purpose
    VOID,
 
    R_BUTTONS,
+   EDITMODE,
    COLOR,
    OPENFILE,
    FILLCOLOR,
@@ -87,7 +88,6 @@ enum Purpose
    ACPBOTH,
 
    R_TOGGLEBUTTONS = 2000,
-   EDITMODE,
 
    R_CHECKBUTTONS = 3000,
    TOPLEFT,

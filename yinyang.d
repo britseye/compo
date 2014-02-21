@@ -54,8 +54,7 @@ class YinYang: LineSet
    {
       cSet.setLineParams(lineWidth);
       cSet.toggling(false);
-      if (outline)
-         cSet.setToggle(Purpose.OUTLINE, true);
+      cSet.setToggle(Purpose.OUTLINE, outline);
       cSet.setLabel(Purpose.LINEWIDTH, formatLT(lineWidth));
       cSet.toggling(true);
       cSet.setComboIndex(Purpose.XFORMCB, xform);

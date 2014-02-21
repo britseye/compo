@@ -152,6 +152,7 @@ class USPS : TextViewItem
          da.hide();
          dframe.hide();
          te.show();
+         edButton.setLabel("Design");
          cSet.disable(Purpose.HRDATA);
          cSet.disable(Purpose.INCH, 0);
          eframe.show();
@@ -165,6 +166,7 @@ class USPS : TextViewItem
          cSet.enable(Purpose.HRDATA);
          cSet.enable(Purpose.INCH, 0);
          dframe.show();
+         edButton.setLabel("Edit Text");
          da.show();
       }
       aw.dirty = true;

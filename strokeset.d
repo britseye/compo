@@ -838,7 +838,7 @@ class StrokeSet : LineSet
       c.translate(-center.x, -center.y);
 
       c.setLineWidth(lineWidth);
-      c.setLineJoin(les? CairoLineJoin.MITER: CairoLineJoin.ROUND);
+      c.setLineCap(les? CairoLineCap.BUTT: CairoLineCap.ROUND);
       c.setSourceRgb(baseColor.red, baseColor.green, baseColor.blue);
 
       for (size_t i = 0; i < pcPath.length; i++)
@@ -966,6 +966,7 @@ class StrokeSet : LineSet
       double lw = 1;
       if(zoomed) lw /= esf;
       c.setLineWidth(lw);
+      c.setLineCap(les? CairoLineCap.BUTT: CairoLineCap.ROUND);
       for (size_t i = 0; i < pcPath.length; i++)
       {
          c.moveTo(pcPath[i].start.x, pcPath[i].start.y);

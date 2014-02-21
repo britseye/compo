@@ -377,6 +377,7 @@ class MorphText : TextViewItem
          da.hide();
          dframe.hide();
          te.show();
+         edButton.setLabel("Design");
          cSet.disable(Purpose.MOLLT, 0);
          cSet.disable(Purpose.XFORMCB);
          cSet.disable(Purpose.MORPHCB);
@@ -396,11 +397,14 @@ class MorphText : TextViewItem
          cSet.enable(Purpose.MOL, 0);
          cSet.enable(Purpose.INCH, 0);
          dframe.show();
+         edButton.setLabel("Edit Text");
          string txt=tb.getText();
          if (txt.length)
          {
+            string[] a = split(txt, "\n");
+            txt = a[0];
             if (txt.length > 20)
-               txt = txt[0..20];
+               txt = txt[0..17] ~ "...";
             setName(txt);
          }
          da.show();

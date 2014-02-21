@@ -116,6 +116,11 @@ class Teardrop: LineSet
       cSet.cy = vp+40;
    }
 
+   override void afterDeserialize()
+   {
+      constructBase();
+   }
+
    override void preResize(int oldW, int oldH)
    {
       double hr = cast(double) width/oldW;

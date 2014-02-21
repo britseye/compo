@@ -13,6 +13,7 @@ import std.stream;
 import std.array;
 import std.format;
 import std.uuid;
+import std.zlib;
 
 import about;
 import common;
@@ -62,6 +63,7 @@ import teardrop;
 import yinyang;
 import shield;
 import partition;
+import curve;
 
 import gtk.FileChooserDialog;
 import gtk.FileFilter;
@@ -266,6 +268,8 @@ class Serializer
          return serializeCrescent(acb);
       case AC_CROSS:
          return serializeCross(acb);
+      case AC_CURVE:
+         return serializeCurve(acb);
       case AC_FANCYTEXT:
          return serializeFancyText(acb);
       case AC_FADER:
@@ -462,9 +466,9 @@ class Serializer
       s ~= "baseColor=" ~ o.colorString(false) ~ "\n";
       s ~= "altColor=" ~ o.colorString(true) ~ "\n";
       s ~= "fill=" ~ to!string(o.fill) ~ "\n";
+      s ~= "outline=" ~ to!string(o.outline) ~"\n";
       s ~= "fillFromPattern=" ~ to!string(o.fillFromPattern) ~ "\n";
       s ~= "fillUid=" ~ o.fillUid.toString() ~ "\n";
-      s ~= "outline=" ~ to!string(o.outline) ~"\n";
       s ~= "olt=" ~ to!string(o.olt) ~ "\n";
       s ~= "tf=" ~ transform2S(o.tf) ~ "\n";
       s ~= "cm=" ~ to!string(o.cm) ~ "\n";
@@ -516,10 +520,11 @@ class Serializer
       s ~= "bcp=" ~ to!string(o.bcp) ~ "\n";
       s ~= "nDabs=" ~ to!string(o.nDabs) ~ "\n";
       s ~= "shapeSeed=" ~ to!string(o.shapeSeed) ~ "\n";
-      s ~= "colorSeed=" ~ to!string(o.shapeSeed) ~ "\n";
+      s ~= "colorSeed=" ~ to!string(o.colorSeed) ~ "\n";
       s ~= "angle=" ~ to!string(o.angle) ~ "\n";
       s ~= "pointed=" ~ to!string(o.pointed) ~ "\n";
       s ~= "shade=" ~ to!string(o.shade) ~ "\n";
+      s ~= "printRandom=" ~ to!string(o.printRandom) ~ "\n";
       s ~= "pca=" ~ partColorArray2S(o.pca) ~ "\n";
       s ~= "\n";
       os.writeString(s);
@@ -606,6 +611,22 @@ class Serializer
       os.writeString(s);
    }
 
+   void serializeCurve(ACBase acb)
+   {
+      Curve o = cast(Curve) acb;
+      string s = basics(acb);
+      s ~= "baseColor=" ~ o.colorString(false) ~ "\n";
+      s ~= "lineWidth=" ~ to!string(o.lineWidth) ~ "\n";
+      s ~= "les=" ~ to!string(o.les) ~ "\n";
+      s ~= "start=" ~ coord2S(o.curve.start) ~ "\n";
+      s ~= "cp1=" ~ coord2S(o.curve.cp1) ~ "\n";
+      s ~= "cp2=" ~ coord2S(o.curve.cp2) ~ "\n";
+      s ~= "end=" ~ coord2S(o.curve.end) ~ "\n";
+      s ~= "tf=" ~ transform2S(o.tf) ~ "\n";
+      s ~= "\n";
+      os.writeString(s);
+   }
+
    void serializeFader(ACBase acb)
    {
       Fader o = cast(Fader) acb;
@@ -676,6 +697,7 @@ class Serializer
       s ~= "diagonal=" ~ to!string(o.diagonal) ~ "\n";
       s ~= "pattern=" ~ to!string(o.pattern) ~ "\n";
       s ~= "instanceSeed=" ~ to!string(o.instanceSeed) ~ "\n";
+      s ~= "printRandom=" ~ to!string(o.printRandom) ~ "\n";
       s ~= "tf=" ~ transform2S(o.tf) ~ "\n";
       s ~= "\n";
       os.writeString(s);
@@ -760,10 +782,7 @@ class Serializer
       {
          ubyte[] buf;
          string[] dummy;
-         if (o.scale4Printer)
-            o.spxb.saveToBuffer(buf, "png", dummy, dummy);
-         else
-            o.pxb.saveToBuffer(buf, "png", dummy, dummy);
+         o.pxb.saveToBuffer(buf, "png", dummy, dummy);
          s ~= "data_length=" ~ to!string(buf.length) ~ "\n";
          os.writeString(s);
          os.writeExact(buf.ptr, buf.length);
@@ -816,6 +835,7 @@ class Serializer
       s ~= "altColor=" ~ o.colorString(true) ~ "\n";
       s ~= "lineWidth=" ~ to!string(o.lineWidth) ~ "\n";
       s ~= "les=" ~ to!string(o.les) ~ "\n";
+      s ~= "open=" ~ to!string(o.open) ~ "\n";
       s ~= "fill=" ~ to!string(o.fill) ~ "\n";
       s ~= "outline=" ~ to!string(o.outline) ~"\n";
       s ~= "fillFromPattern=" ~ to!string(o.fillFromPattern) ~ "\n";
@@ -835,6 +855,7 @@ class Serializer
       s ~= "altColor=" ~ o.colorString(true) ~ "\n";
       s ~= "lineWidth=" ~ to!string(o.lineWidth) ~ "\n";
       s ~= "les=" ~ to!string(o.les) ~ "\n";
+      s ~= "open=" ~ to!string(o.open) ~ "\n";
       s ~= "fill=" ~ to!string(o.fill) ~ "\n";
       s ~= "outline=" ~ to!string(o.outline) ~"\n";
       s ~= "fillFromPattern=" ~ to!string(o.fillFromPattern) ~ "\n";
@@ -884,6 +905,7 @@ class Serializer
       s ~= "element=" ~ to!string(o.element) ~"\n";
       s ~= "lower=" ~ to!string(o.lower) ~"\n";
       s ~= "upper=" ~ to!string(o.upper) ~"\n";
+      s ~= "instanceSeed=" ~ to!string(o.instanceSeed) ~"\n";
       s ~= "printRandom=" ~ to!string(o.printRandom) ~"\n";
       foreach (ShapeInfo t; o.si)
       {
@@ -909,6 +931,7 @@ class Serializer
       s ~= "fillFromPattern=" ~ to!string(o.fillFromPattern) ~ "\n";
       s ~= "fillUid=" ~ o.fillUid.toString() ~ "\n";
       s ~= "ar=" ~ to!string(o.ar) ~ "\n";
+      s ~= "size=" ~ to!string(o.size) ~ "\n";
       s ~= "rr=" ~ to!string(o.rr) ~ "\n";
       s ~= "tf=" ~ transform2S(o.tf) ~ "\n";
       s ~= "\n";
@@ -947,20 +970,23 @@ class Serializer
       s ~= "lineWidth=" ~ to!string(o.lineWidth) ~ "\n";
       s ~= "les=" ~ to!string(o.les) ~ "\n";
       s ~= "sides=" ~ to!string(o.sides) ~ "\n";
+      s ~= "joinRadius=" ~ to!string(o.joinRadius) ~ "\n";
+      s ~= "joinAngle=" ~ to!string(o.joinAngle) ~ "\n";
+      s ~= "cp1Radius=" ~ to!string(o.cp1Radius) ~ "\n";
+      s ~= "cp1ARadius=" ~ to!string(o.cp1ARadius) ~ "\n";
+      s ~= "cp1Angle=" ~ to!string(o.cp1Angle) ~ "\n";
+      s ~= "cp1AAngle=" ~ to!string(o.cp1AAngle) ~ "\n";
+      s ~= "cp2Radius=" ~ to!string(o.cp2Radius) ~ "\n";
+      s ~= "cp2ARadius=" ~ to!string(o.cp2ARadius) ~ "\n";
+      s ~= "cp2Angle=" ~ to!string(o.cp2Angle) ~ "\n";
+      s ~= "cp2AAngle=" ~ to!string(o.cp2AAngle) ~ "\n";
+      s ~= "activeCP=" ~ to!string(o.activeCP) ~ "\n";
+      s ~= "symmetry=" ~ to!string(o.symmetry) ~ "\n";
       s ~= "fill=" ~ to!string(o.fill) ~ "\n";
       s ~= "outline=" ~ to!string(o.outline) ~ "\n";
       s ~= "fillFromPattern=" ~ to!string(o.fillFromPattern) ~ "\n";
       s ~= "fillUid=" ~ o.fillUid.toString() ~ "\n";
       s ~= "target=" ~ to!string(o.target) ~ "\n";
-      /*
-      s ~= "inner=" ~ to!string(o.inner) ~ "\n";
-      s ~= "outer=" ~ to!string(o.outer) ~ "\n";
-      s ~= "cangle=" ~ to!string(o.cangle) ~ "\n";
-      s ~= "laglead=" ~ to!string(o.laglead) ~ "\n";
-      s ~= "cpos=" ~ to!string(cast(int) o.cpos) ~ "\n";
-      */
-      //s ~= "alternating=" ~ to!string(o.alternating) ~ "\n";
-      //s ~= "prop=" ~ to!string(o.prop) ~ "\n";
       s ~= "center=" ~ coord2S(o.center) ~ "\n";
       s ~= "tf=" ~ transform2S(o.tf) ~ "\n";
       s ~= "\n";
@@ -1086,6 +1112,8 @@ class Serializer
       s ~= "xform=" ~ to!string(o.xform) ~ "\n";
       s ~= "fill=" ~ to!string(o.fill) ~ "\n";
       s ~= "outline=" ~ to!string(o.outline) ~ "\n";
+      s ~= "fillFromPattern=" ~ to!string(o.fillFromPattern) ~ "\n";
+      s ~= "fillUid=" ~ o.fillUid.toString() ~ "\n";
       s ~= "tf=" ~ transform2S(o.tf) ~ "\n";
       s ~= "\n";
       os.writeString(s);

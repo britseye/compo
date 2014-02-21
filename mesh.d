@@ -49,7 +49,9 @@ class Mesh : ACBase
    PartColor[4] pca;
    double diagonal;
    int pattern;
-   uint instanceSeed = 42;
+   Mt19937 gen;
+   uint tempSeed, instanceSeed = 42;
+   bool printRandom;
 
    static this()
    {
@@ -87,7 +89,10 @@ class Mesh : ACBase
    override void syncControls()
    {
       cSet.toggling(false);
+      if (printRandom)
+         cSet.setToggle(Purpose.PRINTRANDOM, true);
       cSet.toggling(true);
+      cSet.setComboIndex(Purpose.PATTERN, pattern);
       cSet.setHostName(name);
    }
 
@@ -122,6 +127,7 @@ class Mesh : ACBase
       tm = new Matrix(&tmData);
       pca = predefPC(0);
       diagonal = 1.1*sqrt(cast(double)(width*width+height*height));
+      tempSeed = unpredictableSeed();
 
       setupControls(3);
       positionControls(true);
@@ -169,7 +175,13 @@ class Mesh : ACBase
       cSet.add(cbb, ICoord(200, vp), Purpose.XFORMCB);
       new MoreLess(cSet, 0, ICoord(300, vp+5), true);
 
-      cSet.cy = vp+35;
+      vp += 35;
+      Button b=new Button("Refresh Random");
+      cSet.add(b, ICoord(0, vp), Purpose.REDRAW);
+      CheckButton cb=new CheckButton("Print Random");
+      cSet.add(cb, ICoord(200, vp), Purpose.PRINTRANDOM);
+
+      cSet.cy = vp+32;
    }
 
    override bool specificNotify(Widget w, Purpose wid)
@@ -199,6 +211,12 @@ class Mesh : ACBase
          }
          else
             return false;
+         break;
+      case Purpose.REDRAW:
+         instanceSeed++;
+         break;
+      case Purpose.PRINTRANDOM:
+         printRandom = !printRandom;
          break;
       case Purpose.XFORMCB:
          xform = (cast(ComboBoxText) w).getActive();
@@ -257,8 +275,6 @@ class Mesh : ACBase
    {
       if (random)
       {
-         Mt19937 gen;
-         gen.seed(instanceSeed++);
          uint n;
          for (int i = 0; i < 4; i++)
          {
@@ -488,7 +504,7 @@ class Mesh : ACBase
 
    override void render(Context c)
    {
-      c.translate(hOff, vOff);
+      uint sv = instanceSeed;
       MeshPattern mesh;
       switch (pattern)
       {
@@ -505,6 +521,9 @@ class Mesh : ACBase
             mesh = spheres(20);
             break;
          case 4:
+            if (printRandom && printFlag)
+               sv = tempSeed++;
+            gen.seed(sv);
             mesh = rectangles(20, 20, true);
             break;
          case 5:

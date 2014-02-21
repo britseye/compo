@@ -49,17 +49,20 @@ class BrushDabs : ACBase
    Dab[] dabs;
    size_t nDabs;
    ColorSource cSrc;
-   uint colorSeed, shapeSeed;
+   uint colorSeed, shapeSeed, tempSeed;
    int shade;
    cairo_matrix_t ttData;
    Matrix tt;
    double w, tcp, bcp, angle;
-   bool pointed;
+   bool pointed, printRandom;
 
    override void syncControls()
    {
       cSet.toggling(false);
+      if (printRandom)
+         cSet.setToggle(Purpose.PRINTRANDOM, true);
       cSet.toggling(true);
+      cSet.setComboIndex(Purpose.DCOLORS, shade);
       cSet.setHostName(name);
    }
 
@@ -101,6 +104,7 @@ class BrushDabs : ACBase
          cSrc.init(baseColor, 42);
          cSrc.setShadeBand(shade);
       }
+      //printRandom = true;
       generate();
 
       setupControls();
@@ -133,8 +137,10 @@ class BrushDabs : ACBase
 
       CheckButton cb = new CheckButton("Pointed Brush");
       cSet.add(cb, ICoord(188, vp+80), Purpose.GLWHICH);
+      cb = new CheckButton("Print Random");
+      cSet.add(cb, ICoord(188, vp+100), Purpose.PRINTRANDOM);
 
-      vp += 25;
+      vp += 45;
       ComboBoxText cbb = new ComboBoxText(false);
       cbb.appendText("Base Color Exact");
       cbb.appendText("Base Color All");
@@ -175,6 +181,9 @@ class BrushDabs : ACBase
       case Purpose.REDRAW:
          shapeSeed++;
          generate();
+         break;
+      case Purpose.PRINTRANDOM:
+         printRandom = !printRandom;
          break;
       case Purpose.GLWHICH:
          pointed = !pointed;
@@ -320,11 +329,16 @@ class BrushDabs : ACBase
       return d;
    }
 
-   void generate()
+   void generate(bool forprint = false)
    {
+      uint sv;
+      if (forprint)
+         sv = tempSeed++;
+      else
+         sv = shapeSeed;
       dabs.length = nDabs;
       Mt19937 gen;
-      gen.seed(shapeSeed);
+      gen.seed(sv);
       for (int i = 0; i < nDabs; i++)
       {
          uint n = gen.front;
@@ -371,7 +385,13 @@ class BrushDabs : ACBase
    override void render(Context c)
    {
       c.translate(hOff, vOff);
-      cSrc.setSeed(colorSeed);
+      uint sv = colorSeed;
+      if (printRandom && printFlag)
+      {
+         generate(true);
+         sv = tempSeed;
+      }
+      cSrc.setSeed(sv);
       foreach (int i, Dab d; dabs)
       {
          c.moveTo(d.start.x, d.start.y);

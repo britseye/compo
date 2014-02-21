@@ -318,8 +318,8 @@ class Polygon : LineSet
          cSet.setToggle(Purpose.LESSHARP, true);
       else
          cSet.setToggle(Purpose.LESROUND, true);
-      if (outline)
-         cSet.setToggle(Purpose.OUTLINE, true);
+      cSet.setToggle(Purpose.OUTLINE, outline);
+      cSet.setToggle(Purpose.OPEN, open);
       cSet.setComboIndex(Purpose.XFORMCB, xform);
       cSet.setComboIndex(Purpose.FILLOPTIONS, 0);
       cSet.setLabel(Purpose.LINEWIDTH, formatLT(lineWidth));

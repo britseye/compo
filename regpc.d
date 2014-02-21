@@ -104,7 +104,7 @@ class RegularPolycurve : LineSet
          cSet.enable(Purpose.ACP2);
          cSet.enable(Purpose.ACPBOTH);
       }
-      cSet.setToggle(activeCP-Purpose.CP1, true);
+      cSet.setToggle(activeCP+Purpose.CP1, true);
       cSet.setComboIndex(Purpose.XFORMCB, xform);
       cSet.setComboIndex(Purpose.PATTERN, symmetry);
       cSet.setComboIndex(Purpose.FILLOPTIONS, 0);
@@ -181,6 +181,7 @@ class RegularPolycurve : LineSet
       center.x = 0.5*width;
       center.y = 0.5*height;
       sides = w.config.polySides;
+      activeCP = 0;
       lineWidth = 0.5;
       constructBase();
       tm = new Matrix(&tmData);

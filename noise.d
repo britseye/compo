@@ -33,7 +33,8 @@ class Noise : LineSet
    static int nextOid = 0;
    static int[5] ndots = [ 500, 2000, 5000, 10000, 20000 ];
    int level, dots;
-   uint instanceSeed;
+   uint instanceSeed, tempSeed;
+   bool printRandom;
    Random gen;
 
    override void syncControls()
@@ -62,6 +63,7 @@ class Noise : LineSet
       level = 2;
       dots = 5000;
       instanceSeed = 42;
+      tempSeed=unpredictableSeed();
       gen.seed(instanceSeed);
       setupControls(0);
       positionControls(true);
@@ -89,7 +91,11 @@ class Noise : LineSet
       Button b = new Button("Regenerate");
       cSet.add(b, ICoord(160, vp), Purpose.REDRAW);
 
-      cSet.cy = vp+35;
+      vp += 28;
+      CheckButton cb = new CheckButton("Print Random");
+      cSet.add(cb, ICoord(158, vp), Purpose.PRINTRANDOM);
+
+      cSet.cy = vp+24;
    }
 
    override bool specificNotify(Widget w, Purpose wid)
@@ -102,6 +108,9 @@ class Noise : LineSet
          break;
       case Purpose.REDRAW:
          instanceSeed++;
+         break;
+      case Purpose.PRINTRANDOM:
+         printRandom = !printRandom;
          break;
       default:
          return false;
@@ -116,7 +125,10 @@ class Noise : LineSet
       c.setLineWidth(lineWidth);
       c.setLineCap(CairoLineCap.ROUND);
       double step = 0.1*lineWidth;
-      gen.seed(instanceSeed);
+      uint sv = instanceSeed;
+      if (printRandom && printFlag)
+         sv = tempSeed;
+      gen.seed(sv);
       for (int i = 0; i < dots; i++)
       {
          double ho = uniform(0.0, 1.0*width, gen);
@@ -125,5 +137,7 @@ class Noise : LineSet
          c.lineTo(ho,vo+step);
          c.stroke();
       }
+      if (printRandom && printFlag)
+         tempSeed++;
    }
 }

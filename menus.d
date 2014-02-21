@@ -23,6 +23,7 @@ import keyvals;
 import merger;
 import csv;
 import settings;
+import regpoly;
 
 import std.stdio;
 import std.string;
@@ -208,7 +209,9 @@ class ContextMenus
             return;
          case "Star":
             mi.setLabel("Regular Polygon");
-            aw.doItemInsert(mi, aw.getItemAddContext());
+            ACBase acb = aw.doItemInsert(mi, aw.getItemAddContext());
+            RegularPolygon rp = cast(RegularPolygon) acb;
+            rp.setToStar(10);
             string xplain = "To draw a star, use 'Regular Polygon',\ncheck 'Render as Star', and set\n an even number of sides.";
             aw.popupMsg(xplain, MessageType.INFO);
             mi.setLabel(label);

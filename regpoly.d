@@ -144,6 +144,11 @@ class RegularPolygon : LineSet
       cSet.cy = vp+30;
    }
 
+   override void afterDeserialize()
+   {
+      numSides.setText(to!string(sides));
+   }
+
    override bool specificNotify(Widget w, Purpose wid)
    {
       focusLayout();
@@ -236,6 +241,17 @@ class RegularPolygon : LineSet
       }
       hOff *= hr;
       vOff *= vr;
+   }
+
+   void setToStar(int n)
+   {
+      cSet.toggling(false);
+      cSet.setToggle(Purpose.ASSTAR, true);
+      cSet.toggling(true);
+      sides = n;
+      isStar = true;
+      numSides.setText(to!string(n));
+      constructBase();
    }
 
    void constructBase()

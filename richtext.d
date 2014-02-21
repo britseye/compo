@@ -18,6 +18,7 @@ import tb2pm;
 
 import std.stdio;
 import std.conv;
+import std.array;
 
 import glib.ListSG;
 import gtk.Layout;
@@ -133,7 +134,7 @@ class RichText : TextViewItem
    {
       int vp = cSet.cy;
 
-      new InchTool(cSet, 0, ICoord(0, vp), false);
+      new InchTool(cSet, 0, ICoord(0, vp+8), false);
 
       cSet.cy = vp+40;
    }
@@ -208,6 +209,7 @@ class RichText : TextViewItem
          da.hide();
          dframe.hide();
          te.show();
+         edButton.setLabel("Design");
          cSet.disable(Purpose.INCH, 0);
          eframe.show();
          te.grabFocus();
@@ -218,6 +220,16 @@ class RichText : TextViewItem
          te.hide();
          eframe.hide();
          cSet.enable(Purpose.INCH, 0);
+         string txt=tb.getText();
+         if (txt.length)
+         {
+            string[] a = split(txt, "\n");
+            txt = a[0];
+            if (txt.length > 20)
+               txt = txt[0..17] ~ "...";
+            setName(txt);
+         }
+         edButton.setLabel("Edit Text");
          dframe.show();
          da.show();
       }

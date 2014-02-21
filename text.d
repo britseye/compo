@@ -18,6 +18,7 @@ import tb2pm;
 
 import std.stdio;
 import std.conv;
+import std.array;
 
 import glib.Idle;
 import gtk.Layout;
@@ -148,11 +149,13 @@ class PlainText : TextViewItem
 
    override void toggleView()
    {
+      // editMode to be set before view is toggled
       if (editMode)
       {
          da.hide();
          dframe.hide();
          te.show();
+         edButton.setLabel("Design");
          cSet.disable(Purpose.CENTERTEXT);
          cSet.disable(Purpose.SHRINK2FIT);
          cSet.disable(Purpose.INCH, 0);
@@ -168,11 +171,14 @@ class PlainText : TextViewItem
          cSet.enable(Purpose.SHRINK2FIT);
          cSet.enable(Purpose.INCH, 0);
          dframe.show();
+         edButton.setLabel("Edit Text");
          string txt=tb.getText();
          if (txt.length)
          {
+            string[] a = split(txt, "\n");
+            txt = a[0];
             if (txt.length > 20)
-               txt = txt[0..20];
+               txt = txt[0..17] ~ "...";
             setName(txt);
          }
          da.show();

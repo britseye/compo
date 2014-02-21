@@ -168,13 +168,13 @@ class FancyText : TextViewItem
       int tvp = vp;
 
       Label l = new Label("Orientation");
-      cSet.add(l, ICoord(0, vp), Purpose.LABEL);
+      cSet.add(l, ICoord(0, vp+3), Purpose.LABEL);
 
-      vp += 20;
+      vp += 22;
       TextOrient to = new TextOrient(cSet, 0, ICoord(0, vp), false);
 
       l = new Label("Outline\nthickness");
-      cSet.add(l, ICoord(167, tvp), Purpose.LABEL);
+      cSet.add(l, ICoord(167, tvp+3), Purpose.LABEL);
       MOLLineThick mlt = new MOLLineThick(cSet, 0, ICoord(240, tvp+5), false);
 
 
@@ -212,6 +212,11 @@ class FancyText : TextViewItem
       textBlock.setAlignment(cast(PangoAlignment) alignment);
       te.modifyFont(pfd);
       te.overrideColor(te.getStateFlags(), baseColor);
+      if (editMode)
+         cSet.setInfo("Edit mode: Modify the text as required.");
+      else
+         cSet.setInfo("Design mode: Set parameters for the layer.");
+      toggleView();
       dirty = true;
    }
 
@@ -354,6 +359,7 @@ class FancyText : TextViewItem
          da.hide();
          dframe.hide();
          te.show();
+         edButton.setLabel("Design");
          cSet.disable(Purpose.TORIENT, 0);
          cSet.disable(Purpose.FILL);
          cSet.disable(Purpose.FILLOUTLINE);
@@ -378,11 +384,14 @@ class FancyText : TextViewItem
             cSet.enable(Purpose.MOL, 1);
          cSet.enable(Purpose.INCH, 0);
          dframe.show();
+         edButton.setLabel("Edit Text");
          string txt=tb.getText();
          if (txt.length)
          {
+            string[] a = split(txt, "\n");
+            txt = a[0];
             if (txt.length > 20)
-               txt = txt[0..20];
+               txt = txt[0..17] ~ "...";
             setName(txt);
          }
          da.show();

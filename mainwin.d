@@ -350,7 +350,7 @@ class AppWindow : MainWindow
       return nt;
    }
 
-   void doItemInsert(MenuItem mi, int where, ACBase newItem = null)
+   ACBase doItemInsert(MenuItem mi, int where, ACBase newItem = null)
    {
       bool inCtr = false;
       dirty = true;
@@ -408,6 +408,7 @@ class AppWindow : MainWindow
       // Now fix up the TreeView
       tv.queueDraw();
       treeOps.select(ni);
+      return ni;
    }
 
    void replaceItem(DeletedItem di)

@@ -41,6 +41,7 @@ class Random: LineSet
    double lower, upper;
    int count;
    int element;
+   uint instanceSeed, tempSeed;
    ShapeInfo[] si;
    bool reBuild, printRandom;
    Label countLabel, minSize, maxSize;
@@ -91,6 +92,8 @@ class Random: LineSet
       tm = new Matrix(&tmData);
       fill = true;
       outline = true;
+      instanceSeed = 42;
+      tempSeed = unpredictableSeed();
 
       setupControls();
       positionControls(true);
@@ -167,6 +170,7 @@ class Random: LineSet
          printRandom = !printRandom;
          break;
       case Purpose.MORE:
+         instanceSeed++;
          break;
       default:
          return false;
@@ -254,9 +258,13 @@ class Random: LineSet
 
    void build()
    {
-      if (!printRandom && !reBuild)
+      if (!(printRandom && printFlag) && !reBuild)
          return;
-      auto gen = Xorshift(unpredictableSeed());
+      auto gen = Xorshift();
+      if (printRandom && printFlag)
+         gen.seed(tempSeed++);
+      else
+         gen.seed(instanceSeed);
       si.length = count;
       if (element == 0)
       {

@@ -125,6 +125,8 @@ class Tilings: ACBase
       cSrc.init(baseColor, colorSeed);
       cSrc.setShadeBand(shade);
       setupColors();
+      dirty = true;
+      reBuild();
    }
 
    override void extendControls()

@@ -31,7 +31,6 @@ import gtk.TextBuffer;
 import gtk.TextTag;
 import gtk.TextIter;
 import gtk.Button;
-import gtk.ToggleButton;
 import gtk.CheckButton;
 import gtk.Label;
 import gdk.RGBA;
@@ -59,6 +58,7 @@ class TextViewItem : ACBase
    TextParams tp;
    PgFontDescription pfd;
    Frame eframe;
+   Button edButton;
    double screenRes;
    double fontPoints;
    int alignment;
@@ -108,11 +108,10 @@ class TextViewItem : ACBase
       int vp = cSet.cy;
       tp = new TextParams(cSet, ICoord(0, vp), true, hasAlign, hasStyle);
       vp += 10;
-      ToggleButton tb = new ToggleButton("Edit/Design");
-      tb.setTooltipText("Click this to switch\nbetween text editing and\ndesign modes. Edit is button down.");
-      tb.setActive(1);
+      edButton = new Button("Design");
+      edButton.setTooltipText("Click this to switch between text\nediting and design modes.");
       vp += 20;
-      cSet.add(tb, ICoord(0, vp), Purpose.EDITMODE);
+      cSet.add(edButton, ICoord(0, vp), Purpose.EDITMODE);
 
       if (type != AC_MORPHTEXT)
       {
@@ -132,10 +131,10 @@ class TextViewItem : ACBase
          cb.setActive(0);
          cSet.add(cb, ICoord(210, cSet.cy), Purpose.HIDE, true);
       }
-      cSet.addInfo("Enter the required text in the drawing area,\nand then click the \"Edit/Design\"\nbutton to continue.");
+      cSet.addInfo("Enter the required text in the drawing area,\nand then click the \"Design\"\nbutton to continue.");
    }
 
-   void dgToggleView(ToggleButton rb) {}
+   void dgToggleView(Button rb) {}
    void toggleView() {}
 
    override void onCSNotify(Widget w, Purpose wid)
@@ -150,9 +149,9 @@ class TextViewItem : ACBase
          break;
       case Purpose.EDITMODE:
          if (editMode)
-            cSet.setInfo("Set parameters for the text.");
+            cSet.setInfo("Design mode: Set parameters for the layer.");
          else
-            cSet.setInfo("Modify the text as required, then uncheck\nthe \"Edit the Text\" checkbutton to\ncontinue.");
+            cSet.setInfo("Edit mode: Modify the text as required.");
          editMode = !editMode;
          toggleView();
          break;
@@ -164,7 +163,15 @@ class TextViewItem : ACBase
       reDraw();
    }
 
-   override void afterDeserialize() { dirty = true; }
+   override void afterDeserialize()
+   {
+      if (editMode)
+         cSet.setInfo("Edit mode: Modify the text as required.");
+      else
+         cSet.setInfo("Design mode: Set parameters for the layer.");
+      toggleView();
+      dirty = true;
+   }
 
    override void resize(int oldW, int oldH)
    {

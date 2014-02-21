@@ -56,6 +56,7 @@ import teardrop;
 import yinyang;
 import shield;
 import partition;
+import curve;
 
 import std.stdio;
 import std.conv;
@@ -66,6 +67,7 @@ import std.string;
 import std.conv;
 import std.path;
 import std.uuid;
+import std.zlib;
 
 import gdk.RGBA;
 import pango.PgFontDescription;
@@ -580,6 +582,10 @@ class Deserializer
          child = new Cross(aw, parent);
          setupCross(cast(Cross) child);
          break;
+      case AC_CURVE:
+         child = new Curve(aw, parent);
+         setupCurve(cast(Curve) child);
+         break;
       case AC_FANCYTEXT:
          child = new FancyText(aw, parent);
          setupFancyText(cast(FancyText) child);
@@ -985,6 +991,8 @@ class Deserializer
       x.pointed = to!bool(val);
       getNV(__LINE__, "shade");
       x.shade = to!int(val);
+      getNV(__LINE__, "printRandom");
+      x.printRandom = to!bool(val);
       getNV(__LINE__, "pca");
       x.pca[] = s2PartColorArray(val,__LINE__)[];
       x.afterDeserialize();
@@ -1115,6 +1123,31 @@ class Deserializer
       x.afterDeserialize();
    }
 
+   void setupCurve(Curve x)
+   {
+      basics(x);
+
+      getNV(__LINE__, "baseColor");
+      x.baseColor = makeColor(val);
+      getNV(__LINE__, "lineWidth");
+      x.lineWidth = to!double(val);
+      getNV(__LINE__, "les");
+      x.les = to!bool(val);
+      Coord start, cp1, cp2, end;
+      getNV(__LINE__, "start");
+      start = s2Coord(val, __LINE__);
+      getNV(__LINE__, "cp1");
+      cp1 = s2Coord(val, __LINE__);
+      getNV(__LINE__, "cp2");
+      cp2 = s2Coord(val, __LINE__);
+      getNV(__LINE__, "end");
+      end = s2Coord(val, __LINE__);
+      x.curve = PathItemR(0, start, cp1, cp2, end);
+      getNV(__LINE__, "tf");
+      x.tf = makeTransform(val);
+      x.afterDeserialize();
+   }
+
    void setupFader(Fader x)
    {
       basics(x);
@@ -1214,6 +1247,8 @@ class Deserializer
       x.pattern = to!int(val);
       getNV(__LINE__, "instanceSeed");
       x.instanceSeed = to!uint(val);
+      getNV(__LINE__, "printRandom");
+      x.printRandom = to!bool(val);
       getNV(__LINE__, "tf");
       x.tf = makeTransform(val);
       x.afterDeserialize();
@@ -1325,8 +1360,8 @@ class Deserializer
       {
          ubyte[] buffer;
          buffer.length = n;
-         si.readExact(&buffer[0], n);
-         MemoryInputStream ms = new MemoryInputStream(&buffer[0], n, null);
+         si.readExact(buffer.ptr, n);
+         MemoryInputStream ms = new MemoryInputStream(buffer.ptr, buffer.length, null);
          x.pxb = new Pixbuf(ms, null);
       }
       else
@@ -1377,6 +1412,8 @@ class Deserializer
       x.lineWidth = to!double(val);
       getNV(__LINE__, "les");
       x.les = to!bool(val);
+      getNV(__LINE__, "open");
+      x.open = to!bool(val);
       getNV(__LINE__, "fill");
       x.fill = to!bool(val);
       getNV(__LINE__, "outline");
@@ -1464,6 +1501,8 @@ class Deserializer
       x.lineWidth = to!double(val);
       getNV(__LINE__, "les");
       x.les = to!bool(val);
+      getNV(__LINE__, "open");
+      x.open = to!bool(val);
       getNV(__LINE__, "fill");
       x.fill = to!bool(val);
       getNV(__LINE__, "outline");
@@ -1500,6 +1539,8 @@ class Deserializer
       x.lower = to!double(val);
       getNV(__LINE__, "upper");
       x.upper = to!double(val);
+      getNV(__LINE__, "instanceSeed");
+      x.instanceSeed = to!uint(val);
       getNV(__LINE__, "printRandom");
       x.printRandom = to!bool(val);
       x.si.length = x.count;
@@ -1545,6 +1586,8 @@ class Deserializer
       x.fillUid = parseUUID(val);
       getNV(__LINE__, "ar");
       x.ar = to!double(val);
+      getNV(__LINE__, "size");
+      x.size = to!double(val);
       getNV(__LINE__, "rr");
       x.rr =  to!double(val);
       getNV(__LINE__, "tf");
@@ -1603,6 +1646,30 @@ class Deserializer
       x.les = to!bool(val);
       getNV(__LINE__, "sides");
       x.sides = to!int(val);
+      getNV(__LINE__, "joinRadius");
+      x.joinRadius = to!double(val);
+      getNV(__LINE__, "joinAngle");
+      x.joinAngle = to!double(val);
+      getNV(__LINE__, "cp1Radius");
+      x.cp1Radius = to!double(val);
+      getNV(__LINE__, "cp1ARadius");
+      x.cp1ARadius = to!double(val);
+      getNV(__LINE__, "cp1Angle");
+      x.cp1Angle = to!double(val);
+      getNV(__LINE__, "cp1AAngle");
+      x.cp1AAngle = to!double(val);
+      getNV(__LINE__, "cp2Radius");
+      x.cp2Radius = to!double(val);
+      getNV(__LINE__, "cp2ARadius");
+      x.cp2ARadius = to!double(val);
+      getNV(__LINE__, "cp2Angle");
+      x.cp2Angle = to!double(val);
+      getNV(__LINE__, "cp2AAngle");
+      x.cp2AAngle = to!double(val);
+      getNV(__LINE__, "activeCP");
+      x.activeCP = to!int(val);
+      getNV(__LINE__, "symmetry");
+      x.symmetry = to!int(val);
       getNV(__LINE__, "fill");
       x.fill = to!bool(val);
       getNV(__LINE__, "outline");
@@ -1613,20 +1680,6 @@ class Deserializer
       x.fillUid = parseUUID(val);
       getNV(__LINE__, "target");
       x.target = to!double(val);
-      /*
-      getNV(__LINE__, "inner");
-      x.inner = to!double(val);
-      getNV(__LINE__, "outer");
-      x.outer = to!double(val);
-      getNV(__LINE__, "cangle");
-      x.cangle = to!double(val);
-      getNV(__LINE__, "laglead");
-      x.laglead = to!double(val);
-      getNV(__LINE__, "cpos");
-      x.cpos = cast(Purpose) to!int(val);
-      */
-      //getNV(__LINE__, "prop");
-      //x.prop = to!double(val);
       getNV(__LINE__, "center");
       x.center = s2Coord(val, __LINE__);
       getNV(__LINE__, "tf");
@@ -1793,8 +1846,6 @@ class Deserializer
       x.h = to!double(val);
       getNV(__LINE__, "ttype");
       x.ttype = to!int(val);
-      getNV(__LINE__, "poo");
-      x.fill = to!bool(val);
       x.afterDeserialize();
    }
 
@@ -1816,6 +1867,10 @@ class Deserializer
       x.fill = to!bool(val);
       getNV(__LINE__, "outline");
       x.outline = to!bool(val);
+      getNV(__LINE__, "fillFromPattern");
+      x.fillFromPattern = to!bool(val);
+      getNV(__LINE__, "fillUid");
+      x.fillUid = parseUUID(val);
       getNV(__LINE__, "tf");
       x.tf = makeTransform(val);
       x.afterDeserialize();

@@ -161,6 +161,12 @@ class Moon : LineSet
       cSet.cy = vp+35;
    }
 
+   override void afterDeserialize()
+   {
+      constructTable();
+      setPhaseDesc();
+   }
+
    override void preResize(int oldW, int oldH)
    {
       center.x = width/2;
