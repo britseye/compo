@@ -56,11 +56,7 @@ class PlainText : TextViewItem
       cSet.toggling(false);
       cSet.setToggle(Purpose.CENTERTEXT, centerText);
       cSet.setToggle(Purpose.SHRINK2FIT, shrink2Fit);
-      if (editMode)
-      {
-         cSet.setToggle(Purpose.EDITMODE, true);
-         toggleView();
-      }
+      toggleView();
       cSet.toggling(true);
       cSet.setHostName(name);
    }

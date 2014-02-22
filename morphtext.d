@@ -73,8 +73,6 @@ class MorphText : TextViewItem
          cSet.setToggle(Purpose.OUTLINE, true);
       cSet.setComboIndex(Purpose.XFORMCB, xform);
       cSet.setComboIndex(Purpose.MORPHCB, cm);
-      if (editMode)
-         cSet.setToggle(Purpose.EDITMODE, true);
       toggleView();
       cSet.setLabel(Purpose.LINEWIDTH, formatLT(olt));
       cSet.toggling(true);

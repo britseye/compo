@@ -1350,18 +1350,15 @@ class Deserializer
       x.scaleType = to!int(val);
       getNV(__LINE__, "sadj");
       x.sadj = to!double(val);
-      getNV(__LINE__, "scale4Printer");
-      x.scale4Printer = to!bool(val);
       getNV(__LINE__, "useFile");
       x.useFile = to!bool(val);
       getNV(__LINE__, "data_length");
       int n = to!int(val);
       if (n)
       {
-         ubyte[] buffer;
-         buffer.length = n;
-         si.readExact(buffer.ptr, n);
-         MemoryInputStream ms = new MemoryInputStream(buffer.ptr, buffer.length, null);
+         x.src.length = n;
+         si.readExact(x.src.ptr, n);
+         MemoryInputStream ms = new MemoryInputStream(x.src.ptr, x.src.length, null);
          x.pxb = new Pixbuf(ms, null);
       }
       else
@@ -1384,16 +1381,12 @@ class Deserializer
       getNV(__LINE__, "useFile");
       x.useFile = to!bool(val);
       getNV(__LINE__, "data_length");
-      int n = to!int(val);
+      size_t n = to!int(val);
       if (n)
       {
          x.svgData.length = n;
          si.readExact(x.svgData.ptr, n);
-         string tf = "__temp__"~x.fileName;
-         std.file.write(tf, x.svgData);
-         x.svgr = new SVGRenderer(tf);
-         tf ~="\0";
-         remove(tf.ptr);
+         x.svgr = new SVGRenderer(x.svgData.ptr, n);
       }
       else
          x.svgr = new SVGRenderer(x.fileName);

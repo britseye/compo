@@ -64,11 +64,7 @@ class USPS : TextViewItem
       cSet.setTextParams(alignment, pfd.toString());
       cSet.toggling(false);
       cSet.setToggle(Purpose.HRDATA, showData);
-      if (editMode)
-      {
-         cSet.setToggle(Purpose.EDITMODE, true);
-         toggleView();
-      }
+      toggleView();
       cSet.toggling(true);
       cSet.setHostName(name);
    }

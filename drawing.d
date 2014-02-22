@@ -51,7 +51,6 @@ class Drawing : ACBase
       this(other.aw, other.parent);
       hOff = other.hOff;
       vOff = other.vOff;
-      center = other.center;
       dName = other.dName;
       that = cast(Container) aw.cloneItem(other.that);
       that.setTransparent();
@@ -87,7 +86,7 @@ class Drawing : ACBase
    override void afterDeserialize()
    {
       name = dName~" "~to!string(++nextOid);
-      aw.deserializer.deserializeDrawing(this);
+      //aw.deserializer.deserializeDrawing(this);
    }
 
    override void extendControls()

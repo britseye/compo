@@ -1,12 +1,15 @@
 module rsvgwrap;
 
 import std.string;
+import std.stdio;
+
 import cairo.Context;
 import cairo.Matrix;
 
 // RsvgHandle with rsvg_handle_new_from_file()
 struct RsvgHandle;
 extern(C) RsvgHandle* rsvg_handle_new_from_file(immutable(char)* fn);
+extern(C) RsvgHandle* rsvg_handle_new_from_data(const ubyte* data, size_t data_len, void**error);
 extern(C) int rsvg_handle_render_cairo(RsvgHandle *handle, cairo_t* cr);
 extern(C) void rsvg_handle_get_dimensions(RsvgHandle* handle, RsvgDimensionData* dp);
 
@@ -29,8 +32,13 @@ class SVGRenderer
 */
    this(string filename)
    {
-      void* vp;
       handle = rsvg_handle_new_from_file(toStringz(filename));
+   }
+
+   this(ubyte* data, size_t len)
+   {
+      void* vp;
+      handle = rsvg_handle_new_from_data(data, len, &vp);
    }
 
    void setContext(Context c)
@@ -50,13 +58,11 @@ class SVGRenderer
    The image will first be scaled so it fits in the most restrictive dimension.
    Then any additional scaling is applied.
 */
-   bool render(double x, double y, double w, double h, int scaleType, double scalex = 1.0)
+   bool render(double w, double h, int scaleType, double scalex = 1.0)
    {
       //ctx.save();
-      cairo_matrix_t mts, mtt;
+      cairo_matrix_t mts;
       Matrix tms = new Matrix(&mts);
-      Matrix tmt = new Matrix(&mtt);
-      tmt.initTranslate(x, y);
       tms.initIdentity();
 
       RsvgDimensionData dd;
@@ -71,21 +77,20 @@ class SVGRenderer
          if (tar > ar)
          {
             nh = h;
-            nw = nh*ar;
-            tms.initScale(scalex*((tar*nw)/sh), scalex*(nh/sh));
+            nw = sw*h/sh;
+            tms.initScale(h/sh, h/sh);
          }
          else
          {
             nw = w;
-            nh = nw/ar;
-            tms.initScale(scalex*(nw/sw), scalex*((tar*nh)/sw));
+            nh = sh*w/sw;
+            tms.initScale(w/sw, w/sw);
          }
       }
       else if (scaleType == 1)
       {
          tms.initScale(scalex*w/sw, scalex*h/sh);
       }
-      tms.multiply(tms, tmt);
       ctx.setMatrix(tms);
       int rv = rsvg_handle_render_cairo(handle, ctp);
       //ctx.restore();

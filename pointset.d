@@ -296,7 +296,10 @@ class PointSet : LineSet
       hOff = other.hOff;
       vOff = other.vOff;
       baseColor = other.baseColor.copy();
+      altColor = other.altColor.copy();
       lineWidth = other.lineWidth;
+      oPath = other.oPath.dup;
+      tf = other.tf;
       dirty = true;
       syncControls();
    }

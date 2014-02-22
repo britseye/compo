@@ -60,11 +60,7 @@ class Serial : TextViewItem
    {
       cSet.setTextParams(alignment, pfd.toString());
       cSet.toggling(false);
-      if (editMode)
-      {
-         cSet.setToggle(Purpose.EDITMODE, true);
-         toggleView();
-      }
+      toggleView();
       cSet.setToggle(Purpose.FILL, pad);
       cSet.toggling(true);
       cSet.setHostName(name);
@@ -79,13 +75,15 @@ class Serial : TextViewItem
       baseColor = other.baseColor.copy();
       pfd = other.pfd.copy();
       editMode = other.editMode;
+
+      text = other.text.idup;
       number = other.number;
+writefln("number %d text %s", number, text);
       pad = other.pad;
       padLength = other.padLength;
       syncControls();
-
-      string text = other.tb.getText();
-      tb.setText(text);
+      string s = other.te.getBuffer().getText();
+      te.getBuffer().setText(s);
    }
 
    this(AppWindow w, ACBase parent)
@@ -235,6 +233,7 @@ class Serial : TextViewItem
 
    override void render(Context c)
    {
+writefln("render %s number %d text %s", name, number, text);
       if (printFlag)
          number++;
       text = to!string(number);
@@ -243,7 +242,6 @@ class Serial : TextViewItem
       setCairoFont(c, pfd);
       c.moveTo(hOff, vOff+0.5*height);
       c.showText(text);
-      if (!isMoved) cSet.setDisplay(0, reportPosition());
    }
 }
 

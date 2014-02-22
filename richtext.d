@@ -61,12 +61,7 @@ class RichText : TextViewItem
    {
       cSet.setTextParams(alignment, pfd.toString());
       cSet.toggling(false);
-      if (editMode)
-      {
-         toggleView();
-         cSet.setToggle(Purpose.EDITMODE, true);
-         toggleView();
-      }
+      toggleView();
       cSet.toggling(true);
       cSet.setHostName(name);
    }

@@ -14,17 +14,17 @@ import constants;
 import types;
 import controlset;
 
-import std.conv;
-
 import std.stdio;
 import std.conv;
 import std.string;
+import std.stream;
+
 import gtk.Layout;
 import gtk.Frame;
 import gtk.DrawingArea;
 import cairo.Context;
 import cairo.Surface;
-//import cairo.ImageSurface;
+import gio.MemoryInputStream;
 import gdk.Cairo;
 import gtk.Widget;
 import gtk.Label;
@@ -46,9 +46,10 @@ class PixelImage : ACBase
    static int nextOid = 0;
    int scaleType;
    string fileName;
-   Pixbuf pxb, spxb, rpxb;
+   Pixbuf pxb, rpxb;
+   ubyte[] src;
    double sadj, scaleX, scaleY, pw, ph;
-   bool useFile, scale4Printer;
+   bool useFile, lossy;
 
    override void syncControls()
    {
@@ -69,7 +70,6 @@ class PixelImage : ACBase
       this(other.aw, other.parent);
       fileName = other.fileName;
       pxb = other.pxb;
-      spxb = null;
       scaleType = other.scaleType;
       sadj = other.sadj;
       useFile = other.useFile;
@@ -84,7 +84,6 @@ class PixelImage : ACBase
       group = ACGroups.PIXMAP;
       scaleType = 0;
       sadj = 1.0;
-      scale4Printer = false;
       setupControls();
       positionControls(true);
    }
@@ -264,9 +263,6 @@ class PixelImage : ACBase
             bh = height;
             bw = bh/ar;
          }
-         // This is what we'll save in the .compo file if requested
-         if (scale4Printer)
-            spxb = pxb.scaleSimple(to!int(bw), to!int(bh), GdkInterpType.HYPER);
       }
       else if (scaleType == 1)
       {
@@ -285,7 +281,10 @@ class PixelImage : ACBase
    {
       try
       {
-         pxb = new Pixbuf(fileName);
+         // We'll read the entire file, as we will save that in the .compo file
+         src = cast(ubyte[]) std.file.read(fileName);
+         MemoryInputStream ms = new MemoryInputStream(src.ptr, src.length, null);
+         pxb = new Pixbuf(ms, null);
       }
       catch (Exception ex)
       {
@@ -346,7 +345,6 @@ class PixelImage : ACBase
 
    override void render(Context c)
    {
-      c.translate(hOff, vOff);
       if (pxb is null)
          return;
       double sx = scaleX*sadj, sy = scaleY*sadj;
@@ -384,6 +382,7 @@ class PixelImage : ACBase
       }
       else
       {
+         c.translate(hOff, vOff);
          setSourcePixbuf(c, rpxb, 0, 0);
          c.rectangle(0, 0, w, h);
          c.fill();

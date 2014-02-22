@@ -101,13 +101,8 @@ class FancyText : TextViewItem
       cSet.setTextParams(alignment, pfd.toString());
       cSet.toggling(false);
       if (!angleFixed) cSet.enable(Purpose.MOL, 1);
-      if (outline)
-         cSet.setToggle(Purpose.OUTLINE, true);
-      if (editMode)
-      {
-         cSet.setToggle(Purpose.EDITMODE, true);
-         toggleView();
-      }
+      cSet.setToggle(Purpose.OUTLINE, outline);
+      toggleView();
       cSet.setLabel(Purpose.LINEWIDTH, formatLT(olt));
       cSet.toggling(true);
       cSet.setHostName(name);

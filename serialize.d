@@ -771,7 +771,6 @@ class Serializer
       s ~= "fileName=" ~ o.fileName ~ "\n";
       s ~= "scaleType=" ~ to!string(o.scaleType) ~ "\n";
       s ~= "sadj=" ~ to!string(o.sadj) ~ "\n";
-      s ~= "scale4Printer=false" ~ "\n";   // We have already scaled to printer res first time around - no need to do it again
       s ~= "useFile=" ~ to!string(o.useFile) ~ "\n";
       if (o.useFile)
       {
@@ -780,12 +779,9 @@ class Serializer
       }
       else
       {
-         ubyte[] buf;
-         string[] dummy;
-         o.pxb.saveToBuffer(buf, "png", dummy, dummy);
-         s ~= "data_length=" ~ to!string(buf.length) ~ "\n";
+         s ~= "data_length=" ~ to!string(o.src.length) ~ "\n";
          os.writeString(s);
-         os.writeExact(buf.ptr, buf.length);
+         os.writeExact(o.src.ptr, o.src.length);
          s = "\n\n";
          os.writeString(s);
       }

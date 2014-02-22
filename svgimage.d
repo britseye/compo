@@ -230,9 +230,10 @@ class SVGImage : ACBase
 
    override void render(Context c)
    {
+      c.translate(hOff, vOff);
       if (fileName is null)
          return;
       svgr.setContext(c);
-      svgr.render(hOff, vOff, cast(double) width, cast(double) height, scaleType, scaleX);
+      svgr.render(cast(double) width, cast(double) height, scaleType, scaleX);
    }
 }
