@@ -146,6 +146,13 @@ class PolyEditDlg: Dialog, CSTarget
       cs.realize(layout);
    }
 
+   void setControls()
+   {
+      cs.toggling(false);
+      cs.setToggle(SP+po.activeCoords, true);
+      cs.toggling(true);
+   }
+
    static void moveCoord(ref Coord p, double distance, double angle)
    {
       p.x += cos(angle)*distance;
@@ -318,6 +325,7 @@ class Polygon : LineSet
          cSet.setToggle(Purpose.LESSHARP, true);
       else
          cSet.setToggle(Purpose.LESROUND, true);
+      cSet.setToggle(Purpose.OPEN, open);
       cSet.setToggle(Purpose.OUTLINE, outline);
       cSet.setToggle(Purpose.OPEN, open);
       cSet.setComboIndex(Purpose.XFORMCB, xform);
@@ -330,24 +338,41 @@ class Polygon : LineSet
    this(Polygon other)
    {
       this(other.aw, other.parent);
+      if (other.constructing)
+      {
+         aw.popupMsg("The Polygon you are copying is not complete.\nCreating blank Polygon in construct mode.",MessageType.WARNING);
+         constructing = true;
+         return;
+      }
       constructing = false;
       hOff = other.hOff;
       vOff = other.vOff;
       baseColor = other.baseColor.copy();
       altColor = other.altColor.copy();
       lineWidth = other.lineWidth;
+      open = other.open;
       les = other.les;
       fill = other.fill;
       outline = other.outline;
+      fillFromPattern = other.fillFromPattern;
+      fillUid = other.fillUid;
       center = other.center;
       oPath = other.oPath.dup;
       xform = other.xform;
       tf = other.tf;
       editing = other.editing;
+      activeCoords = other.activeCoords;
       cSet.enable(Purpose.REDRAW);
-      cSet.setInfo("Click the Edit button to move, add, or delete edges");
       dirty = true;
       syncControls();
+      if (other.editing)
+      {
+         other.hideDialogs();
+         other.editing = false;
+         other.switchMode();
+         md.setControls();
+         switchMode();
+      }
    }
 
    this(AppWindow w, ACBase parent)

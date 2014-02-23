@@ -48,6 +48,8 @@ class Pattern : LineSet
    this(Pattern other)
    {
       this(other.aw, other.parent);
+      hOff = other.hOff;
+      vOff = other.vOff;
       rows = other.rows;
       cols = other.cols;
       unit = other.unit;

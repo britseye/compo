@@ -68,6 +68,7 @@ class MorphText : TextViewItem
    override void syncControls()
    {
       cSet.setLineWidth(olt);
+      cSet.setTextParams(alignment, pfd.toString());
       cSet.toggling(false);
       if (outline)
          cSet.setToggle(Purpose.OUTLINE, true);
@@ -122,6 +123,7 @@ class MorphText : TextViewItem
       positionControls(true);
       toggleView();
       pfd = PgFontDescription.fromString("Sans 30");
+      cSet.setTextParams(0, "Sans 30");
       if (!delayCM)
       {
          changeMorph();

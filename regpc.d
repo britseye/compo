@@ -34,17 +34,17 @@ import gtk.Label;
 import cairo.Context;
 import gtkc.cairotypes;
 import cairo.Matrix;
-
+/*
 enum
 {
-   P1 = Purpose.R_RADIOBUTTONS-100,
+   P1 = Purpose.TOGGLEBUTTONS-100,
    P2,
    BOTH,
    AP1,
    AP2,
    ABOTH
 }
-
+*/
 enum
 {
    SS,
@@ -75,8 +75,7 @@ class RegularPolycurve : LineSet
          cSet.setToggle(Purpose.LESSHARP, true);
       else
          cSet.setToggle(Purpose.LESROUND, true);
-      if (outline)
-         cSet.setToggle(Purpose.OUTLINE, true);
+      cSet.setToggle(Purpose.OUTLINE, outline);
       if (symmetry == SS)
       {
          cSet.disable(Purpose.CP1);
@@ -115,6 +114,13 @@ class RegularPolycurve : LineSet
 
    this(RegularPolycurve other)
    {
+      if (other.editMode)
+      {
+         editMode = true;
+         other.editMode = false;
+         other.switchMode();
+         other.reDraw();
+      }
       this(other.aw, other.parent);
       hOff = other.hOff;
       vOff = other.vOff;
@@ -146,6 +152,8 @@ class RegularPolycurve : LineSet
       tf = other.tf;
       syncControls();
       dirty = true;
+      if (editMode)
+         switchMode();
    }
 
    this(AppWindow w, ACBase parent)
@@ -313,21 +321,8 @@ class RegularPolycurve : LineSet
       }
       if (p == Purpose.REDRAW)
       {
-         if (editMode)
-         {
-            hOff = sho;
-            vOff = svo;
-            pcPath = parkPath;
-            vb.setLabel("SS View");
-         }
-         else
-         {
-            sho = hOff;
-            svo = vOff;
-            parkPath = pcPath.dup;
-            vb.setLabel("Actual");
-         }
          editMode = !editMode;
+         switchMode();
          return true;
       }
       if (p == Purpose.PATTERN)
@@ -374,6 +369,24 @@ class RegularPolycurve : LineSet
       }
       else
          return false;
+   }
+
+   void switchMode()
+   {
+         if (editMode)
+         {
+            sho = hOff;
+            svo = vOff;
+            parkPath = pcPath.dup;
+            vb.setLabel("Actual");
+         }
+         else
+         {
+            hOff = sho;
+            vOff = svo;
+            pcPath = parkPath;
+            vb.setLabel("SS View");
+         }
    }
 
    override bool specificUndo(CheckPoint cp)

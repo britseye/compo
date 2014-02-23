@@ -58,11 +58,15 @@ class SVGImage : ACBase
    this(SVGImage other)
    {
       this(other.aw, other.parent);
+      hOff = other.hOff;
+      vOff = other.vOff;
       fileName = other.fileName;
+      svgData = other.svgData.dup;
       scaleType = other.scaleType;
       scaleX = other.scaleX;
       useFile = other.useFile;
       syncControls();
+      svgr = new SVGRenderer(svgData.ptr, svgData.length);
    }
 
    this(AppWindow w, ACBase parent)
@@ -230,10 +234,11 @@ class SVGImage : ACBase
 
    override void render(Context c)
    {
-      c.translate(hOff, vOff);
       if (fileName is null)
          return;
+      c.save();
       svgr.setContext(c);
-      svgr.render(cast(double) width, cast(double) height, scaleType, scaleX);
+      svgr.render(hOff, vOff, cast(double) width, cast(double) height, scaleType, scaleX);
+      c.restore();
    }
 }

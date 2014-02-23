@@ -170,6 +170,13 @@ class StrokesDlg: Dialog, CSTarget
       cs.realize(layout);
    }
 
+   void setControls()
+   {
+      cs.toggling(false);
+      cs.setToggle(SP+po.activeCoords, true);
+      cs.toggling(true);
+   }
+
    static void moveCoord(ref Coord p, double distance, double angle)
    {
       p.x += cos(angle)*distance;
@@ -380,7 +387,14 @@ class StrokeSet : LineSet
    this(StrokeSet other)
    {
       this(other.aw, other.parent);
+      if (other.constructing)
+      {
+         aw.popupMsg("The StrokeSet you are copying is not complete.\nCreating blank StrokeSet in construct mode.",MessageType.WARNING);
+         constructing = true;
+         return;
+      }
       constructing = false;
+      cSet.enable(Purpose.REDRAW);
       hOff = other.hOff;
       vOff = other.vOff;
       baseColor = other.baseColor.copy();
@@ -396,6 +410,15 @@ class StrokeSet : LineSet
       currentStack ~= current;
       dirty = true;
       syncControls();
+      editing = other.editing;
+      if (other.editing)
+      {
+         other.hideDialogs();
+         other.editing = false;
+         other.switchMode();
+         md.setControls();
+         switchMode();
+      }
    }
 
    this(AppWindow w, ACBase parent)

@@ -102,19 +102,12 @@ class Mesh : ACBase
       hOff = other.hOff;
       vOff = other.vOff;
       baseColor = other.baseColor.copy();
-      /*
-      altColor = other.altColor.copy();
-      topLeft = other.topLeft;
-      bottomRight = other.bottomRight;
-      lineWidth = other.lineWidth;
-      les = other.les;
-      rounded = other.rounded;
-      fill = other.fill;
-      solid = other.solid;
-      rr = other.rr;
-      tf = other.tf;
-      */
+      pca = other.pca.dup;
+      instanceSeed = other.instanceSeed;
+      pattern = other.pattern;
+      printRandom = other.printRandom;
       xform = other.xform;
+      tf = other.tf;
       syncControls();
    }
 

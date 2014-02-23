@@ -53,6 +53,7 @@ class Partition: ACBase
    override void syncControls()
    {
       cSet.toggling(false);
+      cSet.setToggle(Purpose.FILLOUTLINE, outline);
       cSet.toggling(true);
       cSet.setHostName(name);
    }
@@ -64,6 +65,11 @@ class Partition: ACBase
       vOff = other.vOff;
       baseColor = other.baseColor.copy();
       lineWidth = other.lineWidth;
+      x = other.x;
+      y = other.y;
+      choice =other.choice;
+      outline = other.outline;
+      vertical = other.vertical;
       syncControls();
    }
 

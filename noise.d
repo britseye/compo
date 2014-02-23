@@ -41,6 +41,7 @@ class Noise : LineSet
    {
       cSet.setLineParams(lineWidth);
       cSet.toggling(false);
+      cSet.setToggle(Purpose.PRINTRANDOM, printRandom);
       cSet.setComboIndex(Purpose.PATTERN, level);
       cSet.toggling(true);
       cSet.setHostName(name);
@@ -51,6 +52,10 @@ class Noise : LineSet
       this(other.aw, other.parent);
       baseColor = other.baseColor.copy();
       lineWidth = other.lineWidth;
+      level = other.level;
+      dots = other.dots;
+      instanceSeed = other.instanceSeed;
+      printRandom = other.printRandom;
       syncControls();
    }
 

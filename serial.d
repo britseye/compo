@@ -81,9 +81,10 @@ class Serial : TextViewItem
 writefln("number %d text %s", number, text);
       pad = other.pad;
       padLength = other.padLength;
-      syncControls();
       string s = other.te.getBuffer().getText();
       te.getBuffer().setText(s);
+writeln("buffer "~te.getBuffer().getText());
+      syncControls();
    }
 
    this(AppWindow w, ACBase parent)
@@ -185,7 +186,8 @@ writefln("number %d text %s", number, text);
       }
       else
       {
-         string text = te.getBuffer().getText();
+         text = te.getBuffer().getText();
+writeln("toggle "~text);
          if (text.length == 0)
          {
             number = 0;
@@ -241,7 +243,7 @@ writefln("render %s number %d text %s", name, number, text);
       c.setSourceRgb(baseColor.red, baseColor.green, baseColor.blue);
       setCairoFont(c, pfd);
       c.moveTo(hOff, vOff+0.5*height);
-      c.showText(text);
+      c.showText(s);
    }
 }
 

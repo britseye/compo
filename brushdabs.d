@@ -76,6 +76,11 @@ class BrushDabs : ACBase
       shapeSeed = other.shapeSeed;
       cSrc.init(baseColor, colorSeed);
       shade = other.shade;
+      cSrc.setShadeBand(shade);
+      nDabs = other.nDabs;
+      dabs = other.dabs.dup;
+      pca = other.pca.dup;
+      tf = other.tf;
       syncControls();
    }
 
@@ -104,8 +109,8 @@ class BrushDabs : ACBase
          cSrc.init(baseColor, 42);
          cSrc.setShadeBand(shade);
       }
-      //printRandom = true;
-      generate();
+      if (!asCopy)
+         generate();
 
       setupControls();
       positionControls(true);

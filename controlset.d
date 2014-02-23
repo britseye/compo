@@ -1216,7 +1216,7 @@ class MOLLineThick: PseudoWidget
    Label txt;
    Timeout t;
    double current = 0.5;
-   double lt;
+   double lt = 0.5;
    int tstate;
    int direction;
    uint interval;

@@ -124,6 +124,8 @@ class FancyText : TextViewItem
       pfd = other.pfd.copy();
       fill = other.fill;
       outline = other.outline;
+      fillFromPattern = other.fillFromPattern;
+      fillUid = other.fillUid;
       olt = other.olt;
       orientation = other.orientation;
       hOff = other.hOff;

@@ -77,9 +77,12 @@ class RegularPolygon : LineSet
       starIndent = other.starIndent;
       fill = other.fill;
       outline = other.outline;
+      fillFromPattern = other.fillFromPattern;
+      fillUid = other.fillUid;
       center = other.center;
       oPath = other.oPath.dup;
       xform = other.xform;
+      tf = other.tf;
       syncControls();
    }
 

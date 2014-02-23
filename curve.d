@@ -34,7 +34,7 @@ class Curve : LineSet
 {
    enum
    {
-      SP = Purpose.R_CHECKBUTTONS-100,
+      SP = Purpose.R_TOGGLEBUTTONS-100,
       EP,
       CP1,
       CP2,
@@ -56,8 +56,10 @@ class Curve : LineSet
          cSet.setToggle(Purpose.LESSHARP, true);
       else
          cSet.setToggle(Purpose.LESROUND, true);
-      cSet.setLabel(Purpose.LINEWIDTH, formatLT(lineWidth));
+      cSet.setToggle(Purpose.SHOWMARKERS, showCp);
+      cSet.setToggle(SP+active, true);
       cSet.toggling(true);
+      cSet.setLabel(Purpose.LINEWIDTH, formatLT(lineWidth));
       if (!xform)
          cSet.setComboIndex(Purpose.XFORMCB, 0);
       else
@@ -74,7 +76,13 @@ class Curve : LineSet
       les = other.les;
       curve = other.curve;
       xform = other.xform;
-      tf=other.tf;
+      tf = other.tf;
+      if (other.showCp)
+      {
+         other.showCp = false;
+         showCp = true;
+         active = other.active;
+      }
       syncControls();
    }
 
@@ -122,7 +130,7 @@ class Curve : LineSet
       rb = new RadioButton(rb1, "Move entire");
       cSet.add(rb, ICoord(175, vp+80), cast(Purpose) ALL);
       CheckButton cb = new CheckButton("Show control points");
-      cSet.add(cb, ICoord(0, vp+80), Purpose.EDITMODE);
+      cSet.add(cb, ICoord(0, vp+80), Purpose.SHOWMARKERS);
 
       vp += 25;
       new Compass(cSet, 0, ICoord(0, vp-18));
@@ -132,9 +140,10 @@ class Curve : LineSet
 
    override bool specificNotify(Widget w, Purpose wid)
    {
+
       if (wid >= SP && wid <= ALL)
       {
-         if ((cast(ToggleButton) w).getActive())
+         if ((cast(RadioButton) w).getActive())
          {
             if (active == wid-SP)
                return false;
@@ -142,7 +151,7 @@ class Curve : LineSet
          }
          return true;
       }
-      else if (wid == Purpose.EDITMODE)
+      else if (wid == Purpose.SHOWMARKERS)
          showCp = !showCp;
       else
          return false;

@@ -169,6 +169,13 @@ class PolyCurveDlg: Dialog, CSTarget
       cs.realize(layout);
    }
 
+   void setControls()
+   {
+      cs.toggling(false);
+      cs.setToggle(SP+po.activeCoords, true);
+      cs.toggling(true);
+   }
+
    static void moveCoord(ref Coord p, double distance, double angle)
    {
       p.x += cos(angle)*distance;
@@ -388,25 +395,44 @@ class Polycurve : LineSet
    this(Polycurve other)
    {
       this(other.aw, other.parent);
+      if (other.constructing)
+      {
+         aw.popupMsg("The Polycurve you are copying is not complete.\nCreating blank Polycurve in construct mode.",MessageType.WARNING);
+         constructing = true;
+         return;
+      }
       constructing = false;
       hOff = other.hOff;
       vOff = other.vOff;
+      open = other.open;
       baseColor = other.baseColor.copy();
       altColor = other.altColor.copy();
       lineWidth = other.lineWidth;
       les = other.les;
       fill = other.fill;
       outline = other.outline;
+      fillFromPattern = other.fillFromPattern;
+      fillUid = other.fillUid;
       center = other.center;
       activeCoords = other.activeCoords;
+      cSet.enable(Purpose.REDRAW);
       pcPath = other.pcPath.dup;
       current = other.current;
       xform = other.xform;
       tf = other.tf;
-      editStack ~= pcPath.dup;
+      editStack ~= other.pcPath.dup;
       currentStack ~= current;
       dirty = true;
+      editing = other.editing;
       syncControls();
+      if (other.editing)
+      {
+         other.hideDialogs();
+         other.editing = false;
+         other.switchMode();
+         md.setControls();
+         switchMode();
+      }
    }
 
    this(AppWindow w, ACBase parent)

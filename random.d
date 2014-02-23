@@ -56,6 +56,7 @@ class Random: LineSet
       cSet.setLabel(Purpose.LINEWIDTH, formatLT(lineWidth));
       cSet.toggling(true);
       cSet.setHostName(name);
+      countLabel.setText(to!string(count));
       minSize.setText(to!string(lowerPc));
       maxSize.setText(to!string(upperPc));
    }
@@ -66,6 +67,7 @@ class Random: LineSet
       hOff = other.hOff;
       vOff = other.vOff;
       baseColor = other.baseColor.copy();
+      count = other.count;
       lowerPc = other.lowerPc;
       upperPc = other.upperPc;
       lower = other.lower;

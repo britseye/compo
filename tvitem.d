@@ -21,8 +21,10 @@ import richtext;
 
 import std.stdio;
 import std.conv;
+import std.format;
 import core.memory;
-import std.variant;
+//import std.variant;
+import std.array;
 
 import gtkc.gtktypes;
 import gtk.Widget;
@@ -290,6 +292,16 @@ class TextViewItem : ACBase
       c.setFontSize(size);
    }
 
+   string sensibleFontName()
+   {
+      string family = pfd.getFamily();
+      auto writer = appender!string();
+      int sz = pfd.getSize();
+      double dsz = cast(double) sz/1024.0;
+      formattedWrite(writer, "%s %1.2f", family, dsz);
+      return writer.data;
+   }
+
    void adjustFontSize(int direction, int far)
    {
       if (direction > 0)
@@ -311,6 +323,7 @@ class TextViewItem : ACBase
          pfd.setSize(fs);
       }
       te.modifyFont(pfd);
+      cSet.setTextParams(alignment, sensibleFontName());
    }
 
    bool setSelectionAttribute(string property, string value, int type = 0) { return false; }

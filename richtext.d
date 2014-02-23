@@ -64,6 +64,7 @@ class RichText : TextViewItem
       toggleView();
       cSet.toggling(true);
       cSet.setHostName(name);
+      cSet.setTextParams(alignment, sensibleFontName());
    }
 
    ubyte[] serialize()
@@ -90,8 +91,12 @@ class RichText : TextViewItem
    this(RichText other)
    {
       this(other.aw, other.parent);
+      hOff = other.hOff;
+      vOff = other.vOff;
+      baseColor= other.baseColor.copy();
+      pfd = other.pfd.copy();
       if (other.fa !is null)
-         fa = other.fa[];
+         fa = other.fa.dup;
       ubyte[] buffer = other.serialize();
       deserialize(buffer);
       editMode = other.editMode;
