@@ -48,7 +48,7 @@ class SVGRenderer
    }
 
 /*************************************************************************************
-   Render it in the Cairo Context
+   Render it in the Cairo Context - a transparent Surface context seems to work best
    x - x position
    y - y position
    w - width of the target drawing area
@@ -58,13 +58,9 @@ class SVGRenderer
    The image will first be scaled so it fits in the most restrictive dimension.
    Then any additional scaling is applied.
 */
-   bool render(double ho, double vo, double w, double h, int scaleType, double scalex = 1.0)
+   bool render(double w, double h, int scaleType, double scalex = 1.0)
    {
-      //ctx.save();
       cairo_matrix_t mts;
-      cairo_matrix_t mtt;
-      Matrix tmt = new Matrix(&mtt);
-      tmt.initTranslate(ho, vo);
       Matrix tms = new Matrix(&mts);
       tms.initIdentity();
 
@@ -94,10 +90,8 @@ class SVGRenderer
       {
          tms.initScale(scalex*w/sw, scalex*h/sh);
       }
-      tmt.multiply(tmt, tms);
-      ctx.setMatrix(tmt);
+      ctx.setMatrix(tms);
       int rv = rsvg_handle_render_cairo(handle, ctp);
-      //ctx.restore();
       return (rv != 0);
    }
 }

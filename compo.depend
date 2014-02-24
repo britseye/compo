@@ -3365,13 +3365,13 @@
 	<cairo/Pattern.d>
 	<gtkc/cairotypes.d>
 
-1393164122 source:/home/steve/COMPO/rsvgwrap.d
+1393221251 source:/home/steve/COMPO/rsvgwrap.d
 	<std/string.d>
 	<std/stdio.d>
 	<cairo/Context.d>
 	<cairo/Matrix.d>
 
-1393164122 /home/steve/COMPO//rsvgwrap.d
+1393221251 /home/steve/COMPO//rsvgwrap.d
 
 1384813905 /usr/local/include/d/gtkd-2/cairo/SvgSurface.d
 	<gtkc/cairotypes.d>
@@ -3379,7 +3379,7 @@
 1384813905 /usr/local/include/d/gtkd-2/gtk/PopupBox.d
 	<gtkc/gtktypes.d>
 
-1393163882 source:/home/steve/COMPO/svgimage.d
+1393221412 source:/home/steve/COMPO/svgimage.d
 	<mainwin.d>
 	<acomp.d>
 	<common.d>
@@ -3393,6 +3393,7 @@
 	<std/file.d>
 	<gdk/Cairo.d>
 	<cairo/Context.d>
+	<cairo/Surface.d>
 	<gtk/Widget.d>
 	<gtk/Label.d>
 	<gtk/Button.d>
@@ -3437,7 +3438,7 @@
 	<pango/PgFontDescription.d>
 	<gobject/Value.d>
 
-1393163882 /home/steve/COMPO//svgimage.d
+1393221412 /home/steve/COMPO//svgimage.d
 
 1392883537 /home/steve/COMPO//interfaces.d
 

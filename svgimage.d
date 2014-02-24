@@ -22,6 +22,7 @@ import std.file;
 
 import gdk.Cairo;
 import cairo.Context;
+import cairo.Surface;
 import gtk.Widget;
 import gtk.Label;
 import gtk.Button;
@@ -236,9 +237,21 @@ class SVGImage : ACBase
    {
       if (fileName is null)
          return;
-      c.save();
-      svgr.setContext(c);
-      svgr.render(hOff, vOff, cast(double) width, cast(double) height, scaleType, scaleX);
-      c.restore();
+      //c.save();
+      c.translate(hOff, vOff);
+
+      // Some jiggery-pokery required here - rsvg does not do a good job
+      // rendering directl to the context
+      Surface s = c.getTarget().createSimilar(cairo_content_t.COLOR_ALPHA, width, height);
+      Context sc = c.create(s);
+      sc.setSourceRgba(1,1,1,1);
+      sc.paint();
+
+      svgr.setContext(sc);
+      svgr.render(cast(double) width, cast(double) height, scaleType, scaleX);
+
+      c.setSourceSurface(s, 0, 0);
+      c.paint();
+      //c.restore();
    }
 }
