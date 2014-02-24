@@ -13,7 +13,6 @@ import std.stream;
 import std.array;
 import std.format;
 import std.uuid;
-import std.zlib;
 
 import about;
 import common;

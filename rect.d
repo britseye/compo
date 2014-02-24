@@ -86,10 +86,13 @@ class Rectangle : LineSet
       les = other.les;
       square = other.square;
       rounded = other.rounded;
-      fill = other.fill;
-      outline = other.outline;
       rr = other.rr;
       tf = other.tf;
+      fill = other.fill;
+      outline = other.outline;
+      fillFromPattern = other.fillFromPattern;
+      fillUid = other.fillUid;
+      updateFillUI();
       figureWH();
 
       xform = other.xform;

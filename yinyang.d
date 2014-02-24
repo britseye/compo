@@ -75,6 +75,10 @@ class YinYang: LineSet
       tf = other.tf;
       fill = other.fill;
       outline = other.outline;
+      fillFromPattern = other.fillFromPattern;
+      fillUid = other.fillUid;
+      updateFillUI();
+      constructBase();
       syncControls();
    }
 

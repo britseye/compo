@@ -361,7 +361,7 @@ class Polycurve : LineSet
 {
    static int nextOid = 0;
    PathItem root;
-   PathItem[] pcPath, pcRPath;
+   PathItem[] pcPath, unreflected;
    PathItem[][] editStack;
    Coord topLeft, bottomRight;
    int[] currentStack;
@@ -374,6 +374,7 @@ class Polycurve : LineSet
    double esf, zw, zh;
    Coord vo;
    bool zoomed, protect;
+   Button rfb;
 
    override void syncControls()
    {
@@ -401,6 +402,11 @@ class Polycurve : LineSet
          constructing = true;
          return;
       }
+      if (other.unreflected.length)
+      {
+         unreflected = other.unreflected.dup;
+         rfb.setLabel("Unreflect");
+      }
       constructing = false;
       hOff = other.hOff;
       vOff = other.vOff;
@@ -416,6 +422,7 @@ class Polycurve : LineSet
       center = other.center;
       activeCoords = other.activeCoords;
       cSet.enable(Purpose.REDRAW);
+      cSet.enable(Purpose.REFLECT);
       pcPath = other.pcPath.dup;
       current = other.current;
       xform = other.xform;
@@ -489,10 +496,14 @@ class Polycurve : LineSet
 
       new InchTool(cSet, 0, ICoord(0, vp), true);
 
+      rfb = new Button("Reflect");
+      rfb.setSizeRequest(80, -1);
+      rfb.setSensitive(!constructing);
+      cSet.add(rfb, ICoord(176, vp+2), Purpose.REFLECT);
       Button b = new Button("Edit");
       b.setSizeRequest(70, -1);
       b.setSensitive(!constructing);
-      cSet.add(b, ICoord(203, vp+2), Purpose.REDRAW);
+      cSet.add(b, ICoord(260, vp+2), Purpose.REDRAW);
 
       cSet.cy = vp+40;
    }
@@ -524,6 +535,20 @@ class Polycurve : LineSet
          editing = !editing;
          switchMode();
          focusLayout();
+         return true;
+      case Purpose.REFLECT:
+         lastOp = push!Path_t(this, oPath, OP_REDRAW);
+         if (unreflected !is null)
+         {
+            pcPath = unreflected;
+            unreflected = null;
+            rfb.setLabel("Reflect");
+         }
+         else
+         {
+            reflect();
+            rfb.setLabel("Unreflect");
+         }
          return true;
       case Purpose.OPEN:
          open = !open;
@@ -635,6 +660,38 @@ class Polycurve : LineSet
       return d;
    }
 
+   void reflect()
+   {
+      unreflected = pcPath.dup;
+      Coord s = Coord(pcPath[0].start.x, pcPath[0].start.y), e = Coord(pcPath[$-1].start.x, pcPath[$-1].start.y);
+      double m = (e.y-s.y)/(e.x-s.x);
+      double c = s.y-m*s.x;
+      Coord mp(Coord p)
+      {
+         double d = (p.x + (p.y - c)*m)/(1 + m*m);
+         return Coord(2*d-p.x, 2*d*m - p.y + 2*c);
+      }
+      PathItem[] half2;
+      half2.length = pcPath.length-1;
+      for (size_t i = pcPath.length-2, j = 0;; i--, j++)
+      {
+         with (half2[j])
+         {
+            type = pcPath[i].type;
+            start = mp(pcPath[i].end);
+            cp1 = mp(pcPath[i].cp2);
+            cp2 = mp(pcPath[i].cp1);
+            end = mp(pcPath[i].start);
+            double tx = start.x+cp1.x+cp2.x+end.x;
+            double ty = start.y+cp1.y+cp2.y+end.y;
+            cog = Coord(tx/4, ty/4);
+         }
+         if (i == 0) break;
+      }
+      pcPath.length = pcPath.length-1;
+      pcPath ~= half2;
+   }
+
    static movePoint(ref Coord c, double dx, double dy, double factor = 1)
    {
       if (factor == 1)
@@ -654,6 +711,7 @@ class Polycurve : LineSet
       constructing = false;
       center = figureCenter();
       cSet.enable(Purpose.REDRAW);
+      cSet.enable(Purpose.REFLECT);
       cSet.setInfo("Click the Edit button to move, add, or delete curves");
       figureNextPrev();
    }
@@ -1132,7 +1190,7 @@ class Polycurve : LineSet
          lim--;
       for (int i = 0; i < lim; i++)
          eSegTo(c, pcPath[i]);
-      if (!open && oPath.length > 0)
+      if (!open && pcPath.length > 0)
          c.closePath();
       c.stroke();
 

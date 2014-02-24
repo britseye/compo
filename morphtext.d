@@ -99,6 +99,9 @@ class MorphText : TextViewItem
       cm = other.cm;
       fill = other.fill;
       outline = other.outline;
+      fillFromPattern = other.fillFromPattern;
+      fillUid = other.fillUid;
+      updateFillUI();
       syncControls();
 
       string text = other.tb.getText();

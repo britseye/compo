@@ -304,6 +304,7 @@ class PolyEditDlg: Dialog, CSTarget
 class Polygon : LineSet
 {
    static int nextOid = 0;
+   Coord[] unreflected;
    Coord[][] editStack;
    Coord topLeft, bottomRight;
    int[] currentStack;
@@ -316,6 +317,7 @@ class Polygon : LineSet
    double esf, zw, zh;
    Coord vo;
    bool zoomed, protect;
+   Button rfb;
 
    override void syncControls()
    {
@@ -344,6 +346,11 @@ class Polygon : LineSet
          constructing = true;
          return;
       }
+      if (other.unreflected.length)
+      {
+         unreflected = other.unreflected.dup;
+         rfb.setLabel("Unreflect");
+      }
       constructing = false;
       hOff = other.hOff;
       vOff = other.vOff;
@@ -363,6 +370,7 @@ class Polygon : LineSet
       editing = other.editing;
       activeCoords = other.activeCoords;
       cSet.enable(Purpose.REDRAW);
+      cSet.enable(Purpose.REFLECT);
       dirty = true;
       syncControls();
       if (other.editing)
@@ -434,10 +442,10 @@ class Polygon : LineSet
       cSet.add(b, ICoord(203, vp-10), Purpose.REDRAW);
 
       vp += 21;
-      b = new Button("Reflect");
-      b.setSizeRequest(70, -1);
-      b.setSensitive(0);
-      cSet.add(b, ICoord(203, vp), Purpose.REFLECT);
+      rfb = new Button("Reflect");
+      rfb.setSizeRequest(80, -1);
+      rfb.setSensitive(0);
+      cSet.add(rfb, ICoord(203, vp), Purpose.REFLECT);
 
       cSet.cy = vp+35;
    }
@@ -470,7 +478,17 @@ class Polygon : LineSet
          return true;
       case Purpose.REFLECT:
          lastOp = push!Path_t(this, oPath, OP_REDRAW);
-         reflect();
+         if (unreflected !is null)
+         {
+            oPath = unreflected;
+            unreflected = null;
+            rfb.setLabel("Reflect");
+         }
+         else
+         {
+            reflect();
+            rfb.setLabel("Unreflect");
+         }
          return true;
       case Purpose.OPEN:
          open = !open;
@@ -561,6 +579,7 @@ class Polygon : LineSet
 
    void reflect()
    {
+      unreflected = oPath.dup;
       Coord s = oPath[0], e = oPath[$-1];
       double m = (e.y-s.y)/(e.x-s.x);
       double c = s.y-m*s.x;

@@ -244,7 +244,7 @@ class SVGImage : ACBase
       // rendering directl to the context
       Surface s = c.getTarget().createSimilar(cairo_content_t.COLOR_ALPHA, width, height);
       Context sc = c.create(s);
-      sc.setSourceRgba(1,1,1,1);
+      sc.setSourceRgba(1,1,1,0);
       sc.paint();
 
       svgr.setContext(sc);

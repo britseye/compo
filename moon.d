@@ -90,17 +90,21 @@ class Moon : LineSet
       hOff = other.hOff;
       vOff = other.vOff;
       baseColor = other.baseColor.copy();
+      altColor = other.altColor.copy();
       lineWidth = other.lineWidth;
       les = other.les;
       fill = other.fill;
       outline = other.outline;
-      altColor = other.altColor.copy();
+      fillFromPattern = other.fillFromPattern;
+      fillUid = other.fillUid;
+      updateFillUI();
       center = other.center;
       xform = other.xform;
       tf = other.tf;
       radius = other.radius;
       radius2 = other.radius2;
       ha = other.ha;
+      day = other.day;
       dirty = true;
       syncControls();
    }
@@ -111,7 +115,7 @@ class Moon : LineSet
       super(w, parent, s, AC_MOON);
       group = ACGroups.SHAPES;
       closed = true;
-      altColor = new RGBA(1,1,0.8,1);
+      altColor = new RGBA(0,0,0,1);
       les = true;
       fill = false;
 

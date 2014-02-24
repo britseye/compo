@@ -67,7 +67,6 @@ import std.string;
 import std.conv;
 import std.path;
 import std.uuid;
-import std.zlib;
 
 import gdk.RGBA;
 import pango.PgFontDescription;

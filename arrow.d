@@ -74,13 +74,16 @@ class Arrow : LineSet
       hOff = other.hOff;
       vOff = other.vOff;
       baseColor = other.baseColor.copy();
+      altColor = other.altColor.copy();
       lineWidth = other.lineWidth;
       les = other.les;
       size = other.size;
       hw = other.hw;
       fill = other.fill;
       outline = other.outline;
-      altColor = other.altColor.copy();
+      fillFromPattern = other.fillFromPattern;
+      fillUid = other.fillUid;
+      updateFillUI();
       center = other.center;
       oPath = other.oPath.dup;
       xform = other.xform;
@@ -100,7 +103,7 @@ class Arrow : LineSet
 
       center.x = 0.5*width;
       center.y = 0.5*height;
-      size = 1;
+      size = 2.5;
       hw = 0;  // medium head width
       constructBase();
       tm = new Matrix(&tmData);

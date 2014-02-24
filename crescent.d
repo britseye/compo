@@ -82,11 +82,14 @@ class Crescent : LineSet
       hOff = other.hOff;
       vOff = other.vOff;
       baseColor = other.baseColor.copy();
+      altColor = other.altColor.copy();
       lineWidth = other.lineWidth;
       les = other.les;
       fill = other.fill;
       outline = other.outline;
-      altColor = other.altColor.copy();
+      fillFromPattern = other.fillFromPattern;
+      fillUid = other.fillUid;
+      updateFillUI();
       center = other.center;
       xform = other.xform;
       tf = other.tf;

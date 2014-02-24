@@ -1664,7 +1664,7 @@
 	<gtkc/gtktypes.d>
 	<gtkc/gdktypes.d>
 
-1392624291 source:/home/steve/COMPO/arrow.d
+1393223718 source:/home/steve/COMPO/arrow.d
 	<mainwin.d>
 	<constants.d>
 	<acomp.d>
@@ -2014,43 +2014,43 @@
 
 1393139574 /home/steve/COMPO//richtext.d
 
-1392624291 /home/steve/COMPO//arrow.d
+1393223718 /home/steve/COMPO//arrow.d
 
 1390804295 /home/steve/COMPO//bevel.d
 
 1388312000 /home/steve/COMPO//box.d
 
-1392889517 /home/steve/COMPO//circle.d
+1393223734 /home/steve/COMPO//circle.d
 
 1386742097 /home/steve/COMPO//connector.d
 
 1392189014 /home/steve/COMPO//corner.d
 
-1393144771 /home/steve/COMPO//fancytext.d
+1393223368 /home/steve/COMPO//fancytext.d
 
 1392809954 /home/steve/COMPO//fader.d
 
-1392959367 /home/steve/COMPO//heart.d
+1393224496 /home/steve/COMPO//heart.d
 
 1392624640 /home/steve/COMPO//line.d
 
-1393146147 /home/steve/COMPO//morphtext.d
+1393223591 /home/steve/COMPO//morphtext.d
 
 1393148135 /home/steve/COMPO//pattern.d
 
 1386240867 /home/steve/COMPO//picture.d
 
-1393155789 /home/steve/COMPO//polygon.d
+1393236554 /home/steve/COMPO//polygon.d
 
 1393150282 /home/steve/COMPO//random.d
 
-1392968948 /home/steve/COMPO//rect.d
+1393226583 /home/steve/COMPO//rect.d
 
 1393156833 /home/steve/COMPO//regpoly.d
 
 1392816189 /home/steve/COMPO//separator.d
 
-1392468806 /home/steve/COMPO//reference.d
+1393222245 /home/steve/COMPO//reference.d
 
 1384813905 /usr/local/include/d/gtkd-2/gio/MemoryInputStream.d
 	<gtkc/giotypes.d>
@@ -2082,7 +2082,7 @@
 	<cairo/Pattern.d>
 	<gtkc/cairotypes.d>
 
-1393144771 source:/home/steve/COMPO/fancytext.d
+1393223368 source:/home/steve/COMPO/fancytext.d
 	<types.d>
 	<controlset.d>
 	<mainwin.d>
@@ -2152,7 +2152,7 @@
 	<cairo/Context.d>
 	<cairo/SvgSurface.d>
 
-1392959367 source:/home/steve/COMPO/heart.d
+1393224496 source:/home/steve/COMPO/heart.d
 	<mainwin.d>
 	<constants.d>
 	<acomp.d>
@@ -2525,7 +2525,7 @@
 	<std/math.d>
 	<gtkc/cairotypes.d>
 
-1393146147 source:/home/steve/COMPO/morphtext.d
+1393223591 source:/home/steve/COMPO/morphtext.d
 	<mainwin.d>
 	<acomp.d>
 	<tvitem.d>
@@ -2636,7 +2636,7 @@
 	<gtk/TreePath.d>
 	<gtk/TreeModel.d>
 
-1392889517 source:/home/steve/COMPO/circle.d
+1393223734 source:/home/steve/COMPO/circle.d
 	<mainwin.d>
 	<constants.d>
 	<acomp.d>
@@ -2704,7 +2704,7 @@
 	<gtkc/gobjecttypes.d>
 	<gtkc/gdktypes.d>
 
-1393155789 source:/home/steve/COMPO/polygon.d
+1393236554 source:/home/steve/COMPO/polygon.d
 	<mainwin.d>
 	<container.d>
 	<constants.d>
@@ -2794,7 +2794,7 @@
 	<gtkc/cairotypes.d>
 	<cairo/Surface.d>
 
-1392968948 source:/home/steve/COMPO/rect.d
+1393226583 source:/home/steve/COMPO/rect.d
 	<mainwin.d>
 	<constants.d>
 	<acomp.d>
@@ -2822,7 +2822,7 @@
 	<gtkc/cairotypes.d>
 	<cairo/Matrix.d>
 
-1392468806 source:/home/steve/COMPO/reference.d
+1393222245 source:/home/steve/COMPO/reference.d
 	<mainwin.d>
 	<acomp.d>
 	<common.d>
@@ -3379,7 +3379,7 @@
 1384813905 /usr/local/include/d/gtkd-2/gtk/PopupBox.d
 	<gtkc/gtktypes.d>
 
-1393221412 source:/home/steve/COMPO/svgimage.d
+1393221763 source:/home/steve/COMPO/svgimage.d
 	<mainwin.d>
 	<acomp.d>
 	<common.d>
@@ -3403,9 +3403,9 @@
 	<gtk/FileFilter.d>
 	<gtk/FileChooserDialog.d>
 
-1393161177 /home/steve/COMPO//pixelimage.d
+1393221749 /home/steve/COMPO//pixelimage.d
 
-1393161177 source:/home/steve/COMPO/pixelimage.d
+1393221749 source:/home/steve/COMPO/pixelimage.d
 	<mainwin.d>
 	<acomp.d>
 	<common.d>
@@ -3438,7 +3438,7 @@
 	<pango/PgFontDescription.d>
 	<gobject/Value.d>
 
-1393221412 /home/steve/COMPO//svgimage.d
+1393221763 /home/steve/COMPO//svgimage.d
 
 1392883537 /home/steve/COMPO//interfaces.d
 
@@ -3450,7 +3450,7 @@
 	<gtk/Entry.d>
 	<cairo/Context.d>
 
-1392624270 source:/home/steve/COMPO/cross.d
+1393224042 source:/home/steve/COMPO/cross.d
 	<mainwin.d>
 	<constants.d>
 	<acomp.d>
@@ -3481,9 +3481,9 @@
 	<gtkc/cairotypes.d>
 	<cairo/Matrix.d>
 
-1392624270 /home/steve/COMPO//cross.d
+1393224042 /home/steve/COMPO//cross.d
 
-1391675308 source:/home/steve/COMPO/crescent.d
+1393223749 source:/home/steve/COMPO/crescent.d
 	<mainwin.d>
 	<constants.d>
 	<acomp.d>
@@ -3514,11 +3514,11 @@
 	<gtkc/cairotypes.d>
 	<cairo/Matrix.d>
 
-1391675308 /home/steve/COMPO//crescent.d
+1393223749 /home/steve/COMPO//crescent.d
 
-1393156483 /home/steve/COMPO//polycurve.d
+1393236613 /home/steve/COMPO//polycurve.d
 
-1393156483 source:/home/steve/COMPO/polycurve.d
+1393236213 source:/home/steve/COMPO/polycurve.d
 	<mainwin.d>
 	<constants.d>
 	<acomp.d>
@@ -3819,9 +3819,9 @@
 1384813905 /usr/local/include/d/gtkd-2/cairo/Version.d
 	<gtkc/cairotypes.d>
 
-1392959779 /home/steve/COMPO//moon.d
+1393226350 /home/steve/COMPO//moon.d
 
-1392959779 source:/home/steve/COMPO/moon.d
+1393226350 source:/home/steve/COMPO/moon.d
 	<mainwin.d>
 	<constants.d>
 	<acomp.d>
@@ -3852,9 +3852,9 @@
 	<gtkc/cairotypes.d>
 	<cairo/Matrix.d>
 
-1391675540 /home/steve/COMPO//triangle.d
+1393228065 /home/steve/COMPO//triangle.d
 
-1391675540 source:/home/steve/COMPO/triangle.d
+1393228065 source:/home/steve/COMPO/triangle.d
 	<mainwin.d>
 	<constants.d>
 	<acomp.d>
@@ -4166,9 +4166,9 @@
 
 1392191094 /home/steve/COMPO//corners.d
 
-1392970999 /home/steve/COMPO//teardrop.d
+1393227720 /home/steve/COMPO//teardrop.d
 
-1392970999 source:/home/steve/COMPO/teardrop.d
+1393227720 source:/home/steve/COMPO/teardrop.d
 	<mainwin.d>
 	<constants.d>
 	<acomp.d>
@@ -4189,9 +4189,9 @@
 	<cairo/Matrix.d>
 	<cairo/Surface.d>
 
-1392974328 /home/steve/COMPO//yinyang.d
+1393228337 /home/steve/COMPO//yinyang.d
 
-1392974328 source:/home/steve/COMPO/yinyang.d
+1393228337 source:/home/steve/COMPO/yinyang.d
 	<mainwin.d>
 	<constants.d>
 	<acomp.d>
@@ -4211,9 +4211,9 @@
 	<cairo/Context.d>
 	<cairo/Matrix.d>
 
-1392803117 /home/steve/COMPO//shield.d
+1393227071 /home/steve/COMPO//shield.d
 
-1392803117 source:/home/steve/COMPO/shield.d
+1393227071 source:/home/steve/COMPO/shield.d
 	<mainwin.d>
 	<constants.d>
 	<acomp.d>

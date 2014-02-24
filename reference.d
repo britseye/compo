@@ -51,10 +51,14 @@ class Reference : ACBase
    this(Reference other)
    {
       this(other.aw, other.parent);
+      hOff = other.hOff;
+      vOff = other.vOff;
       fileName = other.fileName;
       that = other.that;   // It's a reference - no need to copy
       scf = other.scf;
       local = other.local;
+      xform = other.xform;
+      tf = other.tf;
    }
 
    this(AppWindow w, ACBase parent)

@@ -67,13 +67,16 @@ class Cross : LineSet
       hOff = other.hOff;
       vOff = other.vOff;
       baseColor = other.baseColor.copy();
+      altColor = other.altColor.copy();
       lineWidth = other.lineWidth;
       les = other.les;
       uw = other.uw;
       cw = other.cw;
       fill = other.fill;
+      fillFromPattern = other.fillFromPattern;
+      fillUid = other.fillUid;
+      updateFillUI();
       outline = other.outline;
-      altColor = other.altColor.copy();
       center = other.center;
       oPath = other.oPath.dup;
       xform = other.xform;

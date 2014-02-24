@@ -72,7 +72,11 @@ class Shield: LineSet
       tf = other.tf;
       fill = other.fill;
       outline = other.outline;
+      fillFromPattern = other.fillFromPattern;
+      fillUid = other.fillUid;
+      updateFillUI();
       style = other.style;
+      constructBase();
       syncControls();
    }
 

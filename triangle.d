@@ -81,6 +81,9 @@ class Triangle : LineSet
       ttype = other.ttype;
       fill = other.fill;
       outline = other.outline;
+      fillFromPattern = other.fillFromPattern;
+      fillUid = other.fillUid;
+      updateFillUI();
       tf = other.tf;
 
       xform = other.xform;
