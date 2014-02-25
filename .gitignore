@@ -1,9 +1,9 @@
 /bin
-/lib
 /obj
 /save
 /deb
 /drawings
-/i386
 /objdir
+/i386
+/amd64
 
