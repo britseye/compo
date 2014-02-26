@@ -15,5 +15,5 @@ libcairo2 (>= 1.12.14) - For Ubuntu 12.04 you can download a .deb file to instal
 
 librsvg.so - the version on Ubuntu 12.04 is librsvg-2.so.2, but for some reason there is no symbolic link to it called librsvg.so. So if you don't have that either, you can create the symlink, or specify the library explicitly as in -L-l:librsvg-2.so.2.
 
-libusps4cb - This is a tiny US Postal Service library used in the creation of postal barcodes (https://ribbs.usps.gov/index.cfm?page=intellmailmailpieces). The 32 bit makefile uses libusps4cb.a, but the .a files are no longer available (bad decision - how many apps are you likely to have on your machine to print postal bar codes???), so for a 64 bit build, put libusps4cb.so somewhere that's on your library path. Both these files are in the compo/lib directory on GitHub.
+libusps4cb - This is a tiny US Postal Service library used in the creation of postal barcodes (https://ribbs.usps.gov/index.cfm?page=intellmailmailpieces). The 32 bit makefile uses libusps4cb.a, but the .a files are no longer available (bad decision - how many apps are you likely to have on your machine to print postal bar codes???), so for a 64 bit build, put libusps4cb.so somewhere that's on your library path. Both these files are in the compo/lib directory on GitHub. libusps4cb.a - 32 bit, libusps4cb.so - 64 bit.
 
