@@ -9,5 +9,6 @@
 	"targetType": "executable",
 	"dflags": ["-m32", "-I/usr/local/include/d/gtkd-2"],
 	"libs": ["usps4cb", "gtkd-2", "dl", "pthread", "m", "rt", "rsvg"],
-	"lflags": ["-L/usr/lib/i386-linux-gnu", "-L/usr/local/lib", "-L./lib", "-l:libphobos2.a"]
+	"lflags": ["-L/usr/lib/i386-linux-gnu", "-L/usr/local/lib", "-L./lib", "-l:librsvg-2.so.2",
+	           "-l:libphobos2.a"]
 }
