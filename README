@@ -2,18 +2,18 @@ COMPO is a graphical design utility for creating compositions
 in one or more specified areas of a printed page, or for creating
 PNG or SVG images of arbitrary size.
 
-You can find out what it is supposed to be able to do at
+You can find out what it is supposed to be able to do, and check its status at
 http://britseyeview.com/compo/
 
-2014/01/29 Checked in changes that allow clean build with warnings
-and deprecations on.
+To build and run it you'll need ensure you have the following libraries:
 
-Regularized shape and geometric objects so they are all implemented
-in a similar way for eae of maintenance.
+GTK+ 3.4 or better.
 
-Added a more complete implementation of flatten and drawing, and a new
-pattern type - BrushDabs. This introduces the idea of 'shim' layers/
-objects that do not normally display themselves, but effect the
-following layer. So BrushDabs will be used as fill for any closed shape
-or geometric object that is placed over it.
+libgtkd-2.a - download the source from gtkd.org and build it - doesn't take long.
+
+libcairo2 (>= 1.12.14) - For Ubuntu 12.04 you can download a .deb file to install that from http://www.ubuntuupdates.org/package/xorg-edgers/precise/main/base/libcairo2. Other Ubuntu versions are available there also.
+
+librsvg.so - the version on Ubuntu 12.04 is librsvg-2.so.2, but for some reason there is no symbolic link to it called librsvg.so. So if you don't have that either, you can create the symlink, or specify the library explicitly as in -L-l:librsvg-2.so.2.
+
+libusps4cb - This is a tiny US Postal Service library used in the creation of postal barcodes (https://ribbs.usps.gov/index.cfm?page=intellmailmailpieces). The 32 bit makefile uses libusps4cb.a, but the .a files are no longer available (bad decision - how many apps are you likely to have on your machine to print postal bar codes???), so for a 64 bit build, put libusps4cb.so somewhere that's on your library path. Both these files are in the compo/lib directory on GitHub.
 
