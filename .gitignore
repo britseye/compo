@@ -4,6 +4,7 @@
 /deb
 /drawings
 /objdir
-/i386
-/amd64
+/source/bin
+/source/obj
+/i386/compo
 

@@ -5,19 +5,19 @@
 		<Cursor position="961" topLine="0" />
 	</File>
 	<File name="acomp.d" open="0" top="0" tabpos="3">
-		<Cursor position="11366" topLine="499" />
+		<Cursor position="21995" topLine="969" />
 	</File>
 	<File name="arrow.d" open="0" top="0" tabpos="2">
-		<Cursor position="2030" topLine="64" />
+		<Cursor position="4959" topLine="148" />
 	</File>
 	<File name="bevel.d" open="0" top="0" tabpos="1">
-		<Cursor position="0" topLine="0" />
+		<Cursor position="0" topLine="75" />
 	</File>
 	<File name="brushdabs.d" open="0" top="0" tabpos="0">
-		<Cursor position="1714" topLine="32" />
+		<Cursor position="4793" topLine="150" />
 	</File>
 	<File name="circle.d" open="0" top="0" tabpos="2">
-		<Cursor position="1682" topLine="32" />
+		<Cursor position="3073" topLine="113" />
 	</File>
 	<File name="common.d" open="0" top="0" tabpos="3">
 		<Cursor position="3194" topLine="124" />
@@ -26,13 +26,16 @@
 		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="container.d" open="0" top="0" tabpos="3">
-		<Cursor position="0" topLine="0" />
+		<Cursor position="2428" topLine="120" />
 	</File>
 	<File name="controlsdlg.d" open="0" top="0" tabpos="1">
 		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="controlset.d" open="0" top="0" tabpos="2">
 		<Cursor position="523" topLine="64" />
+	</File>
+	<File name="corners.d" open="0" top="0" tabpos="0">
+		<Cursor position="3835" topLine="162" />
 	</File>
 	<File name="crescent.d" open="0" top="0" tabpos="0">
 		<Cursor position="2137" topLine="63" />
@@ -46,7 +49,7 @@
 	<File name="curve.d" open="0" top="0" tabpos="1">
 		<Cursor position="1300" topLine="33" />
 	</File>
-	<File name="deserialize.d" open="1" top="1" tabpos="1">
+	<File name="deserialize.d" open="0" top="0" tabpos="1">
 		<Cursor position="956" topLine="15" />
 	</File>
 	<File name="drawing.d" open="0" top="0" tabpos="1">
@@ -68,7 +71,7 @@
 		<Cursor position="1750" topLine="48" />
 	</File>
 	<File name="interfaces.d" open="0" top="0" tabpos="3">
-		<Cursor position="1583" topLine="11" />
+		<Cursor position="132" topLine="0" />
 	</File>
 	<File name="lgradient.d" open="0" top="0" tabpos="1">
 		<Cursor position="8874" topLine="293" />
@@ -77,7 +80,7 @@
 		<Cursor position="5005" topLine="185" />
 	</File>
 	<File name="lineset.d" open="0" top="0" tabpos="1">
-		<Cursor position="2371" topLine="71" />
+		<Cursor position="3950" topLine="112" />
 	</File>
 	<File name="mainwin.d" open="0" top="0" tabpos="0">
 		<Cursor position="10164" topLine="452" />
@@ -160,7 +163,7 @@
 	<File name="serial.d" open="0" top="0" tabpos="0">
 		<Cursor position="4899" topLine="164" />
 	</File>
-	<File name="serialize.d" open="1" top="0" tabpos="2">
+	<File name="serialize.d" open="0" top="0" tabpos="2">
 		<Cursor position="378" topLine="0" />
 	</File>
 	<File name="settings.d" open="0" top="0" tabpos="4">
@@ -203,7 +206,7 @@
 		<Cursor position="6998" topLine="160" />
 	</File>
 	<File name="tvitem.d" open="0" top="0" tabpos="1">
-		<Cursor position="7758" topLine="285" />
+		<Cursor position="3566" topLine="126" />
 	</File>
 	<File name="types.d" open="0" top="0" tabpos="2">
 		<Cursor position="0" topLine="100" />

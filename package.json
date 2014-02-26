@@ -1,0 +1,13 @@
+{
+	"name": "compo",
+	"description": "A graphical design application.",
+	"authors": ["Steve Teale"],
+	"copyright": "Steve Teale 2011-2014",
+	"license": "BSL-1.0",
+	"homepage": "http://britseyeview.com/compo/",
+	"targetPath": "i386",
+	"targetType": "executable",
+	"dflags": ["-m32", "-I/usr/local/include/d/gtkd-2"],
+	"libs": ["usps4cb", "gtkd-2", "dl", "pthread", "m", "rt", "rsvg"],
+	"lflags": ["-L/usr/lib/i386-linux-gnu", "-L/usr/local/lib", "-L./lib", "-l:libphobos2.a"]
+}
