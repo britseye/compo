@@ -59,11 +59,14 @@ class TextViewItem : ACBase
    TextBlock textBlock;
    TextParams tp;
    PgFontDescription pfd;
+   string[] teStack;
+   string dummy;
+   size_t teSP;
    Frame eframe;
    Button edButton;
    double screenRes;
    double fontPoints;
-   int alignment;
+   int alignment, orientation;;
    bool disableHandlers;
    bool editMode;
    TextTag colorTag;
@@ -79,7 +82,10 @@ class TextViewItem : ACBase
       super(_aw, _parent, _name, _type);
       group = ACGroups.TEXT;
       editMode = true;
-
+      if (type != AC_RICHTEXT)
+         teStack.length = 20;
+      teSP = 0;
+      dummy = " ";
       te = new TextView();
       tb = te.getBuffer();
       tb.addOnChanged(&bufferChanged);
@@ -93,7 +99,6 @@ class TextViewItem : ACBase
       te.modifyFont(pfd);
       te.setRightMargin(2);
       te.doref();
-      lastOp=push!string(this, null, OP_TEXT);  // So we can undo back to nothing
 
       eframe = new Frame(te, null);
       eframe.setSizeRequest(width+4, height+4);
@@ -165,6 +170,31 @@ class TextViewItem : ACBase
       reDraw();
    }
 
+   void pushTS(string s)
+   {
+      if (teSP >= 19)
+      {
+         string[18] t;
+         t[] = teStack[2..$];
+         teStack[1..19] = t[];
+         teStack[19] = s;
+      }
+      else
+         teStack[++teSP] = s;
+   }
+
+   string popTS()
+   {
+
+      if (teSP == 0)
+      {
+         aw.popupMsg("Sorry, there are no more items in the undo stack.\nIf you meant to undo some other change\nswitch to design mode and try again.",
+                        MessageType.WARNING);
+         return dummy;
+      }
+      return teStack[teSP--];
+   }
+
    override void afterDeserialize()
    {
       if (editMode)
@@ -185,32 +215,45 @@ class TextViewItem : ACBase
       commonResize(oldW, oldH);
    }
 
+   void teUndo()
+   {
+      string s = popTS();
+      disableHandlers = true;
+      if (s.ptr != dummy.ptr)
+         tb.setText(s);
+      disableHandlers = false;
+      te.queueDraw();
+   }
+
    override void undo()
    {
+      if (editMode)
+      {
+         teUndo();
+         return;
+      }
       CheckPoint cp;
       cp = popOp();
       if (cp.type == 0)
          return;
       switch (cp.type)
       {
+      case OP_NAME:
+         name = cp.s;
+         nameEntry.setText(name);
+         aw.tv.queueDraw();
+         lastOp = OP_UNDEF;
+         break;
       case OP_FONT:
          pfd = PgFontDescription.fromString(cp.s);
          lastOp = OP_UNDEF;
          te.modifyFont(pfd);
+         cSet.setTextParams(alignment, sensibleFontName());
+         dirty = true;
          break;
       case OP_COLOR:
          applyColor(cp.color, false);
          lastOp = OP_UNDEF;
-         break;
-      case OP_TEXT:
-         disableHandlers = true;
-         if (cp.s is null)
-            tb.setText("");
-         else
-            tb.setText(cp.s);
-         disableHandlers = false;
-         lastOp = OP_UNDEF;
-         te.queueDraw();
          break;
       case OP_MOVE:
          Coord t = cp.coord;
@@ -218,7 +261,24 @@ class TextViewItem : ACBase
          vOff = t.y;
          lastOp = OP_UNDEF;
          break;
+      case OP_SIZE:
+         pfd.setSize(cp.iVal);
+         te.modifyFont(pfd);
+         cSet.setTextParams(alignment, sensibleFontName());
+         break;
+      case OP_ALIGN:
+         alignment = cp.iVal;
+         textBlock.setAlignment(cast(PangoAlignment) alignment);
+         dirty = true;
+         cSet.setTextParams(alignment, sensibleFontName());
+         break;
+      case OP_ORIENT:
+         orientation = cp.iVal;
+         setOrientation(orientation);
+         break;
       default:
+         if (!specificUndo(cp))
+            return;
          break;
       }
       te.grabFocus();
@@ -226,27 +286,16 @@ class TextViewItem : ACBase
       reDraw();
    }
 
-   void pushCheckpoint()  // This will be overidden for rich text
-   {
-      lastOp = push!string(this, tb.getText(), OP_TEXT);
-   }
-
    void textInsertion(TextIter ti, string s, int len, TextBuffer tb)
    {
       if (disableHandlers)
          return;
-      // Ensure we can undo back to nothing
-      if (tb.getText().length == 0)
-      {
-         lastOp = push!string(this, null, OP_TEXT);
-         return;
-      }
 
       // If length > 1 the presumption is that it's a paste.
       // Maybe we should check for 2 or 3 utf8 chars
       if (s.length > 1 || s == " " || s == "\t" || s == "\n")
       {
-         pushCheckpoint();
+         pushTS(tb.getText());
       }
    }
 
@@ -258,8 +307,7 @@ class TextViewItem : ACBase
    {
       if (disableHandlers)
          return;
-      string s = tb.getText();
-      lastOp = push!string(this, s, OP_TEXT);
+      pushTS(tb.getText());
    }
 
    void bufferChanged(TextBuffer b)
@@ -304,24 +352,23 @@ class TextViewItem : ACBase
 
    void adjustFontSize(int direction, int far)
    {
+      int fs = pfd.getSize();
+      lastOp = push!int(this, fs, OP_SIZE);
       if (direction > 0)
       {
-         int fs = pfd.getSize();
          if (far)
             fs *= 1.5;
          else
             fs *= 1.05;
-         pfd.setSize(fs);
       }
       else
       {
-         int fs = pfd.getSize();
          if (far)
             fs *= 0.66;
          else
             fs *= 0.95;
-         pfd.setSize(fs);
       }
+      pfd.setSize(fs);
       te.modifyFont(pfd);
       cSet.setTextParams(alignment, sensibleFontName());
    }
@@ -342,6 +389,8 @@ class TextViewItem : ACBase
       }
       ssStart = ssEnd = 0;
    }
+
+   void pushCheckpoint() {}
 
    override void onCSTextParam(Purpose p, string sv, int iv)
    {
@@ -367,6 +416,7 @@ class TextViewItem : ACBase
       {
          if (type == AC_SERIAL || type == AC_MORPHTEXT)
             return;
+         pushCheckpoint();
          lastOp = push!int(this, alignment, OP_ALIGN);
          alignment = iv;
          textBlock.setAlignment(cast(PangoAlignment) iv);
@@ -378,6 +428,7 @@ class TextViewItem : ACBase
       {
          if (type != AC_RICHTEXT)
             return;
+         pushCheckpoint();
          if (sv == "bold")
             setSelectionAttribute("weight", "800");
          else if (sv == "italic")

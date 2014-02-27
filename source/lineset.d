@@ -111,7 +111,6 @@ class LineSet : ACBase
       switch (wid)
       {
       case Purpose.COLOR:
-         focusLayout();
          lastOp = push!RGBA(this, baseColor, OP_COLOR);
          setColor(false);
          break;
@@ -124,15 +123,18 @@ class LineSet : ACBase
             les = true;
          break;
       case Purpose.OUTLINE:
+         FillSpec fs = FillSpec(fill, outline, altColor, fillFromPattern, fillUid);
+         lastOp = push!FillSpec(this, fs, OP_FILL);
          outline = !outline;
          break;
       case Purpose.FILLOPTIONS:
          int n = fillOptions.getActive();
          if (n == 0)
             return;
+         FillSpec fs = FillSpec(fill, outline, altColor, fillFromPattern, fillUid);
+         lastOp = push!FillSpec(this, fs, OP_FILL);
          if (n == 1)
          {
-            lastOp = push!RGBA(this, altColor, OP_ALTCOLOR);
             setColor(true);
             fillFromPattern = false;
             fill = true;
@@ -176,27 +178,30 @@ class LineSet : ACBase
    {
       CheckPoint cp;
       cp = popOp();
+      bool here = true;
       if (cp.type == 0)
          return;
       switch (cp.type)
       {
+      case OP_NAME:
+         name = cp.s;
+         nameEntry.setText(name);
+         aw.tv.queueDraw();
+         lastOp = OP_UNDEF;
+         break;
       case OP_COLOR:
          baseColor = cp.color.copy();
-         lastOp = OP_UNDEF;
          break;
       case OP_ALTCOLOR:
          altColor = cp.color.copy();
-         lastOp = OP_UNDEF;
          break;
       case OP_THICK:
          lineWidth = cp.dVal;
          cSet.setLineParams(lineWidth);
-         lastOp = OP_UNDEF;
          break;
       case OP_PATH:
          oPath = cp.path;
          dirty = true;
-         lastOp = OP_UNDEF;
          break;
       case OP_SCALE:
       case OP_HSC:
@@ -208,19 +213,27 @@ class LineSet : ACBase
       case OP_VFLIP:
          dirty = true;  // Must recalculate the render path
          tf = cp.transform;
-         lastOp = OP_UNDEF;
          break;
       case OP_MOVE:
          Coord t = cp.coord;
          hOff = t.x;
          vOff = t.y;
-         lastOp = OP_UNDEF;
+         break;
+      case OP_FILL:
+         FillSpec t = cp.fillSpec;
+         fill = t.fill, outline = t.outline, fillFromPattern = t.fillFromPattern;
+         fillUid = t.fillUid;
+         altColor = new RGBA(t.color.r, t.color.g, t.color.b, t.color.a);
+         updateFillUI();
          break;
       default:
+         here = false;
          if (!specificUndo(cp))
             return;
          break;
       }
+      if (here)
+         lastOp = OP_UNDEF;
       aw.dirty = true;
       reDraw();
    }

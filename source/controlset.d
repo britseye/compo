@@ -274,42 +274,42 @@ class ControlSet
    {
       PseudoWidget p = pseudo(Purpose.INCH, id);
       if (p !is null)
-         p.csInstruction("display", 0, s, 0, 0.0);
+         p.csInstruction("display", 0, s, 0, 0.0, null);
    }
 
    void setHostName(string s)
    {
       PseudoWidget p = pseudo(Purpose.RENAME, 0);
       if (p !is null)
-         p.csInstruction("hostname",0, s, 0, 0.0);
+         p.csInstruction("hostname",0, s, 0, 0.0, null);
    }
 
    void setLineParams(double lt)
    {
       PseudoWidget p = pseudo(Purpose.LINEPARAMS, 0);
       if (p !is null)
-         p.csInstruction("linewidth", 0, "", 0, lt);
+         p.csInstruction("linewidth", 0, "", 0, lt, null);
    }
 
    void setLineWidth(double lt)
    {
       PseudoWidget p = pseudo(Purpose.MOLLT, 0);
       if (p !is null)
-         p.csInstruction("linewidth", 0, "", 0, lt);
+         p.csInstruction("linewidth", 0, "", 0, lt, null);
    }
 
    void setTextParams(int alignment, string fontName)
    {
       PseudoWidget p = pseudo(Purpose.TEXTPARAMS, 0);
       if (p !is null)
-         p.csInstruction("setup", 0, fontName, alignment, 0.0);
+         p.csInstruction("setup", 0, fontName, alignment, 0.0, null);
    }
 
    void setPalette(PartColor* pca)
    {
       PseudoWidget p = pseudo(Purpose.PALETTE, 0);
       if (p !is null)
-         p.csInstruction("colors", 0, "", cast(int) pca, 0.0);
+         p.csInstruction("colors", 0, "", 0, 0.0, pca);
    }
 
    void enable() {}
@@ -352,6 +352,17 @@ class ControlSet
       Widget w = wia[windex[wid]].widget;
       int b = bv? 1: 0;
       (cast(ToggleButton) w).setActive(b);
+   }
+
+   void setToggleUI(int wid, bool bv)
+   {
+      if (windex[wid] == -1)
+         return;
+      Widget w = wia[windex[wid]].widget;
+      int b = bv? 1: 0;
+      noToggle = true;
+      (cast(ToggleButton) w).setActive(b);
+      noToggle = false;
    }
 
    void setSpinButton(int wid, double v)
@@ -431,6 +442,7 @@ class ControlSet
    {
       noToggle = !state;
    }
+
 /*************************************************************
   Individual widgets send raw data - the widget and the event
   to the host
@@ -508,7 +520,7 @@ class PseudoWidget
       cy = pos.y;
    }
 
-   void csInstruction(string name, int type, string sval, int ival, double dval) {}
+   void csInstruction(string name, int type, string sval, int ival, double dval, void* ptr) {}
    void enable() {}
    void disable() {}
 }
@@ -635,7 +647,7 @@ class TextParams: PseudoWidget
       lNormal.setMarkup("<span font=\"Sans 14\">A</span>");
    }
 
-   override void csInstruction(string name, int type, string sval, int ival, double dval)
+   override void csInstruction(string name, int type, string sval, int ival, double dval, void* ptr)
    {
       if (name != "setup")
          return;
@@ -820,7 +832,7 @@ class InchTool: PseudoWidget
       cs.add(display, ICoord(cx+40, cy+8), Purpose.DISPLAY);
    }
 
-  override  void csInstruction(string name, int type, string sval, int ival, double dval)
+  override  void csInstruction(string name, int type, string sval, int ival, double dval, void* ptr)
    {
       if (name == "display")
          display.setText(sval);
@@ -970,18 +982,7 @@ class Compass: PseudoWidget
       pointerX = 50;
       pointerY = 26;
    }
-/*
-   void csInstruction(string name, int type, string sval, int ival, double dval)
-   {
-      if (name == "display")
-         display.setText(sval);
-   }
 
-   void setDisplay(string s)
-   {
-      display.setText(s);
-   }
-*/
    bool drawIt(Context c, Widget w)
    {
       if (sensitive)
@@ -1241,7 +1242,7 @@ class MOLLineThick: PseudoWidget
       cs.add(txt, ICoord(cx+35, cy), Purpose.LINEWIDTH, initialState, true);
    }
 
-   override void csInstruction(string name, int type, string sval, int ival, double dval)
+   override void csInstruction(string name, int type, string sval, int ival, double dval, void* ptr)
    {
       if (name == "linewidth")
       {
@@ -1481,12 +1482,13 @@ class Palette: PseudoWidget
              PartColor(0,0.76,0,1), PartColor(0,0.8,0,1), PartColor(1,1,0,1), PartColor(1,0,0,1)];
    }
 
-   override void csInstruction(string name, int type, string sval, int ival, double dval)
+   override void csInstruction(string name, int type, string sval, int ival, double dval, void* ptr)
    {
-      if (name == "color")
+      if (name == "colors")
       {
-         PartColor* pcp = cast(PartColor*) ival;
+         PartColor* pcp = cast(PartColor*) ptr;
          pca[] = pcp[0..8];
+         da.queueDraw();
       }
    }
 
@@ -1623,7 +1625,7 @@ class RenameGadget: PseudoWidget
       ok.setSensitive(false);
    }
 
-   override void csInstruction(string name, int type, string sval, int ival, double dval)
+   override void csInstruction(string name, int type, string sval, int ival, double dval, void* ptr)
    {
       if (name == "hostname")
          entry.setText(sval);
@@ -1645,4 +1647,3 @@ class RenameGadget: PseudoWidget
       target.onCSNameChange(s);
    }
 }
-

@@ -45,7 +45,7 @@ class Curve : LineSet
 
    static int nextOid = 0;
    PathItemR curve;
-   int active;
+   int active, cMoves;
    bool showCp;
 
   override void syncControls()
@@ -106,6 +106,7 @@ class Curve : LineSet
       curve.end.y = 0.5*height;
       dirty = true;
       tm = new Matrix(&tmData);
+      cMoves = 100;
 
       setupControls(3);
       positionControls(true);
@@ -158,6 +159,20 @@ class Curve : LineSet
       return true;
    }
 
+   override bool specificUndo(CheckPoint cp)
+   {
+      switch (cp.type)
+      {
+      case OP_REDRAW:
+         curve = cp.pathItemR;
+         break;
+      default:
+         return false;
+      }
+      lastOp = OP_UNDEF;
+      return true;
+   }
+
    override void preResize(int oldW, int oldH)
    {
       center.x = width/2;
@@ -180,6 +195,11 @@ class Curve : LineSet
 
    override void onCSCompass(int instance, double angle, bool coarse)
    {
+      if (++cMoves > 10)
+      {
+         lastOp = push!PathItemR(this, curve, OP_REDRAW);
+         cMoves = 0;
+      }
       double d = coarse? 2: 0.5;
       Coord dummy = Coord(0,0);
       moveCoord(dummy, d, angle);
@@ -238,6 +258,7 @@ class Curve : LineSet
 
    override void mouseMoveOp(double dx, double dy, GdkModifierType state)
    {
+      lastOp = push!PathItemR(this, curve, OP_REDRAW);
       adjust(dx, dy);
       dirty = true;
    }

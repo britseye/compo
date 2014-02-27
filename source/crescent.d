@@ -166,6 +166,31 @@ class Crescent : LineSet
       //RenameGadget rg = new RenameGadget(cSet, ICoord(0, vp), name, true);
    }
 
+   override bool specificUndo(CheckPoint cp)
+   {
+      switch (cp.type)
+      {
+      case OP_SIZE:
+         Coord t = cp.coord;
+         r0 = t.x;
+         r1 = t.y;
+         dirty = true;
+         break;
+      case OP_DV0:
+         d = cp.dVal;
+         dirty = true;
+         break;
+      case OP_DV1:
+         r1 = cp.dVal;
+         dirty = true;
+         break;
+      default:
+         return false;
+      }
+      lastOp = OP_UNDEF;
+      return true;
+   }
+
    override void preResize(int oldW, int oldH)
    {
       center.x = width/2;
@@ -197,7 +222,8 @@ class Crescent : LineSet
       focusLayout();
       if (instance == 0) // Size
       {
-         double delta = coarse? 1.05: 1.01;
+         lastOp = pushC!Coord(this, Coord(r0, r1), OP_SIZE);
+         double delta = coarse? 1.1: 1.01;
          if (more)
          {
             r0 *= delta;
@@ -214,11 +240,13 @@ class Crescent : LineSet
       }
       else if (instance == 1) // Distance between centers
       {
+         lastOp = pushC!double(this, d, OP_DV0);
          double dd = more? 1: -1;
          d += dd;
       }
       else if (instance == 2)  // Radius of smaller circle
       {
+         lastOp = pushC!double(this, r1, OP_DV1);
          if (more)
          {
             if (r1+1 > r0)

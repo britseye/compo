@@ -56,6 +56,8 @@ class RichText : TextViewItem
    static uint tagId;
    static GType colorType;
    Fragment[] fa;
+   ubyte[][] rtStack;
+   size_t rtSP;
 
    override void syncControls()
    {
@@ -116,7 +118,8 @@ class RichText : TextViewItem
       string s = "Rich Text "~to!string(++nextOid);
       super(w, parent, s, AC_RICHTEXT);
       tb.addOnApplyTag(&tagApplied);
-      lastOp = push!(ubyte[])(this, null, OP_TEXT);
+      rtStack.length = 20;
+      rtSP = 0;
       alignment = 0;
       setupControls(3);
       positionControls(true);
@@ -142,12 +145,47 @@ class RichText : TextViewItem
    override void pushCheckpoint()
    {
       ubyte[] buf = serialize();
-      lastOp = push!(ubyte[])(this, buf, OP_TEXT);
+      if (rtSP >= 19)
+      {
+         ubyte[][18] t;
+         t[] = rtStack[2..$];
+         rtStack[1..19] = t[];
+         rtStack[19] = buf;
+      }
+      else
+         rtStack[++rtSP] = buf;
    }
 
-   override void tagApplied(TextTag tt, TextIter  ti1, TextIter ti2, TextBuffer b)
+   ubyte[] popRTS()
    {
-      //pushCheckpoint();
+
+      if (rtSP == 0)
+      {
+         aw.popupMsg("Sorry, there are no more items in the undo stack.\nIf you meant to undo some other change\nswitch to design mode and try again.",
+                        MessageType.WARNING);
+         return null;
+      }
+      return rtStack[rtSP--];
+   }
+
+   override void textInsertion(TextIter ti, string s, int len, TextBuffer tb)
+   {
+      if (disableHandlers)
+         return;
+
+      // If length > 1 the presumption is that it's a paste.
+      // Maybe we should check for 2 or 3 utf8 chars
+      if (s.length > 1 || s == " " || s == "\t" || s == "\n")
+      {
+         pushCheckpoint();
+      }
+   }
+
+   override void textDeletion(TextIter ti1, TextIter ti2, TextBuffer tb)
+   {
+      if (disableHandlers)
+         return;
+      pushCheckpoint();
    }
 
    override bool installColor(RGBA c)
@@ -161,14 +199,37 @@ class RichText : TextViewItem
       return true;
    }
 
+   void rtUndo()
+   {
+      ubyte[] a = popRTS();
+      if (a is null)
+         return;
+      disableHandlers = true;
+      tb.setText("");
+      deserialize(a);
+      disableHandlers = false;
+      te.queueDraw();
+   }
+
    override void undo()
    {
+      if (editMode)
+      {
+         rtUndo();
+         return;
+      }
       CheckPoint cp;
       cp = popOp();
       if (cp.type == 0)
          return;
       switch (cp.type)
       {
+      case OP_NAME:
+         name = cp.s;
+         nameEntry.setText(name);
+         aw.tv.queueDraw();
+         lastOp = OP_UNDEF;
+         break;
       case OP_FONT:
          pfd = PgFontDescription.fromString(cp.s);
          lastOp = OP_UNDEF;
@@ -176,15 +237,6 @@ class RichText : TextViewItem
          break;
       case OP_COLOR:
          applyColor(cp.color, false);
-         lastOp = OP_UNDEF;
-         te.queueDraw();
-         break;
-      case OP_TEXT:
-         disableHandlers = true;
-         tb.setText("");
-         if (cp.ubbuf !is null)
-            deserialize(cp.ubbuf);
-         disableHandlers = false;
          lastOp = OP_UNDEF;
          te.queueDraw();
          break;

@@ -74,7 +74,7 @@ class LGradient: ACBase
       setupControls();
       positionControls(true);
       revfade = false;
-      orient = false;
+      orient = 0;
       showGuides = true;
       setOrientation(0);
       dirty = true;
@@ -256,6 +256,7 @@ class LGradient: ACBase
    {
       if (p == Purpose.TORIENT)
       {
+         lastOp = push!int(this, orient, OP_ORIENT);
          orient = iv;
          setOrientation(iv);
          dirty = true;
@@ -341,7 +342,7 @@ class LGradient: ACBase
       else if (instance == 3)
       {
          double theta = coarse? 5*rads: 1*rads;
-         lastOp = pushC!double(this, fp, OP_VSIZE);
+         lastOp = pushC!double(this, angle, OP_DV0);
          if (!more) theta = -theta;
          angle -= theta;
          setOrientation(4);
@@ -351,42 +352,37 @@ class LGradient: ACBase
       reDraw();
    }
 
-   override void undo()
+   override bool specificUndo(CheckPoint cp)
    {
-      CheckPoint cp;
-      cp = popOp();
       if (cp.type == 0)
-         return;
+         return false;
       switch (cp.type)
       {
-      case OP_COLOR:
-         baseColor = cp.color.copy();
-         lastOp = OP_UNDEF;
-         break;
       case OP_OPACITY:
          maxOpacity = cp.dVal;
          ov.setText(to!string(maxOpacity));
-         lastOp = OP_UNDEF;
+         break;
+      case OP_ORIENT:
+         orient = cp.iVal;
+         setOrientation(orient);
          break;
       case OP_HSIZE:
          fw = cp.dVal;
-         lastOp = OP_UNDEF;
+         setOrientation(orient);
          break;
       case OP_VSIZE:
          fp = cp.dVal;
-         lastOp = OP_UNDEF;
+         setOrientation(orient);
          break;
-      case OP_MOVE:
-         Coord t = cp.coord;
-         hOff = t.x;
-         vOff = t.y;
-         lastOp = OP_UNDEF;
+      case OP_DV0:
+         angle = cp.dVal;
+         setOrientation(4);
          break;
       default:
-         return;
+         return false;
       }
-      aw.dirty = true;
-      reDraw();
+      lastOp = OP_UNDEF;
+      return true;
    }
 
    void setupStops()

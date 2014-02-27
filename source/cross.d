@@ -159,6 +159,34 @@ class Cross : LineSet
       //RenameGadget rg = new RenameGadget(cSet, ICoord(0, vp), name, true);
    }
 
+   override bool specificUndo(CheckPoint cp)
+   {
+      switch (cp.type)
+      {
+      case OP_SIZE:
+         size = cp.dVal;
+         break;
+      case OP_DV0:
+         urW = cp.dVal;
+         break;
+      case OP_DV1:
+         cbW = cp.dVal;
+         break;
+      case OP_DV2:
+         cbPos = cp.dVal;
+         cbOff = (cbPos-h/2)/-h;
+         break;
+      case OP_DV3:
+         ar = cp.dVal;
+         break;
+      default:
+         return false;
+      }
+      constructBase();
+      lastOp = OP_UNDEF;
+      return true;
+   }
+
    override void preResize(int oldW, int oldH)
    {
       center.x = width/2;
@@ -216,6 +244,7 @@ class Cross : LineSet
    {
       if (instance == 0)
       {
+         lastOp = pushC!double(this, size, OP_SIZE);
          double delta = coarse? 1.05: 1.01;
          if (more)
             size *= delta;
@@ -228,6 +257,7 @@ class Cross : LineSet
       }
       else if (instance == 1)  // Upright width
       {
+         lastOp = pushC!double(this, urW, OP_DV0);
          if (more)
          {
             if (urW+0.05 > 0.8)
@@ -244,6 +274,7 @@ class Cross : LineSet
       }
       else if (instance == 2)
       {
+         lastOp = pushC!double(this, cbW, OP_DV1);
          if (more)
          {
             if (cbW+0.05 > 0.8)
@@ -260,6 +291,7 @@ class Cross : LineSet
       }
       else if (instance == 3)
       {
+         lastOp = pushC!double(this, cbPos, OP_DV2);
          if (more)
          {
             if (cbPos-vo-0.05*h < rise)
@@ -279,6 +311,7 @@ class Cross : LineSet
       }
       else if (instance == 4)
       {
+         lastOp = pushC!double(this, ar, OP_DV3);
          if (more)
          {
             if (ar+0.05 > 2)

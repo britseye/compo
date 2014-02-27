@@ -252,9 +252,10 @@ class MorphText : TextViewItem
          int n = fillOptions.getActive();
          if (n == 0)
             return false;
+         FillSpec fs = FillSpec(fill, outline, altColor, fillFromPattern, fillUid);
+         lastOp = push!FillSpec(this, fs, OP_FILL);
          if (n == 1)
          {
-            lastOp = push!RGBA(this, altColor, OP_ALTCOLOR);
             setColor(true);
             fillFromPattern = false;
             fill = true;
@@ -358,6 +359,17 @@ class MorphText : TextViewItem
          vOff = t.y;
          lastOp = OP_UNDEF;
          break;
+      case OP_FILL:
+         FillSpec t = cp.fillSpec;
+         fill = t.fill, outline = t.outline, fillFromPattern = t.fillFromPattern;
+         fillUid = t.fillUid;
+         altColor = new RGBA(t.color.r, t.color.g, t.color.b, t.color.a);
+         updateFillUI();
+         break;
+      case OP_THICK:
+         olt = cp.dVal;
+         cSet.setLineWidth(olt);
+         break;
       default:
          break;
       }
@@ -368,6 +380,7 @@ class MorphText : TextViewItem
 
    override void onCSLineWidth(double lt)
    {
+      lastOp = pushC!double(this, olt, OP_THICK);
       olt = lt;
       aw.dirty = true;
       reDraw();

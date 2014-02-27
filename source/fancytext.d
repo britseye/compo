@@ -77,7 +77,6 @@ class FancyText : TextViewItem
    CheckButton oo;
    Button fcbtn;
    SpinButton sb;
-   int orientation;
    double angle;
    double olt;
    double lastHo = double.min_normal, lastVo = double.max;
@@ -255,9 +254,10 @@ class FancyText : TextViewItem
          int n = fillOptions.getActive();
          if (n == 0)
             return false;
+         FillSpec fs = FillSpec(fill, outline, altColor, fillFromPattern, fillUid);
+         lastOp = push!FillSpec(this, fs, OP_FILL);
          if (n == 1)
          {
-            lastOp = push!RGBA(this, altColor, OP_ALTCOLOR);
             setColor(true);
             fillFromPattern = false;
             fill = true;
@@ -291,8 +291,34 @@ class FancyText : TextViewItem
       return true;
    }
 
+   override bool specificUndo(CheckPoint cp)
+   {
+      switch (cp.type)
+      {
+      case OP_FILL:
+         FillSpec t = cp.fillSpec;
+         fill = t.fill, outline = t.outline, fillFromPattern = t.fillFromPattern;
+         fillUid = t.fillUid;
+         altColor = new RGBA(t.color.r, t.color.g, t.color.b, t.color.a);
+         updateFillUI();
+         break;
+      case OP_DV0:
+         angle = cp.dVal;
+         break;
+      case OP_THICK:
+         olt = cp.dVal;
+         cSet.setLineWidth(olt);
+         break;
+      default:
+         return false;
+      }
+      lastOp = OP_UNDEF;
+      return true;
+   }
+
    override void onCSLineWidth(double lw)
    {
+      lastOp = pushC!double(this, olt, OP_THICK);
       olt = lw;
       aw.dirty = true;
       reDraw();
@@ -308,10 +334,10 @@ class FancyText : TextViewItem
       }
       else if (instance == 1)
       {
+         lastOp = pushC!double(this, angle, OP_DV0);
          double ra = far? rads*5: rads/3;
          if (more)
             ra = -ra;
-         //lastOp = pushC!Transform(this, tf, OP_ROT);
          angle -= ra;
       }
       else
@@ -322,6 +348,7 @@ class FancyText : TextViewItem
 
    override void setOrientation(int o)
    {
+      lastOp = push!int(this, orientation, OP_ORIENT);
       orientation = o;
       angleChanged = true;
       switch (orientation)

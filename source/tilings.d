@@ -174,7 +174,7 @@ class Tilings: ACBase
 
       vp += 40;
       Palette p = new Palette(cSet, ICoord(5, vp), true);
-      p.csInstruction("color", 0, "", cast(int) pca.ptr, 0);
+      p.csInstruction("colors", 0, "", 0, 0, pca.ptr);
 
       vp += 40;
       CheckButton check = new CheckButton("Print random");

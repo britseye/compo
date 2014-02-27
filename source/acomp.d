@@ -70,8 +70,10 @@ enum ArrowKeys
 enum
 {
    OP_NONE,
+   OP_NAME,
    OP_MOVE,
    OP_COLOR,
+   OP_XCOLOR,
    OP_ALTCOLOR,
    OP_OPACITY,
    OP_FONT,
@@ -128,6 +130,10 @@ enum
    OP_MC1,
    OP_MC2,
    OP_MC3,
+   OP_CSEED,
+   OP_SSEED,
+   OP_PCA,
+   OP_ORIENT,
 
    OP_UNDEF
 }
@@ -150,14 +156,18 @@ struct CheckPoint
       Coord coord;
       double dVal;
       int iVal;
+      uint uiVal;
       bool boolVal;
       Coord[] path;
       ubyte[] ubbuf;
+      PathItemR pathItemR;
       PathItem[] pcPath;
       Transform transform;
       ParamBlock paramBlock;
       PartColor partColor;
+      PartColor[] pca;
       RPCCP rpccp;
+      FillSpec fillSpec;
    }
 }
 alias Coord[] Path_t;
@@ -185,9 +195,14 @@ int push(T)(ACBase that, T t, int op)
       that.lcp.coord = t;
       that.lcp.type = op;
    }
+   else static if (is(T == PathItemR))
+   {
+      that.lcp.pathItemR = t;
+      that.lcp.type = op;
+   }
    else static if (is(T == PathItem[]))
    {
-      that.lcp.pcPath = t;
+      that.lcp.pcPath = t.dup;
       that.lcp.type = op;
    }
    else static if (is(T == ParamBlock))
@@ -210,6 +225,11 @@ int push(T)(ACBase that, T t, int op)
       that.lcp.iVal = t;
       that.lcp.type = op;
    }
+   else static if (is(T == uint))
+   {
+      that.lcp.uiVal = t;
+      that.lcp.type = op;
+   }
    else static if (is(T == bool))
    {
       that.lcp.boolVal = t;
@@ -220,9 +240,19 @@ int push(T)(ACBase that, T t, int op)
       that.lcp.partColor = t;
       that.lcp.type = op;
    }
+   else static if (is(T == PartColor[]))
+   {
+      that.lcp.pca = t.dup;
+      that.lcp.type = op;
+   }
    else static if (is(T == RPCCP))
    {
       that.lcp.rpccp = t;
+      that.lcp.type = op;
+   }
+   else static if (is(T == FillSpec))
+   {
+      that.lcp.fillSpec = t;
       that.lcp.type = op;
    }
    that.pushOp(that.lcp);
@@ -252,6 +282,11 @@ int pushC(T)(ACBase that, T t, int op)
    else static if (is(T == Coord))
    {
       that.lcp.coord = t;
+      that.lcp.type = op;
+   }
+   else static if (is(T == PathItemR))
+   {
+      that.lcp.pathItemR = t;
       that.lcp.type = op;
    }
    else static if (is(T == PathItem[]))
@@ -548,6 +583,7 @@ class ACBase : CSTarget     // Area Composition base class
          formattedWrite(writer, "Pattern: %s - (%s)", fillObject.name, fillUid);
          fillOptions.setTooltipText(writer.data);
       }
+      cSet.setToggleUI(Purpose.OUTLINE, outline);
    }
 
    void pushOp(CheckPoint cp)
@@ -585,13 +621,33 @@ class ACBase : CSTarget     // Area Composition base class
       cp = popOp();
       if (cp.type == 0)
          return;
+      focusLayout();
       switch (cp.type)
       {
+      case OP_NAME:
+         name = cp.s;
+         nameEntry.setText(name);
+         aw.tv.queueDraw();
+         lastOp = OP_UNDEF;
+         break;
+      case OP_COLOR:
+         baseColor = cp.color.copy();
+         break;
       case OP_MOVE:
          Coord t = cp.coord;
          hOff = t.x;
          vOff = t.y;
          lastOp = OP_UNDEF;
+         break;
+      case OP_SCALE:
+      case OP_HSC:
+      case OP_VSC:
+      case OP_HSK:
+      case OP_VSK:
+      case OP_ROT:
+      case OP_HFLIP:
+      case OP_VFLIP:
+         tf = cp.transform;
          break;
       default:
          if (!specificUndo(cp))
@@ -759,6 +815,7 @@ class ACBase : CSTarget     // Area Composition base class
 
    void onCSNameChange(string s)
    {
+      lastOp = push!string(this, name, OP_NAME);
       aw.dirty = true;
       name = s;
       nameWasSet = true;

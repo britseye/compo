@@ -4240,7 +4240,7 @@
 	<gtk/AboutDialog.d>
 	<gtk/Version.d>
 
-1392901584 source:/home/steve/COMPO/source/acomp.d
+1393497334 source:/home/steve/COMPO/source/acomp.d
 	<mainwin.d>
 	<constants.d>
 	<types.d>
@@ -4295,13 +4295,13 @@
 
 1316267666 /home/steve/COMPO/source/constants.d
 
-1391588835 /home/steve/COMPO/source/types.d
+1393412477 /home/steve/COMPO/source/types.d
 
 1391686482 /home/steve/COMPO/source/common.d
 
-1393145807 /home/steve/COMPO/source/controlset.d
+1393421920 /home/steve/COMPO/source/controlset.d
 
-1392890122 /home/steve/COMPO/source/container.d
+1393424249 /home/steve/COMPO/source/container.d
 
 1392454672 /home/steve/COMPO/source/controlsdlg.d
 
@@ -4311,7 +4311,7 @@
 
 1393310060 /home/steve/COMPO/source/interfaces.d
 
-1393223718 source:/home/steve/COMPO/source/arrow.d
+1393410718 source:/home/steve/COMPO/source/arrow.d
 	<mainwin.d>
 	<constants.d>
 	<acomp.d>
@@ -4343,9 +4343,9 @@
 	<gtkc/cairotypes.d>
 	<cairo/Matrix.d>
 
-1392901584 /home/steve/COMPO/source/acomp.d
+1393497334 /home/steve/COMPO/source/acomp.d
 
-1392879169 /home/steve/COMPO/source/lineset.d
+1393482198 /home/steve/COMPO/source/lineset.d
 
 1392624287 source:/home/steve/COMPO/source/avery.d
 	<std/stdio.d>
@@ -4377,7 +4377,7 @@
 	<gtkc/cairotypes.d>
 	<cairo/Matrix.d>
 
-1393147152 source:/home/steve/COMPO/source/brushdabs.d
+1393422005 source:/home/steve/COMPO/source/brushdabs.d
 	<mainwin.d>
 	<constants.d>
 	<acomp.d>
@@ -4404,7 +4404,7 @@
 	<cairo/Matrix.d>
 	<cairo/Surface.d>
 
-1393223734 source:/home/steve/COMPO/source/circle.d
+1393481234 source:/home/steve/COMPO/source/circle.d
 	<mainwin.d>
 	<constants.d>
 	<acomp.d>
@@ -4468,7 +4468,7 @@
 
 1316267666 source:/home/steve/COMPO/source/constants.d
 
-1392890122 source:/home/steve/COMPO/source/container.d
+1393424249 source:/home/steve/COMPO/source/container.d
 	<constants.d>
 	<types.d>
 	<controlset.d>
@@ -4515,9 +4515,9 @@
 
 1392970484 /home/steve/COMPO/source/menus.d
 
-1393144522 /home/steve/COMPO/source/tvitem.d
+1393500728 /home/steve/COMPO/source/tvitem.d
 
-1393145807 source:/home/steve/COMPO/source/controlset.d
+1393421920 source:/home/steve/COMPO/source/controlset.d
 	<acomp.d>
 	<types.d>
 	<interfaces.d>
@@ -4574,7 +4574,7 @@
 	<gtkc/cairotypes.d>
 	<cairo/Matrix.d>
 
-1393223749 source:/home/steve/COMPO/source/crescent.d
+1393481878 source:/home/steve/COMPO/source/crescent.d
 	<mainwin.d>
 	<constants.d>
 	<acomp.d>
@@ -4605,7 +4605,7 @@
 	<gtkc/cairotypes.d>
 	<cairo/Matrix.d>
 
-1393224042 source:/home/steve/COMPO/source/cross.d
+1393483429 source:/home/steve/COMPO/source/cross.d
 	<mainwin.d>
 	<constants.d>
 	<acomp.d>
@@ -4648,7 +4648,7 @@
 
 1392627188 /home/steve/COMPO/source/merger.d
 
-1393153298 source:/home/steve/COMPO/source/curve.d
+1393484995 source:/home/steve/COMPO/source/curve.d
 	<mainwin.d>
 	<constants.d>
 	<acomp.d>
@@ -4745,27 +4745,27 @@
 
 1393078082 /home/steve/COMPO/source/serial.d
 
-1393139574 /home/steve/COMPO/source/richtext.d
+1393496859 /home/steve/COMPO/source/richtext.d
 
-1393223718 /home/steve/COMPO/source/arrow.d
+1393410718 /home/steve/COMPO/source/arrow.d
 
 1390804295 /home/steve/COMPO/source/bevel.d
 
-1393223734 /home/steve/COMPO/source/circle.d
+1393481234 /home/steve/COMPO/source/circle.d
 
 1392191094 /home/steve/COMPO/source/corners.d
 
-1393224042 /home/steve/COMPO/source/cross.d
+1393483429 /home/steve/COMPO/source/cross.d
 
-1393223368 /home/steve/COMPO/source/fancytext.d
+1393501408 /home/steve/COMPO/source/fancytext.d
 
 1392809954 /home/steve/COMPO/source/fader.d
 
-1393224496 /home/steve/COMPO/source/heart.d
+1393506330 /home/steve/COMPO/source/heart.d
 
-1392624640 /home/steve/COMPO/source/line.d
+1393510639 /home/steve/COMPO/source/line.d
 
-1393223591 /home/steve/COMPO/source/morphtext.d
+1393501648 /home/steve/COMPO/source/morphtext.d
 
 1393148135 /home/steve/COMPO/source/pattern.d
 
@@ -4783,7 +4783,7 @@
 
 1393222245 /home/steve/COMPO/source/reference.d
 
-1392815784 /home/steve/COMPO/source/lgradient.d
+1393507942 /home/steve/COMPO/source/lgradient.d
 
 1392815436 /home/steve/COMPO/source/rgradient.d
 
@@ -4795,25 +4795,25 @@
 
 1393160864 /home/steve/COMPO/source/strokeset.d
 
-1393073084 /home/steve/COMPO/source/drawing.d
+1393487523 /home/steve/COMPO/source/drawing.d
 
 1393073443 /home/steve/COMPO/source/pointset.d
 
 1393160344 /home/steve/COMPO/source/regpc.d
 
-1393223749 /home/steve/COMPO/source/crescent.d
+1393481878 /home/steve/COMPO/source/crescent.d
 
 1393226350 /home/steve/COMPO/source/moon.d
 
 1393228065 /home/steve/COMPO/source/triangle.d
 
-1393147152 /home/steve/COMPO/source/brushdabs.d
+1393422005 /home/steve/COMPO/source/brushdabs.d
 
 1393149010 /home/steve/COMPO/source/noise.d
 
 1393148572 /home/steve/COMPO/source/mesh.d
 
-1393147715 /home/steve/COMPO/source/tilings.d
+1393422146 /home/steve/COMPO/source/tilings.d
 
 1393227720 /home/steve/COMPO/source/teardrop.d
 
@@ -4823,9 +4823,9 @@
 
 1393149283 /home/steve/COMPO/source/partition.d
 
-1393153298 /home/steve/COMPO/source/curve.d
+1393484995 /home/steve/COMPO/source/curve.d
 
-1393073084 source:/home/steve/COMPO/source/drawing.d
+1393487523 source:/home/steve/COMPO/source/drawing.d
 	<mainwin.d>
 	<acomp.d>
 	<common.d>
@@ -4868,7 +4868,7 @@
 	<cairo/Pattern.d>
 	<gtkc/cairotypes.d>
 
-1393223368 source:/home/steve/COMPO/source/fancytext.d
+1393501408 source:/home/steve/COMPO/source/fancytext.d
 	<types.d>
 	<controlset.d>
 	<mainwin.d>
@@ -4925,7 +4925,7 @@
 	<cairo/Context.d>
 	<cairo/SvgSurface.d>
 
-1393224496 source:/home/steve/COMPO/source/heart.d
+1393506330 source:/home/steve/COMPO/source/heart.d
 	<mainwin.d>
 	<constants.d>
 	<acomp.d>
@@ -4954,7 +4954,7 @@
 	<gtk/Entry.d>
 	<cairo/Context.d>
 
-1392815784 source:/home/steve/COMPO/source/lgradient.d
+1393507942 source:/home/steve/COMPO/source/lgradient.d
 	<mainwin.d>
 	<constants.d>
 	<acomp.d>
@@ -4975,7 +4975,7 @@
 	<cairo/Pattern.d>
 	<gtkc/cairotypes.d>
 
-1392624640 source:/home/steve/COMPO/source/line.d
+1393510639 source:/home/steve/COMPO/source/line.d
 	<mainwin.d>
 	<constants.d>
 	<acomp.d>
@@ -4997,7 +4997,7 @@
 	<gtkc/cairotypes.d>
 	<cairo/Matrix.d>
 
-1392879169 source:/home/steve/COMPO/source/lineset.d
+1393482198 source:/home/steve/COMPO/source/lineset.d
 	<std/stdio.d>
 	<std/conv.d>
 	<std/array.d>
@@ -5323,7 +5323,7 @@
 	<std/math.d>
 	<gtkc/cairotypes.d>
 
-1393223591 source:/home/steve/COMPO/source/morphtext.d
+1393501648 source:/home/steve/COMPO/source/morphtext.d
 	<mainwin.d>
 	<acomp.d>
 	<tvitem.d>
@@ -5748,7 +5748,7 @@
 	<cairo/Pattern.d>
 	<gtkc/cairotypes.d>
 
-1393139574 source:/home/steve/COMPO/source/richtext.d
+1393496859 source:/home/steve/COMPO/source/richtext.d
 	<mainwin.d>
 	<acomp.d>
 	<tvitem.d>
@@ -6137,7 +6137,7 @@
 	<mainwin.d>
 	<merger.d>
 
-1393147715 source:/home/steve/COMPO/source/tilings.d
+1393422146 source:/home/steve/COMPO/source/tilings.d
 	<mainwin.d>
 	<constants.d>
 	<acomp.d>
@@ -6214,7 +6214,7 @@
 	<gtkc/cairotypes.d>
 	<cairo/Matrix.d>
 
-1393144522 source:/home/steve/COMPO/source/tvitem.d
+1393500728 source:/home/steve/COMPO/source/tvitem.d
 	<acomp.d>
 	<mainwin.d>
 	<config.d>
@@ -6250,8 +6250,9 @@
 	<gtkc/cairotypes.d>
 	<cairo/Matrix.d>
 
-1391588835 source:/home/steve/COMPO/source/types.d
+1393412477 source:/home/steve/COMPO/source/types.d
 	<std/uuid.d>
+	<gdk/RGBA.d>
 	<gtkc/gdktypes.d>
 
 1393074377 source:/home/steve/COMPO/source/uspsib.d

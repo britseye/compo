@@ -169,20 +169,34 @@ class Arrow : LineSet
       case Purpose.NARROW:
       case Purpose.WIDE:
          if (hw == wid-Purpose.MEDIUM)
-            // Don'y go through the whole preformance for nothing
+            // Don't go through the whole performance for nothing
             return true;
-         lastOp = push!(Coord[])(this, oPath, OP_PATH);
-         if (wid == Purpose.MEDIUM)
-            hw = 0;
-         else if (wid == Purpose.NARROW)
-            hw = 1;
-         else
-            hw = 2;
+         lastOp = push!int(this, hw, OP_IV0);
+         hw = wid-Purpose.MEDIUM;
          constructBase();
          break;
       default:
          return false;
       }
+      return true;
+   }
+
+   override bool specificUndo(CheckPoint cp)
+   {
+      switch (cp.type)
+      {
+      case OP_IV0:
+         hw = cp.iVal;
+         cSet.setToggleUI(Purpose.MEDIUM+hw, true);
+         break;
+      case OP_SIZE:
+         size = cp.dVal;
+         break;
+      default:
+         return false;
+      }
+      lastOp = OP_UNDEF;
+      constructBase();
       return true;
    }
 
@@ -218,6 +232,7 @@ class Arrow : LineSet
       else if (instance == 0)
       {
          double delta = coarse? 1.05: 1.01;
+         lastOp = pushC!double(this, size, OP_SIZE);
          if (more)
             size *= delta;
          else

@@ -137,15 +137,11 @@ class Container: ACBase
 
    int getNextId() { return ++nextChildId; }
 
-   override void onCSNotify(Widget w, Purpose wid)
+   override bool specificNotify(Widget w, Purpose wid)
    {
       focusLayout();
       switch (wid)
       {
-      case Purpose.COLOR:
-         lastOp = push!RGBA(this, baseColor, OP_COLOR);
-         setColor(false);
-         break;
       case Purpose.GUIDELINE:
          glShowing = !glShowing;
          reDraw();
@@ -164,9 +160,9 @@ class Container: ACBase
          }
          break;
       default:
-         break;
+         return false;
       }
-      focusLayout();
+      return true;
    }
 
    override void onCSMoreLess(int instance, bool more, bool coarse)

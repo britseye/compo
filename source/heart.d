@@ -117,6 +117,21 @@ class Heart: LineSet
       cSet.cy = vp+40;
    }
 
+   override bool specificUndo(CheckPoint cp)
+   {
+      switch (cp.type)
+      {
+      case OP_SIZE:
+         unit = cp.dVal;
+         break;
+      default:
+         return false;
+      }
+      lastOp = OP_UNDEF;
+      constructBase();
+      return true;
+   }
+
    override void afterDeserialize()
    {
       constructBase();
@@ -148,6 +163,7 @@ class Heart: LineSet
       focusLayout();
       if (instance == 0)
       {
+         lastOp = pushC!double(this, unit, OP_SIZE);
          double delta = coarse? 1.05: 1.01;
          if (more)
             unit *= delta;

@@ -118,18 +118,36 @@ class Circle : LineSet
       cSet.cy = vp+40;
    }
 
+   override bool specificUndo(CheckPoint cp)
+   {
+      switch (cp.type)
+      {
+      case OP_SIZE:
+         radius = cp.dVal;
+         break;
+      default:
+         return false;
+      }
+      lastOp = OP_UNDEF;
+      return true;
+   }
+
    override void onCSMoreLess(int instance, bool more, bool coarse)
    {
       focusLayout();
       if (instance == 0)
       {
-         double factor = coarse? 1.5: 1.05;
+         double factor = coarse? 1.2: 1.05;
          if (more)
+         {
+            lastOp = pushC!double(this, radius, OP_SIZE);
             radius *= factor;
+         }
          else
          {
             if (radius/factor < lineWidth)
                return;
+            lastOp = pushC!double(this, radius, OP_SIZE);
             radius /= factor;
          }
       }

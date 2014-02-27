@@ -139,6 +139,16 @@ class Drawing : ACBase
          vOff = t.y;
          lastOp = OP_UNDEF;
          break;
+      case OP_SCALE:
+      case OP_HSC:
+      case OP_VSC:
+      case OP_HSK:
+      case OP_VSK:
+      case OP_ROT:
+      case OP_HFLIP:
+      case OP_VFLIP:
+         tf = cp.transform;
+         break;
       default:
          return;
       }

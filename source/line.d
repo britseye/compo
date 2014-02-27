@@ -40,7 +40,7 @@ class Line : LineSet
    }
 
    static int nextOid = 0;
-   int active;
+   int active, cMoves;
    bool showSe;
 
    override void syncControls()
@@ -90,6 +90,7 @@ class Line : LineSet
       oPath[0].y = 0.5*height;
       oPath[1].x = 0.75*width;
       oPath[1].y = 0.5*height;
+      cMoves = 100;
       dirty = true;
 
       setupControls(3);
@@ -134,6 +135,20 @@ class Line : LineSet
       return true;
    }
 
+   override bool specificUndo(CheckPoint cp)
+   {
+      switch (cp.type)
+      {
+      case OP_REDRAW:
+         oPath = cp.path;
+         break;
+      default:
+         return false;
+      }
+      lastOp = OP_UNDEF;
+      return true;
+   }
+
    override void preResize(int oldW, int oldH)
    {
       center.x = width/2;
@@ -165,6 +180,11 @@ class Line : LineSet
 
    override void onCSCompass(int instance, double angle, bool coarse)
    {
+      if (++cMoves > 10)
+      {
+         lastOp = push!(Coord[])(this, oPath, OP_REDRAW);
+         cMoves = 0;
+      }
       double d = coarse? 2: 0.5;
       Coord dummy = Coord(0,0);
       moveCoord(dummy, d, angle);
@@ -199,6 +219,7 @@ class Line : LineSet
 
    override void mouseMoveOp(double dx, double dy, GdkModifierType state)
    {
+      lastOp = push!(Coord[])(this, oPath, OP_REDRAW);
       adjust(dx, dy);
       dirty = true;
    }

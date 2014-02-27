@@ -162,7 +162,7 @@ class BrushDabs : ACBase
 
       vp += 85;
       Palette p = new Palette(cSet, ICoord(0, vp), true);
-      p.csInstruction("color", 0, "", cast(int) pca.ptr, 0);
+      p.csInstruction("colors", 0, "", 0, 0, pca.ptr);
 
       cSet.cy = vp+45;
    }
@@ -181,9 +181,11 @@ class BrushDabs : ACBase
       switch (p)
       {
       case Purpose.REFRESH:
+         lastOp = push!uint(this, colorSeed, OP_CSEED);
          colorSeed++;
          break;
       case Purpose.REDRAW:
+         lastOp = push!uint(this, colorSeed, OP_SSEED);
          shapeSeed++;
          generate();
          break;
@@ -195,8 +197,8 @@ class BrushDabs : ACBase
          constructBase();
          generate();
          break;
-      case Purpose.XCOLOR:   // We need to augment the default handling associated with Purpose COLOR
-         lastOp = push!RGBA(this, baseColor, OP_COLOR);
+      case Purpose.XCOLOR:   // We need to augment the default handling associated with Purpose.COLOR
+         lastOp = push!RGBA(this, baseColor, OP_XCOLOR);
          setColor(false);
          cSrc.setBase(baseColor);
          break;
@@ -204,6 +206,7 @@ class BrushDabs : ACBase
          int n = (cast(ComboBoxText) w).getActive();
          if (shade == n)
             return false;
+         lastOp = push!int(this, shade, OP_IV0);
          shade = n;
          cSrc.setShadeBand(shade);
          break;
@@ -217,11 +220,51 @@ class BrushDabs : ACBase
    {
       switch (cp.type)
       {
+      case OP_CSEED:
+         colorSeed = cp.uiVal;
+         cSrc.setSeed(colorSeed);
+         break;
+      case OP_SSEED:
+         lastOp = push!uint(this, colorSeed, OP_SSEED);
+         shapeSeed = cp.uiVal;
+         generate();
+         break;
+      case OP_XCOLOR:
+         baseColor = cp.color;
+         cSrc.setBase(baseColor);
+         break;
+      case OP_IV0:
+         shade = cp.iVal;
+         cSrc.setShadeBand(shade);
+         cSet.setComboIndex(Purpose.DCOLORS, shade);
+         break;
+      case OP_IV1:
+         nDabs = cp.iVal;
+         generate();
+         break;
+      case OP_DV0:
+         w = cp.dVal;
+         constructBase();
+         generate();
+         break;
+      case OP_DV1:
+         tcp = cp.dVal;
+         constructBase();
+         generate();
+         break;
+      case OP_DV2:
+         angle = cp.dVal;
+         constructBase();
+         generate();
+         break;
+      case OP_PCA:
+         pca = cp.pca;
+         cSet.setPalette(pca.ptr);
+         break;
       default:
          break;
       }
       lastOp = OP_UNDEF;
-      //constructBase();
       return true;
    }
 
@@ -236,6 +279,7 @@ class BrushDabs : ACBase
 
    override void onCSPalette(PartColor[] npa)
    {
+      lastOp = push!(PartColor[])(this, pca, OP_PCA);
       pca[] = npa[];
       reDraw();
    }
@@ -248,14 +292,20 @@ class BrushDabs : ACBase
          if (more)
          {
             if (nDabs < 0x2000)
+            {
+               lastOp = pushC!int(this, nDabs, OP_IV1);
                nDabs *= 2;
+            }
             else
                return;
          }
          else
          {
             if (nDabs > 1)
+            {
+               lastOp = pushC!int(this, nDabs, OP_IV1);
                nDabs /=2;
+            }
             else
                return;
          }
@@ -265,14 +315,20 @@ class BrushDabs : ACBase
          if (more)
          {
             if (w < 100)
+            {
+               lastOp = pushC!double(this, w, OP_DV0);
                w++;
+            }
             else
                return;
          }
          else
          {
             if (w > 3)
+            {
+               lastOp = pushC!double(this, w, OP_DV0);
                w--;
+            }
             else
                return;
          }
@@ -283,14 +339,20 @@ class BrushDabs : ACBase
          if (more)
          {
             if (tcp < 4)
+            {
+               lastOp = pushC!double(this, tcp, OP_DV1);
                tcp += 0.05;
+            }
             else
                return;
          }
          else
          {
             if (tcp > 0.1)
+            {
+               lastOp = pushC!double(this, tcp, OP_DV1);
                tcp -= 0.05;
+            }
             else
                return;
          }
@@ -298,6 +360,7 @@ class BrushDabs : ACBase
       }
       else if (instance == 3)
       {
+         lastOp = pushC!double(this, angle, OP_DV2);
          if (more)
          {
             if (angle < 2*PI)

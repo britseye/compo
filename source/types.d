@@ -8,6 +8,8 @@
 module types;
 
 import std.uuid;
+
+import gdk.RGBA;
 import gtkc.gdktypes;
 
 struct Coord
@@ -152,3 +154,20 @@ struct FillOption
    UUID uuid;
 }
 
+struct FillSpec
+{
+   bool fill;
+   bool outline;
+   PartColor color;
+   bool fillFromPattern;
+   UUID fillUid;
+
+   this(bool f, bool o, RGBA clr, bool fp, UUID uid)
+   {
+      fill = f;
+      outline = o;
+      color = PartColor(clr.red, clr.green, clr.blue, clr.alpha);
+      fillFromPattern = fp;
+      fillUid = uid;
+   }
+}
