@@ -827,6 +827,7 @@ class StrokeSet : LineSet
    {
       getBounding();
       Coord c = Coord(topLeft.x+0.5*(bottomRight.x-topLeft.x), topLeft.y+0.5*(bottomRight.y-topLeft.y));
+      center = c;
       return c;
    }
 

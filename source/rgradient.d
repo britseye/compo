@@ -117,7 +117,7 @@ class RGradient: ACBase
       cSet.add(ov, ICoord(310, vp), Purpose.LABEL);
 
       vp += 30;
-      CheckButton cb = new CheckButton("Mark the center");
+      CheckButton cb = new CheckButton("Show Guidelines");
       cb.setActive(1);
       cSet.add(cb, ICoord(0, vp), Purpose.SOLID);
 
@@ -192,6 +192,27 @@ class RGradient: ACBase
       return true;
    }
 
+   override bool specificUndo(CheckPoint cp)
+   {
+      switch (cp.type)
+      {
+      case OP_OPACITY:
+         maxOpacity = cp.dVal;
+         break;
+      case OP_VSIZE:
+         inrad = cp.dVal;
+         break;
+      case OP_HSIZE:
+         outrad = cp.dVal;
+         break;
+      default:
+         return false;
+      }
+      dirty = true;
+      lastOp = OP_UNDEF;
+      return true;
+   }
+
    override void onCSMoreLess(int instance, bool more, bool coarse)
    {
       focusLayout();
@@ -200,7 +221,6 @@ class RGradient: ACBase
          n *= 10;
       if (instance == 0)
       {
-         lastOp = pushC!double(this, maxOpacity, OP_OPACITY);
          double nv;
          if (more)
          {
@@ -219,6 +239,7 @@ class RGradient: ACBase
             if (nv <= 0.1)
                nv = 0;
          }
+         lastOp = pushC!double(this, maxOpacity, OP_OPACITY);
          maxOpacity = nv;
          string t = to!string(maxOpacity);
          if (t.length > 4)
@@ -228,52 +249,21 @@ class RGradient: ACBase
       }
       else if (instance == 1)
       {
-         lastOp = pushC!double(this, inrad, OP_VSIZE);
-         if (n > 0 && inrad+n > outrad)
+         if (n > 0 && inrad+n >= outrad)
             return;
          if (n < 0 && inrad+n < 5)
             return;
-
+         lastOp = pushC!double(this, inrad, OP_VSIZE);
          inrad += n;
          dirty = true;
       }
       else if (instance == 2)
       {
-         lastOp = pushC!double(this, outrad, OP_HSIZE);
-         if (n < 0 && outrad+n < inrad)
+         if (n < 0 && outrad+n <= inrad)
             return;
+         lastOp = pushC!double(this, outrad, OP_HSIZE);
          outrad += n;
          dirty = true;
-      }
-      aw.dirty = true;
-      reDraw();
-   }
-
-   override void undo()
-   {
-      CheckPoint cp;
-      cp = popOp();
-      if (cp.type == 0)
-         return;
-      switch (cp.type)
-      {
-      case OP_COLOR:
-         baseColor = cp.color.copy();
-         lastOp = OP_UNDEF;
-         break;
-      case OP_OPACITY:
-         maxOpacity = cp.dVal;
-         ov.setText(to!string(maxOpacity));
-         lastOp = OP_UNDEF;
-         break;
-      case OP_MOVE:
-         Coord t = cp.coord;
-         hOff = t.x;
-         vOff = t.y;
-         lastOp = OP_UNDEF;
-         break;
-      default:
-         return;
       }
       aw.dirty = true;
       reDraw();
@@ -443,33 +433,41 @@ class RGradient: ACBase
       double g = baseColor.green();
       double b = baseColor.blue();
       addStops(r, g, b);
-      // for testing
-      //c.setSourceRgb(0,0,0);
-      //c.paint();
-      c.moveTo(hOff, vOff);
-      c.lineTo(hOff+width, vOff);
-      c.lineTo(hOff+width, vOff+height);
-      c.lineTo(hOff, vOff+height);
+
+      c.rectangle(hOff, vOff, width, height);
       c.setSource(pat);
       c.fill();
+
+      double[2] da = [2,2];
       if (!printFlag && mark)
       {
+         c.save();
+         c.setDash(da, 0);
+         c.setOperator(CairoOperator.SOURCE);
+         c.setSourceRgb(0,0,0);
          c.moveTo(hOff+center.x-10, vOff+center.y);
          c.lineTo(hOff+center.x+10, vOff+center.y);
          c.moveTo(hOff+center.x, vOff+center.y-10);
          c.lineTo(hOff+center.x, vOff+center.y+10);
          c.setLineWidth(1);
-         c.setSourceRgb(0,0,0);
          c.stroke();
-         c.moveTo(hOff+center.x-8, vOff+center.y-8);
-         c.lineTo(hOff+center.x+8, vOff+center.y+8);
-         c.moveTo(hOff+center.x-8, vOff+center.y+8);
-         c.lineTo(hOff+center.x+8, vOff+center.y-8);
-         c.setLineWidth(2);
+         c.arc(hOff+center.x, vOff+center.y, inrad, 0, 2*PI);
+         c.stroke();
+         c.arc(hOff+center.x, vOff+center.y, outrad, 0, 2*PI);
+         c.stroke();
          c.setSourceRgb(1,1,1);
+         c.setDash(da, 2);
+         c.moveTo(hOff+center.x-10, vOff+center.y);
+         c.lineTo(hOff+center.x+10, vOff+center.y);
+         c.moveTo(hOff+center.x, vOff+center.y-10);
+         c.lineTo(hOff+center.x, vOff+center.y+10);
+         c.setLineWidth(1);
          c.stroke();
+         c.arc(hOff+center.x, vOff+center.y, inrad, 0, 2*PI);
+         c.stroke();
+         c.arc(hOff+center.x, vOff+center.y, outrad, 0, 2*PI);
+         c.stroke();
+         c.restore();
       }
    }
 }
-
-

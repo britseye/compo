@@ -152,13 +152,7 @@ class SVGImage : ACBase
       focusLayout();
       if (scaleType != 0)
          return;
-      lastOp = pushC!double(this, scaleX, OP_SCALE);
-      if (lastOp != OP_SCALE)
-      {
-         lcp.dVal = scaleX;
-         lcp.type = lastOp = OP_SCALE;
-         pushOp(lcp);
-      }
+      lastOp = pushC!double(this, scaleX, OP_DV0);
       if (coarse)
       {
          if (more)
@@ -178,30 +172,18 @@ class SVGImage : ACBase
       reDraw();
    }
 
-
-   override void undo()
+   override bool specificUndo(CheckPoint cp)
    {
-      CheckPoint cp;
-      cp = popOp();
-      if (cp.type == 0)
-         return;
       switch (cp.type)
       {
-      case OP_SCALE:
+      case OP_DV0:
          scaleX = cp.dVal;
-         lastOp = OP_UNDEF;
-         break;
-      case OP_MOVE:
-         Coord t = cp.coord;
-         hOff = t.x;
-         vOff = t.y;
-         lastOp = OP_UNDEF;
          break;
       default:
-         break;
+         return false;
       }
-      aw.dirty = true;
-      reDraw();
+      lastOp = OP_UNDEF;
+      return true;
    }
 
    override void preResize(int oldW, int oldH)
@@ -237,11 +219,10 @@ class SVGImage : ACBase
    {
       if (fileName is null)
          return;
-      //c.save();
       c.translate(hOff, vOff);
 
       // Some jiggery-pokery required here - rsvg does not do a good job
-      // rendering directl to the context
+      // rendering directly to the context
       Surface s = c.getTarget().createSimilar(cairo_content_t.COLOR_ALPHA, width, height);
       Context sc = c.create(s);
       sc.setSourceRgba(1,1,1,0);
@@ -252,6 +233,5 @@ class SVGImage : ACBase
 
       c.setSourceSurface(s, 0, 0);
       c.paint();
-      //c.restore();
    }
 }

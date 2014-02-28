@@ -169,6 +169,23 @@ class Triangle : LineSet
       return true;
    }
 
+   override bool specificUndo(CheckPoint cp)
+   {
+      switch (cp.type)
+      {
+      case OP_SIZE:
+         Coord t = cp.coord;
+         w = t.x;
+         h = t.y;
+         figurePath();
+         break;
+      default:
+         return false;
+      }
+      lastOp = OP_UNDEF;
+      return true;
+   }
+
    override void preResize(int oldW, int oldH)
    {
       double hr = cast(double) width/oldW;
@@ -228,6 +245,8 @@ class Triangle : LineSet
          double factor = coarse? 1.5: 1.05;
          if (more)
          {
+            Coord t = Coord(w, h);
+            lastOp = pushC!Coord(this, t, OP_SIZE);
             w *= factor;
             h *= factor;
          }
@@ -235,6 +254,8 @@ class Triangle : LineSet
          {
             if (0.5*(w+h)/factor < lineWidth)
                return;
+            Coord t = Coord(w, h);
+            lastOp = pushC!Coord(this, t, OP_SIZE);
             w /= factor;
             h /= factor;
          }

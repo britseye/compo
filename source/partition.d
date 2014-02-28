@@ -169,13 +169,29 @@ class Partition: ACBase
       return true;
    }
 
+   override bool specificUndo(CheckPoint cp)
+   {
+      switch (cp.type)
+      {
+      case OP_RESIZE:
+         Coord t = cp.coord;
+         hOff = t.x;
+         vOff = t.y;
+         break;
+      default:
+         return false;
+      }
+      lastOp = OP_UNDEF;
+      return true;
+   }
+
    override void onCSMoreLess(int instance, bool more, bool coarse)
    {
       focusLayout();
       int direction = more? 1: -1;
       if (coarse)
          direction *= 2;
-      lastOp = pushC!Coord(this, Coord(hOff, vOff), OP_MOVE);
+      lastOp = pushC!Coord(this, Coord(hOff, vOff), OP_RESIZE);
       switch (choice)
       {
          case VERTICAL:
@@ -197,29 +213,6 @@ class Partition: ACBase
             break;
          default:
             return;
-      }
-      aw.dirty = true;
-      reDraw();
-   }
-
-   override void undo()
-   {
-      CheckPoint cp;
-      cp = popOp();
-      if (cp.type == 0)
-         return;
-      switch (cp.type)
-      {
-      case OP_COLOR:
-         baseColor = cp.color.copy();
-         lastOp = OP_UNDEF;
-         break;
-      case OP_ALTCOLOR:
-         altColor = cp.color.copy();
-         lastOp = OP_UNDEF;
-         break;
-      default:
-         return;
       }
       aw.dirty = true;
       reDraw();

@@ -193,17 +193,22 @@ class Rectangle : LineSet
    {
       switch (cp.type)
       {
-      case OP_SIZE:
+      case OP_DV0:
          rr = cp.dVal;
          lastOp = OP_UNDEF;
          break;
+      case OP_SIZE:
+         size = cp.dVal;
+         figureWH();
+         break;
       case OP_HSIZE:
          ar = cp.dVal;
-         lastOp = OP_UNDEF;
+         figureWH();
          break;
       default:
          return false;
       }
+      lastOp = OP_UNDEF;
       return true;
    }
 
@@ -239,7 +244,7 @@ class Rectangle : LineSet
       focusLayout();
       if (instance == 0)
       {
-         lastOp = pushC!double(this, rr, OP_SIZE);
+         lastOp = pushC!double(this, rr, OP_DV0);
          double cw, ch;
          double lim = ((w > h)? h: w)*0.5 - lineWidth;
          double t = rr+direction;
@@ -251,11 +256,15 @@ class Rectangle : LineSet
       {
          double factor = coarse? 1.5: 1.05;
          if (more)
+         {
+            lastOp = pushC!double(this, size, OP_SIZE);
             size *= factor;
+         }
          else
          {
             if (0.5*(w+h)/factor < lineWidth)
                return;
+            lastOp = pushC!double(this, size, OP_SIZE);
             size /= factor;
          }
          figureWH();

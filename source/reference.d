@@ -180,27 +180,6 @@ class Reference : ACBase
       return true;
    }
 
-   override void undo()
-   {
-      CheckPoint cp;
-      cp = popOp();
-      if (cp.type == 0)
-         return;
-      switch (cp.type)
-      {
-      case OP_MOVE:
-         Coord t = cp.coord;
-         hOff = t.x;
-         vOff = t.y;
-         lastOp = OP_UNDEF;
-         break;
-      default:
-         return;
-      }
-      aw.dirty = true;
-      reDraw();
-   }
-
    override void preResize(int oldW, int oldH)
    {
       double hr = cast(double) width/oldW;

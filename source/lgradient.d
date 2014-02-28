@@ -550,23 +550,51 @@ class LGradient: ACBase
 
    void renderGuides(Context c)
    {
-      c.setSourceRgb(0.8,0.8,0.8);
+      c.setOperator(CairoOperator.SOURCE);
       c.setLineWidth(1);
+
+      // Draw the direction line
+      c.save();
+      c.setSourceRgb(0,0,0);
+      c.setDash([2.0, 2.0], 0.0);
       c.moveTo(start.x, start.y);
       c.lineTo(end.x, end.y);
       c.stroke();
-      c.moveTo(cp1.x-3, cp1.y+3);
-      c.lineTo(cp1.x, cp1.y-3);
-      c.lineTo(cp1.x+3, cp1.y+3);
-      c.closePath();
+      c.setSourceRgb(1,1,1);
+      c.setDash([2.0, 2.0], 2.0);
+      c.moveTo(start.x, start.y);
+      c.lineTo(end.x, end.y);
+      c.stroke();
+      c.restore();
+
+      // Draw two triangles
+      c.save();
       c.setSourceRgb(0,0,0);
-      c.fill();
-      c.moveTo(cp2.x-3, cp2.y+3);
-      c.lineTo(cp2.x, cp2.y-3);
-      c.lineTo(cp2.x+3, cp2.y+3);
+      c.moveTo(cp1.x-5, cp1.y+5);
+      c.lineTo(cp1.x, cp1.y-6);
+      c.lineTo(cp1.x+5, cp1.y+5);
       c.closePath();
-      c.setSourceRgb(0,0,1);
-      c.fill();
+      c.stroke();
+      c.setSourceRgb(1,1,1);
+      c.moveTo(cp1.x-6, cp1.y+6);
+      c.lineTo(cp1.x, cp1.y-7);
+      c.lineTo(cp1.x+6, cp1.y+6);
+      c.closePath();
+      c.stroke();
+
+      c.setSourceRgb(0,0,0);
+      c.moveTo(cp2.x-5, cp2.y-5);
+      c.lineTo(cp2.x, cp2.y+6);
+      c.lineTo(cp2.x+5, cp2.y-5);
+      c.closePath();
+      c.stroke();
+      c.setSourceRgb(1,1,1);
+      c.moveTo(cp2.x-6, cp2.y-6);
+      c.lineTo(cp2.x, cp2.y+7);
+      c.lineTo(cp2.x+6, cp2.y-6);
+      c.closePath();
+      c.stroke();
+      c.restore();
    }
 
    override void render(Context c)
@@ -581,11 +609,7 @@ class LGradient: ACBase
       addStops(baseColor.red, baseColor.green, baseColor.blue);
 
       c.setSource(pat);
-      c.moveTo(lpX, lpY);
-      c.lineTo(lpX, lpY+height);
-      c.lineTo(lpX+width, lpY+height);
-      c.lineTo(lpX+width, lpY);
-      c.closePath();
+      c.rectangle(lpX, lpY, width, height);
       c.fill();
 
       if (showGuides)

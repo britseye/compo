@@ -220,11 +220,11 @@ class Tilings: ACBase
          printRandom = !printRandom;
          break;
       case Purpose.REFRESH:
-         colorSeed++;
+         colorSeed += cSet.control? -1: 1;
          setupColors();
          break;
       case Purpose.REDRAW:
-         shapeSeed++;
+         shapeSeed += cSet.control? -1: 1;
          dirty = true;
          reBuild();
          break;
@@ -240,18 +240,66 @@ class Tilings: ACBase
       reDraw();
    }
 
+   override bool specificUndo(CheckPoint cp)
+   {
+      switch (cp.type)
+      {
+      case OP_CSEED:
+         colorSeed = cp.uiVal;
+         cSrc.setSeed(colorSeed);
+         break;
+      case OP_SSEED:
+         lastOp = push!uint(this, colorSeed, OP_SSEED);
+         shapeSeed = cp.uiVal;
+         break;
+      case OP_XCOLOR:
+         baseColor = cp.color;
+         cSrc.setBase(baseColor);
+         break;
+      case OP_IV0:
+         shade = cp.iVal;
+         cSrc.setShadeBand(shade);
+         cSet.setComboIndex(Purpose.DCOLORS, shade);
+         break;
+      case OP_ROWCOLS:
+         ICoord ic = cp.iCoord;
+         rows = ic.x;
+         cols = ic.y;
+         colors.length = rows*(cols*2+1);
+         setupColors();
+         dirty = true;
+         reBuild();
+         break;
+      case OP_PCA:
+         pca = cp.pca;
+         cSet.setPalette(pca.ptr);
+         setupColors();
+         break;
+      default:
+         break;
+      }
+      lastOp = OP_UNDEF;
+      return true;
+   }
+
    override void onCSPalette(PartColor[] npa)
    {
+      focusLayout();
+      lastOp = push!(PartColor[])(this, pca, OP_PCA);
       pca[] = npa[];
-      if (shade == 7)
+      if (shade == 9)
          setupColors();
       reDraw();
    }
 
    override void onCSMoreLess(int instance, bool more, bool coarse)
    {
+      focusLayout();
+      ICoord ic = ICoord(rows, cols);
       if (more)
       {
+
+         lastOp = push!ICoord(this, ic, OP_ROWCOLS);
          rows++;
          cols++;
       }
@@ -259,6 +307,7 @@ class Tilings: ACBase
       {
          if (rows > 0 && cols > 0)
          {
+            lastOp = push!ICoord(this, ic, OP_ROWCOLS);
             rows--;
             cols--;
          }
@@ -266,28 +315,9 @@ class Tilings: ACBase
       colors.length = rows*(cols*2+1);
       setupColors();
       dirty = true;
-      aw.dirty = true;
       reBuild();
+      aw.dirty = true;
       reDraw();
-   }
-
-   override bool specificUndo(CheckPoint cp)
-   {
-      switch (cp.type)
-      {
-      case OP_IV0:
-         colorSeed = cp.iVal;
-         lastOp = OP_UNDEF;
-         break;
-      case OP_IV1:
-         shapeSeed = cp.iVal;
-         lastOp = OP_UNDEF;
-         break;
-      default:
-         return false;
-      }
-      dirty = true;
-      return true;
    }
 
    static void moveCoord(ref Coord p, double distance, double angle)

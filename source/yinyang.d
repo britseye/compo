@@ -130,6 +130,21 @@ class YinYang: LineSet
       cSet.cy = vp+40;
    }
 
+   override bool specificUndo(CheckPoint cp)
+   {
+      switch (cp.type)
+      {
+      case OP_SIZE:
+         unit = cp.dVal;
+         constructBase();
+         break;
+      default:
+         return false;
+      }
+      lastOp = OP_UNDEF;
+      return true;
+   }
+
    override void preResize(int oldW, int oldH)
    {
       double hr = cast(double) width/oldW;
@@ -158,11 +173,19 @@ class YinYang: LineSet
       {
          double delta = coarse? 1.05: 1.01;
          if (more)
+         {
+            lastOp = pushC!double(this, unit, OP_SIZE);
             unit *= delta;
+         }
          else
          {
             if (unit > 0.1)
+            {
+               lastOp = pushC!double(this, unit, OP_SIZE);
                unit /= delta;
+            }
+            else
+               return;
          }
          constructBase();
       }

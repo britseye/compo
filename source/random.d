@@ -172,7 +172,7 @@ class Random: LineSet
          printRandom = !printRandom;
          break;
       case Purpose.MORE:
-         instanceSeed++;
+         instanceSeed += cSet.control? -1: 1;
          break;
       default:
          return false;

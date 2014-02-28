@@ -165,6 +165,25 @@ class Moon : LineSet
       cSet.cy = vp+35;
    }
 
+   override bool specificUndo(CheckPoint cp)
+   {
+      switch (cp.type)
+      {
+      case OP_SIZE:
+         radius = cp.dVal;
+         constructTable();
+         break;
+      case OP_IV0:
+         day = cp.iVal;
+         setPhaseDesc();
+         break;
+      default:
+         return false;
+      }
+      lastOp = OP_UNDEF;
+      return true;
+   }
+
    override void afterDeserialize()
    {
       constructTable();
@@ -238,16 +257,23 @@ class Moon : LineSet
       {
          double delta = coarse? 1.05: 1.01;
          if (more)
+         {
+            lastOp = pushC!double(this, radius, OP_SIZE);
             radius *= delta;
+         }
          else
          {
             if (radius > 10)
+            {
+               lastOp = pushC!double(this, radius, OP_SIZE);
                radius /= delta;
+            }
          }
          constructTable();
       }
       else if (instance == 1)
       {
+         lastOp = push!int(this, day, OP_IV0);
          if (more)
             day = (day+1)%28;
          else

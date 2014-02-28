@@ -62,6 +62,7 @@ class RegularPolycurve : LineSet
    double target, maxTarget, joinRadius, joinAngle;
    double cp1Radius, cp1Angle, cp2Radius, cp2Angle, cp1ARadius, cp1AAngle, cp2ARadius, cp2AAngle;
    double sho, svo;
+   int lastCPChange;
    Label numSides;
    Button vb;
    CairoFillRule cfr;
@@ -191,6 +192,7 @@ class RegularPolycurve : LineSet
       sides = w.config.polySides;
       activeCP = 0;
       lineWidth = 0.5;
+      lastCPChange = -1;
       constructBase();
       tm = new Matrix(&tmData);
 
@@ -714,7 +716,7 @@ class RegularPolycurve : LineSet
       switch (instance)
       {
          case 0:
-            lastOp = pushC!int(this, sides, OP_IV1);
+            lastOp = push!int(this, sides, OP_IV1);
             doSides();
             break;
          case 1:
@@ -727,12 +729,24 @@ class RegularPolycurve : LineSet
             break;
          case 3:
             RPCCP rpccp = RPCCP(true, cp1Radius, cp2Radius, cp1ARadius, cp2ARadius);
-            lastOp = pushC!(RPCCP)(this, rpccp, OP_RPCCP);
+            if (lastCPChange != 0)
+            {
+               lastOp = push!(RPCCP)(this, rpccp, OP_RPCCP);
+               lastCPChange = 0;
+            }
+            else
+               lastOp = pushC!(RPCCP)(this, rpccp, OP_RPCCP);
             doCpRadius();
             break;
          case 4:
             RPCCP rpccp = RPCCP(false, cp1Angle, cp2Angle, cp1AAngle, cp2AAngle);
-            lastOp = pushC!(RPCCP)(this, rpccp, OP_RPCCP);
+            if (lastCPChange != 1)
+            {
+               lastOp = push!(RPCCP)(this, rpccp, OP_RPCCP);
+               lastCPChange = 1;
+            }
+            else
+               lastOp = pushC!(RPCCP)(this, rpccp, OP_RPCCP);
             doCpAngle();
             break;
          case 5:

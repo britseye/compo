@@ -112,7 +112,7 @@ class Noise : LineSet
          dots = ndots[level];
          break;
       case Purpose.REDRAW:
-         instanceSeed++;
+         instanceSeed += cSet.control? -1: 1;
          break;
       case Purpose.PRINTRANDOM:
          printRandom = !printRandom;

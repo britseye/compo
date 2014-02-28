@@ -601,6 +601,7 @@ class PointSet : LineSet
    {
       getBounding();
       Coord c = Coord(topLeft.x+0.5*(bottomRight.x-topLeft.x), topLeft.y+0.5*(bottomRight.y-topLeft.y));
+      center = c;
       return c;
    }
 
@@ -684,12 +685,12 @@ class PointSet : LineSet
       c.setLineWidth(3);
       for (size_t i = 0; i < oPath.length; i++)
       {
-         c.arc(center.x+oPath[i].x, center.y+oPath[i].y, lineWidth/2, 0, PI*2);
+         c.arc(oPath[i].x, oPath[i].y, lineWidth/2, 0, PI*2);
          c.strokePreserve();
          c.fill();
       }
       c.setSourceRgb(1,0,0);
-      c.arc(center.x+oPath[current].x, center.y+oPath[current].y, lineWidth/2, 0, PI*2);
+      c.arc(oPath[current].x, oPath[current].y, lineWidth/2, 0, PI*2);
       c.strokePreserve();
       c.fill();
    }

@@ -182,11 +182,11 @@ class BrushDabs : ACBase
       {
       case Purpose.REFRESH:
          lastOp = push!uint(this, colorSeed, OP_CSEED);
-         colorSeed++;
+         colorSeed += cSet.control? -1: 1;
          break;
       case Purpose.REDRAW:
          lastOp = push!uint(this, colorSeed, OP_SSEED);
-         shapeSeed++;
+         shapeSeed += cSet.control? -1: 1;
          generate();
          break;
       case Purpose.PRINTRANDOM:
@@ -279,6 +279,7 @@ class BrushDabs : ACBase
 
    override void onCSPalette(PartColor[] npa)
    {
+      focusLayout();
       lastOp = push!(PartColor[])(this, pca, OP_PCA);
       pca[] = npa[];
       reDraw();

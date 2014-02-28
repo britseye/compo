@@ -134,6 +134,7 @@ enum
    OP_SSEED,
    OP_PCA,
    OP_ORIENT,
+   OP_ROWCOLS,
 
    OP_UNDEF
 }
@@ -158,6 +159,7 @@ struct CheckPoint
       int iVal;
       uint uiVal;
       bool boolVal;
+      ICoord iCoord;
       Coord[] path;
       ubyte[] ubbuf;
       PathItemR pathItemR;
@@ -193,6 +195,11 @@ int push(T)(ACBase that, T t, int op)
    else static if (is(T == Coord))
    {
       that.lcp.coord = t;
+      that.lcp.type = op;
+   }
+   else static if (is(T == ICoord))
+   {
+      that.lcp.iCoord = t;
       that.lcp.type = op;
    }
    else static if (is(T == PathItemR))
@@ -282,6 +289,11 @@ int pushC(T)(ACBase that, T t, int op)
    else static if (is(T == Coord))
    {
       that.lcp.coord = t;
+      that.lcp.type = op;
+   }
+   else static if (is(T == ICoord))
+   {
+      that.lcp.iCoord = t;
       that.lcp.type = op;
    }
    else static if (is(T == PathItemR))

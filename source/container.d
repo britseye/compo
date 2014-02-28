@@ -349,10 +349,30 @@ class Container: ACBase
       if (glShowing)
       {
          c.save();
-         c.setOperator(CairoOperator.XOR);
-         c.setSourceRgb(0.8,0.8,0.8);
-         c.setLineWidth(0.5);
-         c.setDash([4.0, 4.0], 0.0);
+         c.setOperator(CairoOperator.SOURCE);
+         c.setLineWidth(1);
+         c.setSourceRgb(0,0,0);
+         c.setDash([2.0, 2.0], 0.0);
+         if (glUseV)
+         {
+            c.moveTo(hOff, 0);
+            c.lineTo(hOff, height);
+            c.stroke();
+            c.moveTo(0, glSaved);
+            c.lineTo(width, glSaved);
+            c.stroke();
+         }
+         else
+         {
+            c.moveTo(glSaved, 0);
+            c.lineTo(glSaved, height);
+            c.stroke();
+            c.moveTo(0, vOff);
+            c.lineTo(width, vOff);
+            c.stroke();
+         }
+         c.setSourceRgb(1,1,1);
+         c.setDash([2.0, 2.0], 2.0);
          if (glUseV)
          {
             c.moveTo(hOff, 0);

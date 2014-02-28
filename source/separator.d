@@ -133,13 +133,15 @@ class Separator : LineSet
          d *= 5;
       if (horizontal)
       {
-         lastOp = pushC!Coord(this, hEnd, OP_HSIZE);
+         Coord[] ca = [hStart, hEnd];
+         lastOp = pushC!(Coord[])(this, ca, OP_HSIZE);
          hStart.x -= d/2;
          hEnd.x += d/2;
       }
       else
       {
-         lastOp = pushC!Coord(this, vEnd, OP_VSIZE);
+         Coord[] ca = [vStart, vEnd];
+         lastOp = pushC!(Coord[])(this, ca, OP_VSIZE);
          vStart.y -= d/2;
          vEnd.y += d/2;
       }
@@ -152,11 +154,15 @@ class Separator : LineSet
       switch (cp.type)
       {
       case OP_HSIZE:
-         hEnd= cp.coord;
+         Coord[] ca = cp.path;
+         hStart = ca[0];
+         hEnd = ca[1];
          lastOp = OP_UNDEF;
          break;
       case OP_VSIZE:
-         vEnd= cp.coord;
+         Coord[] ca = cp.path;
+         vStart = ca[0];
+         vEnd = ca[1];
          lastOp = OP_UNDEF;
          break;
       default:
