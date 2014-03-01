@@ -390,6 +390,7 @@ enum
    AC_TEARDROP,
    AC_YINYANG,
    AC_SHIELD,
+   AC_LINEBORDERS,
 
    AC_CONTAINER = 1000,
    AC_DUMMY,
@@ -400,7 +401,7 @@ string[] _ACTypeNames = [ "Text", "USPS Address", "Fancy Text", "Morphed Text", 
                           "PixelImage", "Line", "Rectangle", "Circle", "Curve", "Regular Polygon", "Regular Polycurve", "PointSet", "Polygon", "Polycurve", "Arrow", "Heart", "Barcode",
                           "Separator", "Corners", "Crescent", "Cross", "Bevel", "Fader", "LGradient", "RGradient",
                           "Random", "Partition", "Reference", "SVGImage", "StrokeSet", "Drawing", "Mesh", "Moon", "Triangle", "Noise",
-                          "Color Tilings", "Teardrop", "YinYang", "Shield" ];
+                          "Color Tilings", "Teardrop", "YinYang", "Shield", "Line Borders" ];
 string ACTypeNames(int t)
 {
    if (t < AC_CONTAINER)

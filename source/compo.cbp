@@ -136,6 +136,7 @@
 		<Unit filename="line.d">
 			<Option target="Debug" />
 		</Unit>
+		<Unit filename="lineborders.d" />
 		<Unit filename="lineset.d">
 			<Option target="Debug" />
 		</Unit>

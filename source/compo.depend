@@ -4240,7 +4240,7 @@
 	<gtk/AboutDialog.d>
 	<gtk/Version.d>
 
-1393582692 source:/home/steve/COMPO/source/acomp.d
+1393594776 source:/home/steve/COMPO/source/acomp.d
 	<mainwin.d>
 	<constants.d>
 	<types.d>
@@ -4291,7 +4291,7 @@
 	<gtk/ColorSelection.d>
 	<gtk/ColorSelectionDialog.d>
 
-1392969586 /home/steve/COMPO/source/mainwin.d
+1393595955 /home/steve/COMPO/source/mainwin.d
 
 1316267666 /home/steve/COMPO/source/constants.d
 
@@ -4343,7 +4343,7 @@
 	<gtkc/cairotypes.d>
 	<cairo/Matrix.d>
 
-1393582692 /home/steve/COMPO/source/acomp.d
+1393594776 /home/steve/COMPO/source/acomp.d
 
 1393482198 /home/steve/COMPO/source/lineset.d
 
@@ -4513,7 +4513,7 @@
 	<glib/Idle.d>
 	<gobject/Value.d>
 
-1392970484 /home/steve/COMPO/source/menus.d
+1393594713 /home/steve/COMPO/source/menus.d
 
 1393500728 /home/steve/COMPO/source/tvitem.d
 
@@ -5018,7 +5018,7 @@
 	<gtk/ComboBoxText.d>
 	<gtk/Label.d>
 
-1392969586 source:/home/steve/COMPO/source/mainwin.d
+1393595955 source:/home/steve/COMPO/source/mainwin.d
 	<constants.d>
 	<config.d>
 	<common.d>
@@ -5078,6 +5078,7 @@
 	<teardrop.d>
 	<yinyang.d>
 	<shield.d>
+	<lineborders.d>
 	<std/stdio.d>
 	<std/conv.d>
 	<std/file.d>
@@ -5138,7 +5139,7 @@
 
 1390804316 /home/steve/COMPO/source/printing.d
 
-1392970484 source:/home/steve/COMPO/source/menus.d
+1393594713 source:/home/steve/COMPO/source/menus.d
 	<mainwin.d>
 	<config.d>
 	<treeops.d>
@@ -6291,7 +6292,7 @@
 	<gtkc/gdktypes.d>
 	<gtk/PopupBox.d>
 
-1393584285 source:/home/steve/COMPO/source/yinyang.d
+1393584512 source:/home/steve/COMPO/source/yinyang.d
 	<mainwin.d>
 	<constants.d>
 	<acomp.d>
@@ -6310,4 +6311,34 @@
 	<gdk/RGBA.d>
 	<cairo/Context.d>
 	<cairo/Matrix.d>
+
+1393681341 source:/home/steve/COMPO/source/lineborders.d
+	<mainwin.d>
+	<constants.d>
+	<acomp.d>
+	<common.d>
+	<types.d>
+	<controlset.d>
+	<lineset.d>
+	<std/stdio.d>
+	<std/conv.d>
+	<std/array.d>
+	<std/format.d>
+	<std/math.d>
+	<gtk/DrawingArea.d>
+	<gtk/Widget.d>
+	<gtk/Label.d>
+	<gtk/Button.d>
+	<gtk/CheckButton.d>
+	<gtk/RadioButton.d>
+	<gtk/ToggleButton.d>
+	<gtk/Layout.d>
+	<gtk/Frame.d>
+	<gtk/Range.d>
+	<gdk/RGBA.d>
+	<cairo/Context.d>
+	<gtkc/cairotypes.d>
+	<cairo/Matrix.d>
+
+1393681600 /home/steve/COMPO/source/lineborders.d
 

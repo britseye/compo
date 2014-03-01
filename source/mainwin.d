@@ -66,6 +66,7 @@ import tilings;
 import teardrop;
 import yinyang;
 import shield;
+import lineborders;
 
 import std.stdio;
 import std.conv;
@@ -289,6 +290,9 @@ class AppWindow : MainWindow
          break;
       case "Line":
          nt = AC_LINE;
+         break;
+      case "Line Borders":
+         nt = AC_LINEBORDERS;
          break;
       case "Partition":
          nt = AC_PARTITION;
@@ -765,6 +769,9 @@ class AppWindow : MainWindow
       case AC_LINE:
          ni = new Line(this, p);
          break;
+      case AC_LINEBORDERS:
+         ni = new LineBorders(this, p);
+         break;
       case AC_REFERENCE:
          ni = new Reference(this, p);
          break;
@@ -872,6 +879,8 @@ class AppWindow : MainWindow
          return new PixelImage(cast(PixelImage) x);
       case AC_LINE:
          return new Line(cast(Line) x);
+      case AC_LINEBORDERS:
+         return new LineBorders(cast(LineBorders) x);
       case AC_FANCYTEXT:
          return new FancyText(cast(FancyText) x);
       case AC_MORPHTEXT:
