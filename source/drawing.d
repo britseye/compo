@@ -60,8 +60,8 @@ class Drawing : ACBase
 
    this(AppWindow w, ACBase parent)
    {
-      super(w, parent, "", AC_DRAWING);
-      group = ACGroups.DRAWINGS;
+      super(w, parent, "", AC_DRAWING, ACGroups.DRAWINGS);
+      notifyHandlers ~= &Drawing.notifyHandler;
       center = Coord(0.5*width, 0.5*height);
       tm = new Matrix(&tmData);
 
@@ -73,8 +73,9 @@ class Drawing : ACBase
    {
       dName = drawingName;
       string s = dName~" "~to!string(++nextOid);
-      super(w, parent, s, AC_DRAWING);
-      group = ACGroups.DRAWINGS;
+      super(w, parent, s, AC_DRAWING, ACGroups.DRAWINGS);
+      notifyHandlers ~= &Drawing.notifyHandler;
+
       center = Coord(0.5*width, 0.5*height);
       tm = new Matrix(&tmData);
       aw.deserializer.deserializeDrawing(this);
@@ -112,6 +113,19 @@ class Drawing : ACBase
       cSet.cy = vp+38;
    }
 
+   override bool notifyHandler(Widget w, Purpose p)
+   {
+      switch (p)
+      {
+      case Purpose.XFORMCB:
+         xform = (cast(ComboBoxText) w).getActive();
+         break;
+      default:
+         return false;
+      }
+      return true;
+   }
+/*
    override bool specificNotify(Widget w, Purpose wid)
    {
       switch (wid)
@@ -124,7 +138,7 @@ class Drawing : ACBase
       }
       return true;
    }
-
+*/
    override void undo()
    {
       CheckPoint cp;

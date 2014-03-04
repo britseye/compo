@@ -105,8 +105,9 @@ class Crescent : LineSet
    this(AppWindow w, ACBase parent)
    {
       string s = "Crescent "~to!string(++nextOid);
-      super(w, parent, s, AC_CRESCENT);
-      group = ACGroups.SHAPES;
+      super(w, parent, s, AC_CRESCENT, ACGroups.SHAPES);
+      notifyHandlers ~= &Crescent.notifyHandler;
+
       altColor = new RGBA(0,0,0,1);
       les = true;
       closed = true;
@@ -163,9 +164,9 @@ class Crescent : LineSet
       new MoreLess(cSet, 3, ICoord(275, vp), true);
 
       cSet.cy = vp+35;
-
-      //RenameGadget rg = new RenameGadget(cSet, ICoord(0, vp), name, true);
    }
+
+   override bool notifyHandler(Widget w, Purpose p) { return false; }
 
    override bool specificUndo(CheckPoint cp)
    {

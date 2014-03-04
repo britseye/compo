@@ -69,8 +69,9 @@ class Bevel: ACBase
    this(AppWindow w, ACBase parent)
    {
       string s = "Bevel "~to!string(++nextOid);
-      super(w, parent, s, AC_BEVEL);
-      group = ACGroups.EFFECTS;
+      super(w, parent, s, AC_BEVEL, ACGroups.EFFECTS);
+      notifyHandlers ~= &Bevel.notifyHandler;
+
       hOff = vOff = 0;
       bt = 10.0;
       lineWidth = 0.5;
@@ -98,6 +99,8 @@ class Bevel: ACBase
 
       cSet.cy = 35;
    }
+
+   override bool notifyHandler(Widget w, Purpose p) { return false; }
 
    override void onCSMoreLess(int id, bool more, bool quickly)
    {

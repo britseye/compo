@@ -69,9 +69,9 @@ class Separator : LineSet
    this(AppWindow w, ACBase parent)
    {
       string s = "Separator "~to!string(++nextOid);
-      super(w, parent, s, AC_SEPARATOR);
-      group = ACGroups.EFFECTS;
-      hOff = vOff = 0;
+      super(w, parent, s, AC_SEPARATOR, ACGroups.EFFECTS);
+      notifyHandlers ~= &Separator.notifyHandler;
+
       horizontal = true;
       lineWidth = 1.0;
       les = true;
@@ -107,6 +107,24 @@ class Separator : LineSet
       cSet.cy = vp+40;
    }
 
+   override bool notifyHandler(Widget w, Purpose p)
+   {
+      switch (p)
+      {
+      case Purpose.HORIZONTAL:
+         if ((cast(RadioButton) w).getActive())
+            horizontal = true;
+         break;
+      case Purpose.VERTICAL:
+         if ((cast(RadioButton) w).getActive())
+            horizontal = false;
+         break;
+      default:
+         return false;
+      }
+      return true;
+   }
+/*
    override bool specificNotify(Widget w, Purpose wid)
    {
       switch (wid)
@@ -124,7 +142,7 @@ class Separator : LineSet
       }
       return true;
    }
-
+*/
    override void onCSMoreLess(int instance, bool more, bool far)
    {
       focusLayout();

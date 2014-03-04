@@ -445,8 +445,8 @@ class Polycurve : LineSet
    this(AppWindow w, ACBase parent)
    {
       string s = "Polycurve "~to!string(++nextOid);
-      super(w, parent, s, AC_POLYCURVE);
-      group = ACGroups.GEOMETRIC;
+      super(w, parent, s, AC_POLYCURVE, ACGroups.GEOMETRIC);
+      notifyHandlers ~= &Polycurve.notifyHandler;
       closed = true;
       center.x = 0.5*width;
       center.y = 0.5*height;
@@ -526,6 +526,47 @@ class Polycurve : LineSet
       }
    }
 
+   override bool notifyHandler(Widget w, Purpose p)
+   {
+      switch (p)
+      {
+      case Purpose.REDRAW:
+         lastOp = push!(PathItem[])(this, pcPath, OP_REDRAW);
+         editing = !editing;
+         switchMode();
+         focusLayout();
+         break;
+      case Purpose.REFLECT:
+         lastOp = push!Path_t(this, oPath, OP_REDRAW);
+         if (unreflected !is null)
+         {
+            pcPath = unreflected;
+            unreflected = null;
+            rfb.setLabel("Reflect");
+         }
+         else
+         {
+            reflect();
+            rfb.setLabel("Unreflect");
+         }
+         break;
+      case Purpose.OPEN:
+         open = !open;
+         if (open)
+            cSet.disable(Purpose.FILLTYPE);
+         else
+            cSet.enable(Purpose.FILLTYPE);
+         if (!constructing)
+            correctEnd();
+         current = 0;
+         figureNextPrev();
+         break;
+      default:
+         return false;
+      }
+      return true;
+   }
+/*
    override bool specificNotify(Widget w, Purpose wid)
    {
       switch (wid)
@@ -565,7 +606,7 @@ class Polycurve : LineSet
          return false;
       }
    }
-
+*/
    void correctEnd()
    {
       double dx = pcPath[0].start.x-pcPath[$-1].end.x;

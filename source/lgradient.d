@@ -62,8 +62,9 @@ class LGradient: ACBase
    this(AppWindow w, ACBase parent)
    {
       string s = "LGradient "~to!string(++nextOid);
-      super(w, parent, s, AC_LGRADIENT);
-      group = ACGroups.EFFECTS;
+      super(w, parent, s, AC_LGRADIENT, ACGroups.EFFECTS);
+      notifyHandlers ~= &LGradient.notifyHandler;
+
       fw = 0.3333333;
       fp = 0.3333333;
       angle = atan2(-1.0*height, 1.0*width);
@@ -159,6 +160,29 @@ class LGradient: ACBase
       fp = height/3;
    }
 
+   override bool notifyHandler(Widget w, Purpose p)
+   {
+      focusLayout();
+      switch (p)
+      {
+      case Purpose.FADELEFT:
+         revfade = !revfade;
+         dirty = true;
+         break;
+      case Purpose.SHOWMARKERS:
+         showGuides = !showGuides;
+         dirty = true;
+         break;
+      case Purpose.PATTERN:
+         gType = (cast(ComboBoxText) w).getActive();
+         dirty = true;
+         break;
+      default:
+         return false;
+      }
+      return true;
+   }
+/*
    override bool specificNotify(Widget w, Purpose wid)
    {
 
@@ -181,7 +205,7 @@ class LGradient: ACBase
       }
       return true;
    }
-
+*/
    void setOrientation(int o)
    {
       void figureSE(double a)

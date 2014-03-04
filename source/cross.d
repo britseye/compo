@@ -94,8 +94,8 @@ class Cross : LineSet
    this(AppWindow w, ACBase parent)
    {
       string s = "Cross "~to!string(++nextOid);
-      super(w, parent, s, AC_CROSS);
-      group = ACGroups.SHAPES;
+      super(w, parent, s, AC_CROSS, ACGroups.SHAPES);
+      notifyHandlers ~= &Cross.notifyHandler;
       closed = true;
       altColor = new RGBA(0,0,0,1);
       les = true;
@@ -159,6 +159,8 @@ class Cross : LineSet
 
       //RenameGadget rg = new RenameGadget(cSet, ICoord(0, vp), name, true);
    }
+
+   override bool notifyHandler(Widget w, Purpose p) { return false; }
 
    override bool specificUndo(CheckPoint cp)
    {

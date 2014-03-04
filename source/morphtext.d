@@ -112,6 +112,7 @@ class MorphText : TextViewItem
    {
       string s = "Morphed Text "~to!string(++nextOid);
       super(w, parent, s, AC_MORPHTEXT);
+      notifyHandlers ~= &MorphText.notifyHandler;
       altColor = new RGBA(0,0,0,1);
       fill = false;
       olt = 0.5;
@@ -235,6 +236,81 @@ class MorphText : TextViewItem
       updateFillUI();
    }
 
+   override bool notifyHandler(Widget w, Purpose p)
+   {
+      switch (p)
+      {
+      case Purpose.FILLCOLOR:
+         setColor(true);
+         break;
+      case Purpose.FILL:
+         fill = !fill;
+         break;
+      case Purpose.OUTLINE:
+         outline = !outline;
+         break;
+      case Purpose.FILLOPTIONS:
+         int n = fillOptions.getActive();
+         if (n == 0)
+            return false;
+         FillSpec fs = FillSpec(fill, outline, altColor, fillFromPattern, fillUid);
+         lastOp = push!FillSpec(this, fs, OP_FILL);
+         if (n == 1)
+         {
+            setColor(true);
+            fillFromPattern = false;
+            fill = true;
+            fillType.setText("(C)");
+         }
+         else if (n == 2)
+         {
+            fillFromPattern = false;
+            fill = false;
+            fillType.setText("(N)");
+         }
+         else if (n == 3)
+         {
+            updateFillOptions(this);
+            fillOptions.setActive(0);
+            return false;
+         }
+         else
+         {
+            fillFromPattern = true;
+            fillUid = others[n-4];
+            fill = true;
+            fillType.setText("(P)");
+         }
+         fillOptions.setActive(0);
+         updateFillUI();
+         break;
+      case Purpose.MORE:
+         if (mdShowing)
+         {
+            md.hide();
+            mdShowing = false;
+            cSet.setLabel(Purpose.MORE, "More");
+         }
+         else
+         {
+            md.showAll();
+            mdShowing = true;
+            cSet.setLabel(Purpose.MORE, "Less");
+         }
+         break;
+      case Purpose.MORPHCB:
+         cm = (cast(ComboBoxText) w).getActive();
+         changeMorph();
+         break;
+      case Purpose.XFORMCB:
+         xform = (cast(ComboBoxText) w).getActive();
+         break;
+      default:
+         return false;
+      }
+      return true;
+   }
+/*
    override bool specificNotify(Widget w, Purpose wid)
    {
       switch (wid)
@@ -309,7 +385,7 @@ class MorphText : TextViewItem
       }
       return true;
    }
-
+*/
    override void undo()
    {
       CheckPoint cp;

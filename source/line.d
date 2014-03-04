@@ -116,6 +116,27 @@ class Line : LineSet
       cSet.cy = vp+40;
    }
 
+   override bool notifyHandler(Widget w, Purpose p)
+   {
+      if (p >= SP && p <= ALL)
+      {
+         if ((cast(ToggleButton) w).getActive())
+         {
+            if (active == p-SP)
+            {
+               nop = true;
+               return true;
+            }
+            active = p-SP;
+         }
+      }
+      else if (p == Purpose.EDITMODE)
+         showSe = !showSe;
+      else
+         return false;
+      return true;
+   }
+/*
    override bool specificNotify(Widget w, Purpose wid)
    {
       if (wid >= SP && wid <= ALL)
@@ -134,7 +155,7 @@ class Line : LineSet
          return false;
       return true;
    }
-
+*/
    override bool specificUndo(CheckPoint cp)
    {
       switch (cp.type)

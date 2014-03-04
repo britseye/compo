@@ -73,9 +73,9 @@ class RGradient: ACBase
    this(AppWindow w, ACBase parent)
    {
       string s = "RGradient "~to!string(++nextOid);
-      super(w, parent, s, AC_RGRADIENT);
-      group = ACGroups.EFFECTS;
-      hOff = vOff = 0;
+      super(w, parent, s, AC_RGRADIENT, ACGroups.EFFECTS);
+      notifyHandlers ~= &RGradient.notifyHandler;
+
       baseColor = new RGBA(1,1,1);
       maxOpacity = 1.0;
       gType = 0;
@@ -172,6 +172,27 @@ class RGradient: ACBase
          outrad = width;
    }
 
+   override bool notifyHandler(Widget w, Purpose p)
+   {
+      switch (p)
+      {
+      case Purpose.SOLID:
+         mark = !mark;
+         break;
+      case Purpose.FADELEFT:
+         revfade = !revfade;
+         dirty = true;
+         break;
+      case Purpose.PATTERN:
+         gType = (cast(ComboBoxText) w).getActive();
+         dirty = true;
+         break;
+      default:
+         return false;
+      }
+      return true;
+   }
+/*
    override bool specificNotify(Widget w, Purpose wid)
    {
       switch (wid)
@@ -192,7 +213,7 @@ class RGradient: ACBase
       }
       return true;
    }
-
+*/
    override bool specificUndo(CheckPoint cp)
    {
       switch (cp.type)

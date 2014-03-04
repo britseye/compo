@@ -74,8 +74,8 @@ class SVGImage : ACBase
    this(AppWindow w, ACBase parent)
    {
       string s = "SVGImage "~to!string(++nextOid);
-      super(w, parent, s, AC_SVGIMAGE);
-      group = ACGroups.SVG;
+      super(w, parent, s, AC_SVGIMAGE, ACGroups.SVG);
+      notifyHandlers ~= &SVGImage.notifyHandler;
       scaleType = 0;
       scaleX = 1.0;
       useFile = false;
@@ -110,6 +110,44 @@ class SVGImage : ACBase
       cSet.cy = vp+50;
    }
 
+   override boolnotifyHandler(Widget w, Purpose p)
+   {
+      switch (p)
+      {
+      case Purpose.OPENFILE:
+         onCFB();
+         focusLayout();
+         return true;
+      case Purpose.SCALEPROP:
+         if ((cast(RadioButton) w).getActive())
+         {
+            scaleType = 0;
+            return true;
+         }
+         break;
+      case Purpose.SCALEFIT:
+         if ((cast(RadioButton) w).getActive())
+         {
+            scaleType = 1;
+            return true;
+         }
+         break;
+      case Purpose.SCALENON:
+         if ((cast(RadioButton) w).getActive())
+         {
+            scaleType = 2;
+            return true;
+         }
+         break;
+      case Purpose.USEFILE:
+         useFile = !useFile;
+         break;
+      default:
+         return false;
+      }
+      return true;
+   }
+/*
    override bool specificNotify(Widget w, Purpose wid)
    {
       switch (wid)
@@ -147,7 +185,7 @@ class SVGImage : ACBase
       }
       return true;
    }
-
+*/
    override void onCSMoreLess(int id, bool more, bool quickly)
    {
       focusLayout();

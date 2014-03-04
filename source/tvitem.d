@@ -82,6 +82,8 @@ class TextViewItem : ACBase
    {
       super(_aw, _parent, _name, _type);
       group = ACGroups.TEXT;
+      notifyHandlers ~= &TextViewItem.notifyHandler;
+
       editMode = true;
       if (type != AC_RICHTEXT)
          teStack.length = 20;
@@ -145,6 +147,24 @@ class TextViewItem : ACBase
    void dgToggleView(Button rb) {}
    void toggleView() {}
 
+   override bool notifyHandler(Widget w, Purpose p)
+   {
+      switch (p)
+      {
+      case Purpose.EDITMODE:
+         if (editMode)
+            cSet.setInfo("Design mode: Set parameters for the layer.");
+         else
+            cSet.setInfo("Edit mode: Modify the text as required.");
+         editMode = !editMode;
+         toggleView();
+         break;
+      default:
+         return false;
+      }
+      return true;
+   }
+/*
    override void onCSNotify(Widget w, Purpose wid)
    {
       switch (wid)
@@ -170,7 +190,7 @@ class TextViewItem : ACBase
       aw.dirty = true;
       reDraw();
    }
-
+*/
    void pushTS(string s)
    {
       if (teSP >= 19)

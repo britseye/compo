@@ -155,6 +155,21 @@ class Triangle : LineSet
       cSet.cy = vp+40;
    }
 
+   override bool notifyHandler(Widget w, Purpose p)
+   {
+      focusLayout();
+      switch (p)
+      {
+      case Purpose.PATTERN:
+         ttype = (cast(ComboBoxText) w).getActive();
+         dirty = true;
+         break;
+      default:
+         return false;
+      }
+      return true;
+   }
+/*
    override bool specificNotify(Widget w, Purpose wid)
    {
       focusLayout();
@@ -169,7 +184,7 @@ class Triangle : LineSet
       }
       return true;
    }
-
+*/
    override bool specificUndo(CheckPoint cp)
    {
       switch (cp.type)

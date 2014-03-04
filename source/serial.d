@@ -134,6 +134,19 @@ writeln("buffer "~te.getBuffer().getText());
       dirty = true;
    }
 
+   override bool notifyHandler(Widget w, Purpose p)
+   {
+      switch (p)
+      {
+      case Purpose.FILL:
+         pad = !pad;
+         break;
+      default:
+         return false;
+      }
+      return true;
+   }
+/*
    override bool specificNotify(Widget w, Purpose wid)
    {
       switch (wid)
@@ -146,7 +159,7 @@ writeln("buffer "~te.getBuffer().getText());
       }
       return true;
    }
-
+*/
    override void onCSMoreLess(int instance, bool more, bool quickly)
    {
       if (instance== 0)

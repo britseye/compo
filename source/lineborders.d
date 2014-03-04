@@ -189,8 +189,8 @@ class LineBorders: LineSet
    this(AppWindow wa, ACBase parent)
    {
       string s = "LineBorders "~to!string(++nextOid);
-      super(wa, parent, s, AC_LINEBORDERS);
-      group = ACGroups.EFFECTS;
+      super(wa, parent, s, AC_LINEBORDERS, ACGroups.EFFECTS);
+      notifyHandlers ~= &LineBorders.notifyHandler;
       hOff = vOff = 0;
 
       lineWidth = 0.5;
@@ -225,6 +225,22 @@ class LineBorders: LineSet
       cSet.cy = vp+60;
    }
 
+   override bool notifyHandler(Widget w, Purpose p)
+   {
+      focusLayout();
+      switch (p)
+      {
+      case Purpose.FULLDATA:
+      doubled = !doubled;
+         bsh = BSegment(slh, sd, false, doubled);
+         bsv = BSegment(slv, sd, true, doubled);
+         break;
+      default:
+         return false;
+      }
+      return true;
+   }
+/*
    override bool specificNotify(Widget w, Purpose p)
    {
       focusLayout();
@@ -240,7 +256,7 @@ class LineBorders: LineSet
       }
       return true;
    }
-
+*/
    void figureWaves()
    {
       bool wmost = (width > height);

@@ -89,6 +89,7 @@ class USPS : TextViewItem
    {
       string s = "USPS Address "~to!string(++nextOid);
       super(w, parent, s, AC_USPS);
+      notifyHandlers ~= &USPS.notifyHandler;
       shrink2Fit = showData = true;
       strokeData[0] = '!';
       pfd = PgFontDescription.fromString(aw.config.USPSFont);     // TBD base font from config file
@@ -128,6 +129,19 @@ class USPS : TextViewItem
       dirty = true;
    }
 
+   override bool notifyHandler(Widget w, Purpose p)
+   {
+      switch (p)
+      {
+      case Purpose.HRDATA:
+         showData = !showData;
+         break;
+      default:
+         return false;
+      }
+      return true;
+   }
+/*
    override bool specificNotify(Widget w, Purpose wid)
    {
       switch (wid)
@@ -140,7 +154,7 @@ class USPS : TextViewItem
       }
       return true;
    }
-
+*/
    override void toggleView()
    {
       if (editMode)

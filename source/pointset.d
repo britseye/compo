@@ -307,8 +307,9 @@ class PointSet : LineSet
    this(AppWindow w, ACBase parent)
    {
       string s = "PointSet "~to!string(++nextOid);
-      super(w, parent, s, AC_POINTSET);
-      group = ACGroups.GEOMETRIC;
+      super(w, parent, s, AC_POINTSET, ACGroups.GEOMETRIC);
+      notifyHandlers ~= &PointSet.notifyHandler;
+
       constructing = true;
       les = true;
       current = 0;
@@ -357,6 +358,22 @@ class PointSet : LineSet
       cSet.cy = vp+30;
    }
 
+   override bool notifyHandler(Widget w, Purpose p)
+   {
+      focusLayout();
+      switch (p)
+      {
+      case Purpose.REDRAW:
+         lastOp = push!Path_t(this, oPath, OP_REDRAW);
+         editing = !editing;
+         switchMode();
+         break;
+      default:
+         return false;
+      }
+      return true;
+   }
+/*
    override bool specificNotify(Widget w, Purpose wid)
    {
       switch (wid)
@@ -371,7 +388,7 @@ class PointSet : LineSet
          return false;
       }
    }
-
+*/
    void switchMode()
    {
       if (editing)

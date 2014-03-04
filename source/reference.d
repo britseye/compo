@@ -64,8 +64,8 @@ class Reference : ACBase
    this(AppWindow w, ACBase parent)
    {
       string s = "Reference "~to!string(++nextOid);
-      super(w, parent, s, AC_REFERENCE);
-      group = ACGroups.REFERENCE;
+      super(w, parent, s, AC_REFERENCE, ACGroups.REFERENCE);
+      notifyHandlers ~= &Reference.notifyHandler;
       tm = new Matrix(&tmData);
 
       setupControls();
@@ -148,6 +148,39 @@ class Reference : ACBase
       cSet.cy = vp+38;
    }
 
+   override bool notifyHandler(Widget w, Purpose p)
+   {
+      switch (p)
+      {
+      case Purpose.OPENFILE:
+         onCFB();
+         focusLayout();
+         return true;
+      case Purpose.LOCALCTR:
+         string s = (cast(ComboBoxText) w).getActiveText();
+         if (s == "Use File")
+         {
+            that = null;
+            nop = true;
+            return true;
+         }
+         setThat(s);
+         break;
+      case Purpose.REDRAW:
+         cbb.removeAll;
+         cbb.appendText("Use File");
+         getLocalCtrs();
+         cbb.setActive(0);
+         break;
+      case Purpose.XFORMCB:
+         xform = (cast(ComboBoxText) w).getActive();
+         break;
+      default:
+         return false;
+      }
+      return true;
+   }
+/*
    override bool specificNotify(Widget w, Purpose wid)
    {
       switch (wid)
@@ -179,7 +212,7 @@ class Reference : ACBase
       }
       return true;
    }
-
+*/
    override void preResize(int oldW, int oldH)
    {
       double hr = cast(double) width/oldW;

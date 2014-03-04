@@ -89,8 +89,8 @@ class Curve : LineSet
    this(AppWindow w, ACBase parent)
    {
       string s = "Curve "~to!string(++nextOid);
-      super(w, parent, s, AC_CURVE);
-      group = ACGroups.GEOMETRIC;
+      super(w, parent, s, AC_CURVE, ACGroups.GEOMETRIC);
+      notifyHandlers ~= &Curve.notifyHandler;
       aw = w;
 
       center.x = 0.5*width;
@@ -139,6 +139,31 @@ class Curve : LineSet
       cSet.cy = vp+85;
    }
 
+   override bool notifyHandler(Widget w, Purpose p)
+   {
+
+      if (p >= SP && p <= ALL)
+      {
+         if ((cast(RadioButton) w).getActive())
+         {
+            if (active == p-SP)
+            {
+               nop =true;
+               return true;
+            }
+            active = p-SP;
+         }
+         return true;
+      }
+      else if (p == Purpose.SHOWMARKERS)
+      {
+         showCp = !showCp;
+         return true;
+      }
+      else
+         return false;
+   }
+/*
    override bool specificNotify(Widget w, Purpose wid)
    {
 
@@ -158,7 +183,7 @@ class Curve : LineSet
          return false;
       return true;
    }
-
+*/
    override bool specificUndo(CheckPoint cp)
    {
       switch (cp.type)

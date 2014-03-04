@@ -103,8 +103,8 @@ class Rectangle : LineSet
    this(AppWindow appw, ACBase parent)
    {
       string s = "Rectangle "~to!string(++nextOid);
-      super(appw, parent, s, AC_RECT);
-      group = ACGroups.SHAPES;
+      super(appw, parent, s, AC_RECT, ACGroups.SHAPES);
+      notifyHandlers ~= &Rectangle.notifyHandler;
       closed = true;
       hOff = vOff = 0;
       altColor = new RGBA(0,0,0,1);
@@ -172,6 +172,24 @@ class Rectangle : LineSet
       cSet.cy = vp+40;
    }
 
+   override bool notifyHandler(Widget w, Purpose p)
+   {
+      focusLayout();
+      switch (p)
+      {
+      case Purpose.ROUNDED:
+         rounded = !rounded;
+         break;
+      case Purpose.PIN:
+         square = !square;
+         figureWH();
+         break;
+      default:
+         return false;
+      }
+      return true;
+   }
+/*
    override bool specificNotify(Widget w, Purpose wid)
    {
       focusLayout();
@@ -189,7 +207,7 @@ class Rectangle : LineSet
       }
       return true;
    }
-
+*/
    override bool specificUndo(CheckPoint cp)
    {
       switch (cp.type)

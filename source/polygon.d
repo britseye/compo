@@ -386,8 +386,8 @@ class Polygon : LineSet
    this(AppWindow w, ACBase parent)
    {
       string s = "Polygon "~to!string(++nextOid);
-      super(w, parent, s, AC_POLYGON);
-      group = ACGroups.GEOMETRIC;
+      super(w, parent, s, AC_POLYGON, ACGroups.GEOMETRIC);
+      notifyHandlers ~= &Polygon.notifyHandler;
       closed = true;
       constructing = true;
       altColor = new RGBA(1,1,1,1);
@@ -467,6 +467,44 @@ class Polygon : LineSet
       }
    }
 
+   override bool notifyHandler(Widget w, Purpose p)
+   {
+      switch (p)
+      {
+      case Purpose.REDRAW:
+         lastOp = push!Path_t(this, oPath, OP_REDRAW);
+         editing = !editing;
+         switchMode();
+         break;
+      case Purpose.REFLECT:
+         lastOp = push!Path_t(this, oPath, OP_REDRAW);
+         if (unreflected !is null)
+         {
+            oPath = unreflected;
+            unreflected = null;
+            rfb.setLabel("Reflect");
+         }
+         else
+         {
+            reflect();
+            rfb.setLabel("Unreflect");
+         }
+         break;
+      case Purpose.OPEN:
+         open = !open;
+         if (open)
+            cSet.disable(Purpose.FILLTYPE);
+         else
+            cSet.enable(Purpose.FILLTYPE);
+         current = 0;
+         figureNextPrev();
+         break;
+      default:
+         return false;
+      }
+      return false;
+   }
+/*
    override bool specificNotify(Widget w, Purpose wid)
    {
       switch (wid)
@@ -503,7 +541,7 @@ class Polygon : LineSet
          return false;
       }
    }
-
+*/
    void switchMode()
    {
       if (editing)

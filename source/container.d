@@ -91,8 +91,9 @@ class Container: ACBase
    this(AppWindow w, ACBase parent)
    {
       string s= "Container "~ to!string(++nextOid);
-      super(w, parent, s, AC_CONTAINER);
-      group = ACGroups.CONTAINER;
+      super(w, parent, s, AC_CONTAINER, ACGroups.CONTAINER);
+      notifyHandlers ~= &Container.notifyHandler;
+
       baseColor = new RGBA(1,1,1,1);
       glShowing = false;
       glUseV = true;
@@ -138,6 +139,34 @@ class Container: ACBase
 
    int getNextId() { return ++nextChildId; }
 
+   override bool notifyHandler(Widget w, Purpose p)
+   {
+      focusLayout();
+      switch (p)
+      {
+      case Purpose.GUIDELINE:
+         glShowing = !glShowing;
+         reDraw();
+         break;
+      case Purpose.GLWHICH:
+         glUseV = !glUseV;
+         if (glUseV)
+         {
+            hOff = glSaved;
+            glSaved = vOff;
+         }
+         else
+         {
+            vOff = glSaved;
+            glSaved = hOff;
+         }
+         break;
+      default:
+         return false;
+      }
+      return true;
+   }
+/*
    override bool specificNotify(Widget w, Purpose wid)
    {
       focusLayout();
@@ -165,7 +194,7 @@ class Container: ACBase
       }
       return true;
    }
-
+*/
    override void onCSMoreLess(int instance, bool more, bool quickly)
    {
       focusLayout();

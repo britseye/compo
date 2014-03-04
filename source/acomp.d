@@ -496,6 +496,12 @@ class ACBase : CSTarget     // Area Composition base class
    Transform tf;
    int xform;
 
+   alias bool delegate(Widget, Purpose) bdnh;
+   bdnh[] notifyHandlers;
+   alias bool delegate(CheckPoint) bduh;
+   bduh[] undoHandlers;
+   bool nop;
+
    mixin template Preamble(alias NAME, alias GNAME, alias T)
    {
       string s = NAME~" "~to!string(nextOid);
@@ -515,6 +521,8 @@ class ACBase : CSTarget     // Area Composition base class
          cpStackLen = w.config.undoStackLength;
          cpStack.length = cpStackLen;
       }
+      notifyHandlers ~= &ACBase.notifyHandler;
+      undoHandlers ~= &ACBase.undoHandler;
       csTop = -1;
       hOff = vOff = lpX = lpY = 0.0;
       parent = _parent;
@@ -564,6 +572,31 @@ class ACBase : CSTarget     // Area Composition base class
       formattedWrite(w, "%f,%f,%f,%f", t.red, t.green, t.blue, t.alpha);
       return w.data;
    }
+
+   bool notifyHandler(Widget w, Purpose p)
+   {
+      switch (p)
+      {
+      case Purpose.COLOR:
+         focusLayout();
+         lastOp = push!RGBA(this, baseColor, OP_COLOR);
+         setColor(false);
+         break;
+      case Purpose.FILLCOLOR:
+         focusLayout();
+         lastOp = push!RGBA(this, altColor, OP_ALTCOLOR);
+         setColor(true);
+         break;
+      case Purpose.HIDE:
+         hidden = !hidden;
+         break;
+      default:
+         return false;
+      }
+      return true;
+   }
+   bool undoHandler(CheckPoint cp) { return false; }
+
 
    void setNameEntry(Entry e) { nameEntry = e; }
    void onCSCompass(int instance, double angle, bool coarse) {}
@@ -1065,6 +1098,27 @@ class ACBase : CSTarget     // Area Composition base class
 
    bool specificNotify(Widget w, Purpose p) { return false; }
 
+   final void onCSNotify(Widget w, Purpose p)
+   {
+      bool handled = false;
+      nop = false;
+      foreach (bdnh nh; notifyHandlers)
+      {
+         if (nh(w, p))
+         {
+            handled = true;
+            break;
+         }
+      }
+      assert(!handled, "No handler for "~to!string(p));
+      if (!nop)   // nop to be set for operations that don't require save or a repaint
+      {
+         aw.dirty = true;
+         reDraw();
+      }
+   }
+
+/*
    void onCSNotify(Widget w, Purpose wid)
    {
       switch (wid)
@@ -1090,7 +1144,7 @@ class ACBase : CSTarget     // Area Composition base class
       aw.dirty = true;
       reDraw();
    }
-
+*/
    void onCSTextParam(Purpose p, string sv, int iv) {}
    void onCSLineWidth(double lw) {}
    void onCSMoreLess(int instance, bool more, bool coarse) {}

@@ -60,8 +60,9 @@ class Pattern : LineSet
    this(AppWindow w, ACBase parent)
    {
       string s = "Pattern "~to!string(++nextOid);
-      super(w, parent, s, AC_PATTERN);
-      group = ACGroups.EFFECTS;
+      super(w, parent, s, AC_PATTERN, ACGroups.EFFECTS);
+      notifyHandlers ~= &Pattern.notifyHandler;
+
       center = Coord(0.5*width, 0.5*height);
       diagonal = 1.1*sqrt(cast(double)(width*width+height*height));
       unit = 5;
@@ -116,6 +117,21 @@ class Pattern : LineSet
       cSet.cy = vp+40;
    }
 
+   override bool notifyHandler(Widget w, Purpose p)
+   {
+      switch (p)
+      {
+      case Purpose.PATTERN:
+         lastOp = push!int(this, choice, OP_IV0);
+         choice = (cast(ComboBoxText) w).getActive();
+         dirty = true;
+         break;
+      default:
+         return false;
+      }
+      return true;
+   }
+/*
    override bool specificNotify(Widget w, Purpose wid)
    {
       switch (wid)
@@ -130,7 +146,7 @@ class Pattern : LineSet
       }
       return true;
    }
-
+*/
    override void onCSMoreLess(int instance, bool more, bool coarse)
    {
       focusLayout();

@@ -66,8 +66,9 @@ class Fader: ACBase
    this(AppWindow w, ACBase parent)
    {
       string s = "Fader "~to!string(++nextOid);
-      super(w, parent, s, AC_FADER);
-      group = ACGroups.EFFECTS;
+      super(w, parent, s, AC_FADER, ACGroups.EFFECTS);
+      notifyHandlers ~= &Fader.notifyHandler;
+
       hOff = width/4;
       vOff = height/4;
       rw = width/2;
@@ -143,6 +144,24 @@ class Fader: ACBase
       rh = height/2;
    }
 
+   override bool notifyHandler(Widget w, Purpose p)
+   {
+      switch (p)
+      {
+      case Purpose.PIN:
+         pin = !pin;
+         if (pin)
+            outline= false;
+         break;
+      case Purpose.FILLOUTLINE:
+         outline = !outline;
+         break;
+      default:
+         return false;
+      }
+      return true;
+   }
+/*
    override bool specificNotify(Widget w, Purpose wid)
    {
       switch (wid)
@@ -160,7 +179,7 @@ class Fader: ACBase
       }
       return true;
    }
-
+*/
    override void undo()
    {
       CheckPoint cp;

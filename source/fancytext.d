@@ -144,6 +144,7 @@ class FancyText : TextViewItem
    {
       string s = "Fancy Text "~to!string(++nextOid);
       super(w, parent, s, AC_FANCYTEXT);
+      notifyHandlers ~= &FancyText.notifyHandler;
       aw = w;
       olt = 0.2;
       altColor = new RGBA(0,0,0,1);
@@ -241,6 +242,57 @@ class FancyText : TextViewItem
       textChanged = true;
    }
 
+   override bool notifyHandler(Widget w, Purpose p)
+   {
+      switch (p)
+      {
+      case Purpose.FILLCOLOR:
+         setColor(true);
+         break;
+      case Purpose.OUTLINE:
+         outline = !outline;
+         break;
+      case Purpose.FILLOPTIONS:
+         int n = fillOptions.getActive();
+         if (n == 0)
+            return false;
+         FillSpec fs = FillSpec(fill, outline, altColor, fillFromPattern, fillUid);
+         lastOp = push!FillSpec(this, fs, OP_FILL);
+         if (n == 1)
+         {
+            setColor(true);
+            fillFromPattern = false;
+            fill = true;
+            fillType.setText("(C)");
+         }
+         else if (n == 2)
+         {
+            fillFromPattern = false;
+            fill = false;
+            fillType.setText("(N)");
+         }
+         else if (n == 3)
+         {
+            updateFillOptions(this);
+            fillOptions.setActive(0);
+            return false;
+         }
+         else
+         {
+            fillFromPattern = true;
+            fillUid = others[n-4];
+            fill = true;
+            fillType.setText("(P)");
+         }
+         fillOptions.setActive(0);
+         updateFillUI();
+         break;
+      default:
+         return false;
+      }
+      return true;
+   }
+/*
    override bool specificNotify(Widget w, Purpose wid)
    {
       switch (wid)
@@ -291,7 +343,7 @@ class FancyText : TextViewItem
       }
       return true;
    }
-
+*/
    override bool specificUndo(CheckPoint cp)
    {
       switch (cp.type)

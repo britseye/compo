@@ -94,12 +94,10 @@ class Arrow : LineSet
 
    this(AppWindow aw, ACBase parent)
    {
-      mixin Preamble!("Arrow", "SHAPES", AC_ARROW);
-      super(aw, parent, s, t, g);
-
-      //string s = "Arrow "~to!string(++nextOid);
-      //group = ACGroups.SHAPES;
-      //super(w, parent, s, AC_ARROW);
+      string s = "Arrow "~to!string(++nextOid);
+      group = ACGroups.SHAPES;
+      super(aw, parent, s, AC_ARROW, ACGroups.SHAPES);
+      notifyHandlers ~= &Arrow.notifyHandler;
       altColor = new RGBA(0,0,0,1);
       les = true;
       closed = true;
@@ -165,6 +163,29 @@ class Arrow : LineSet
       dirty = true;
    }
 
+   override bool notifyHandler(Widget w, Purpose p)
+   {
+      switch (p)
+      {
+      case Purpose.MEDIUM:
+      case Purpose.NARROW:
+      case Purpose.WIDE:
+         if (hw == p-Purpose.MEDIUM)
+         {
+            // Don't go through the whole performance for nothing
+            nop = true;
+            return true;
+         }
+         lastOp = push!int(this, hw, OP_IV0);
+         hw = p-Purpose.MEDIUM;
+         constructBase();
+         break;
+      default:
+         return false;
+      }
+      return true;
+   }
+/*
    override bool specificNotify(Widget w, Purpose wid)
    {
       switch (wid)
@@ -184,7 +205,7 @@ class Arrow : LineSet
       }
       return true;
    }
-
+*/
    override bool specificUndo(CheckPoint cp)
    {
       switch (cp.type)

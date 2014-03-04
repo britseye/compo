@@ -86,8 +86,9 @@ class Corners : LineSet
    this(AppWindow w, ACBase parent)
    {
       string s = "Corners "~to!string(++nextOid);
-      super(w, parent, s, AC_CORNERS);
-      group = ACGroups.EFFECTS;
+      super(w, parent, s, AC_CORNERS, ACGroups.EFFECTS);
+      notifyHandlers ~= &Corners.notifyHandler;
+
       hOff = vOff = 0;
       cw = 0.2*width;
       ch = 0.2*height;
@@ -168,6 +169,32 @@ class Corners : LineSet
          br = true;
    }
 
+   override bool notifyHandler(Widget w, Purpose p)
+   {
+      switch (p)
+      {
+      case Purpose.TOPLEFT:
+         tl = ! tl;
+         lastOp = push!int(this, toBits(), OP_IV0);
+         break;
+      case Purpose.TOPRIGHT:
+         tr = !tr;
+         lastOp = push!int(this, toBits(), OP_IV0);
+         break;
+      case Purpose.BOTTOMLEFT:
+         bl = !bl;
+         lastOp = push!int(this, toBits(), OP_IV0);
+         break;
+      case Purpose.BOTTOMRIGHT:
+         br = !br;
+         lastOp = push!int(this, toBits(), OP_IV0);
+         break;
+      default:
+         return false;
+      }
+      return true;
+   }
+/*
    override bool specificNotify(Widget w, Purpose wid)
    {
       switch (wid)
@@ -193,7 +220,7 @@ class Corners : LineSet
       }
       return true;
    }
-
+*/
    override void onCSMoreLess(int instance, bool more, bool quickly)
    {
       focusLayout();

@@ -113,8 +113,9 @@ class Moon : LineSet
    this(AppWindow w, ACBase parent)
    {
       string s = "Moon "~to!string(++nextOid);
-      super(w, parent, s, AC_MOON);
-      group = ACGroups.SHAPES;
+      super(w, parent, s, AC_MOON, ACGroups.SHAPES);
+      notifyHandlers ~= &Moon.notifyHandler;
+
       closed = true;
       altColor = new RGBA(0,0,0,1);
       les = true;
@@ -165,6 +166,8 @@ class Moon : LineSet
 
       cSet.cy = vp+35;
    }
+
+   override bool notifyHandler(Widget w, Purpose p) { return false; }
 
    override bool specificUndo(CheckPoint cp)
    {

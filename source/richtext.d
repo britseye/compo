@@ -117,6 +117,8 @@ class RichText : TextViewItem
    {
       string s = "Rich Text "~to!string(++nextOid);
       super(w, parent, s, AC_RICHTEXT);
+      notifyHandlers ~= &RichText.notifyHandler;
+
       tb.addOnApplyTag(&tagApplied);
       rtStack.length = 20;
       rtSP = 0;
@@ -141,6 +143,8 @@ class RichText : TextViewItem
 
       cSet.cy = vp+40;
    }
+
+   override bool notifyHandler(Widget w, Purpose p) { return false; }
 
    override void pushCheckpoint()
    {

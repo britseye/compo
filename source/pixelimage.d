@@ -84,7 +84,8 @@ class PixelImage : ACBase
    this(AppWindow w, ACBase parent)
    {
       string s = "Picture "~to!string(++nextOid);
-      super(w, parent, s, AC_PIXBUF);
+      super(w, parent, s, AC_PIXBUF, ACGroups.PIXMAP);
+      notifyHandlers ~= &PixelImage.notifyHandler;
       group = ACGroups.PIXMAP;
       scaleType = 0;
       sadj = 1.0;
@@ -124,6 +125,50 @@ class PixelImage : ACBase
       setScaling();
    }
 
+   override bool notifyHandler(Widget w, Purpose p)
+   {
+      switch (p)
+      {
+      case Purpose.OPENFILE:
+         onCFB();
+         focusLayout();
+         return true;
+      case Purpose.SCALEPROP:
+         if ((cast(RadioButton) w).getActive())
+         {
+            hOff = vOff = 0;
+            scaleType = 0;
+            setScaling();
+            return true;
+         }
+         break;
+      case Purpose.SCALEFIT:
+         if ((cast(RadioButton) w).getActive())
+         {
+            hOff = vOff = 0;
+            scaleType = 1;
+            setScaling();
+            return true;
+         }
+         break;
+      case Purpose.SCALENON:
+         if ((cast(RadioButton) w).getActive())
+         {
+            hOff = vOff = 0;
+            scaleType = 2;
+            setScaling();
+            return true;
+         }
+         break;
+      case Purpose.USEFILE:
+         useFile = !useFile;
+         break;
+      default:
+         return false;
+      }
+      return true;
+   }
+/*
    override bool specificNotify(Widget w, Purpose wid)
    {
       switch (wid)
@@ -167,7 +212,7 @@ class PixelImage : ACBase
       }
       return true;
    }
-
+*/
    override void onCSMoreLess(int id, bool more, bool quickly)
    {
       focusLayout();

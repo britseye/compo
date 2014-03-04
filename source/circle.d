@@ -79,8 +79,8 @@ class Circle : LineSet
    this(AppWindow w, ACBase parent)
    {
       string s = "Circle "~to!string(++nextOid);
-      super(w, parent, s, AC_CIRCLE);
-      group = ACGroups.SHAPES;
+      super(w, parent, s, AC_CIRCLE, ACGroups.SHAPES);
+      notifyHandlers ~= &Circle.notifyHandler;
       closed = true;
       hOff = vOff = 0;
       altColor = new RGBA(0,0,0,1);
@@ -118,6 +118,8 @@ class Circle : LineSet
 
       cSet.cy = vp+40;
    }
+
+   override bool notifyHandler(Widget, Purpose) { return false; }
 
    override bool specificUndo(CheckPoint cp)
    {

@@ -114,8 +114,8 @@ class Mesh : ACBase
    this(AppWindow w, ACBase parent)
    {
       string s = "Mesh Pattern "~to!string(++nextOid);
-      super(w, parent, s, AC_MESH);
-      group = ACGroups.EFFECTS;
+      super(w, parent, s, AC_MESH, ACGroups.EFFECTS);
+      notifyHandlers ~= &Mesh.notifyHandler;
       center = Coord(0.5*width, 0.5*height);
       tm = new Matrix(&tmData);
       pca = predefPC(0);
@@ -177,6 +177,50 @@ class Mesh : ACBase
       cSet.cy = vp+32;
    }
 
+   override bool notifyHandler(Widget w, Purpose p)
+   {
+      focusLayout();
+      switch (p)
+      {
+      case Purpose.PATTERN:
+         pattern = (cast(ComboBoxText) w).getActive();
+         pca = predefPC(pattern);
+         break;
+      case Purpose.DCOLORS:
+         int index = (cast(ComboBoxText) w).getActive();
+         if (index > 0)
+         {
+            index--;
+            RGBA current = new RGBA(pca[index].r, pca[index].g, pca[index].b, 1);
+            RGBA rgba = getDColor(current);
+            if (rgba is null)
+            {
+               cicb.setActive(0);
+               nop = true;
+               return true;
+            }
+            lastOp = push!PartColor(this, pca[index], OP_MC0+index);
+            pca[index] = PartColor(rgba.red, rgba.green, rgba.blue, 1);
+            cicb.setActive(0);
+         }
+         else
+            return false;
+         break;
+      case Purpose.REDRAW:
+         instanceSeed++;
+         break;
+      case Purpose.PRINTRANDOM:
+         printRandom = !printRandom;
+         break;
+      case Purpose.XFORMCB:
+         xform = (cast(ComboBoxText) w).getActive();
+         break;
+      default:
+         return false;
+      }
+      return true;
+   }
+/*
    override bool specificNotify(Widget w, Purpose wid)
    {
       focusLayout();
@@ -219,7 +263,7 @@ class Mesh : ACBase
       }
       return true;
    }
-
+*/
    override bool specificUndo(CheckPoint cp)
    {
       switch (cp.type)

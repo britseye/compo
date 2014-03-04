@@ -86,8 +86,8 @@ class YinYang: LineSet
    this(AppWindow w, ACBase parent)
    {
       string s = "YinYang "~to!string(++nextOid);
-      super(w, parent, s, AC_YINYANG);
-      group = ACGroups.SHAPES;
+      super(w, parent, s, AC_YINYANG, ACGroups.SHAPES);
+      notifyHandlers ~= &YinYang.notifyHandler;
       closed = true;
       hOff = vOff = 0;
       altColor = new RGBA(1,1,1,1);
@@ -130,6 +130,8 @@ class YinYang: LineSet
 
       cSet.cy = vp+40;
    }
+
+   override bool notifyHandler(Widget w, Purpose p) { return false; }
 
    override bool specificUndo(CheckPoint cp)
    {

@@ -37,6 +37,7 @@ class LineSet : ACBase
    this(AppWindow _aw, ACBase _parent, string _name, uint _type, ACGroups g = ACGroups.UNSPECIFIED)
    {
       super(_aw, _parent, _name, _type, g);
+      notifyHandlers ~= &LineSet.notifyHandler;
 
       lineWidth = 0.5;
       les = cairo_line_cap_t.BUTT;
@@ -106,6 +107,68 @@ class LineSet : ACBase
       return w.data;
    }
 
+   override bool notifyHandler(Widget w, Purpose p)
+   {
+      switch (p)
+      {
+      case Purpose.LESROUND:
+         if ((cast(RadioButton) w).getActive())
+            les = false;
+         break;
+      case Purpose.LESSHARP:
+         if ((cast(RadioButton) w).getActive())
+            les = true;
+         break;
+      case Purpose.OUTLINE:
+         FillSpec fs = FillSpec(fill, outline, altColor, fillFromPattern, fillUid);
+         lastOp = push!FillSpec(this, fs, OP_FILL);
+         outline = !outline;
+         break;
+      case Purpose.FILLOPTIONS:
+         int n = fillOptions.getActive();
+         if (n == 0)
+         {
+            nop = true;
+            return true;
+         }
+         FillSpec fs = FillSpec(fill, outline, altColor, fillFromPattern, fillUid);
+         lastOp = push!FillSpec(this, fs, OP_FILL);
+         if (n == 1)
+         {
+            setColor(true);
+            fillFromPattern = false;
+            fill = true;
+         }
+         else if (n == 2)
+         {
+            fillFromPattern = false;
+            fill = false;
+         }
+         else if (n == 3)
+         {
+            updateFillOptions(this);
+            fillOptions.setActive(0);
+            nop = true;
+            return true;
+         }
+         else
+         {
+            fillFromPattern = true;
+            fillUid = others[n-4];
+            fill = true;
+         }
+         fillOptions.setActive(0);
+         updateFillUI();
+         break;
+      case Purpose.XFORMCB:
+         xform = (cast(ComboBoxText) w).getActive();
+         break;
+      default:
+         return false;
+      }
+      return true;
+   }
+/*
    override void onCSNotify(Widget w, Purpose wid)
    {
       switch (wid)
@@ -170,7 +233,7 @@ class LineSet : ACBase
       aw.dirty = true;
       reDraw();
    }
-
+*/
 
    override bool specificUndo(CheckPoint cp) { return false; }
 

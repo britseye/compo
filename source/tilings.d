@@ -95,9 +95,9 @@ class Tilings: ACBase
    this(AppWindow w, ACBase parent, bool asCopy = false)
    {
       string s = "Color Tilings "~to!string(++nextOid);
-      super(w, parent, s, AC_TILINGS);
-      group = ACGroups.EFFECTS;
-      hOff = vOff = 0;
+      super(w, parent, s, AC_TILINGS, ACGroups.EFFECTS);
+      notifyHandlers ~= &Tilings.notifyHandler;
+
       rows = 9;
       cols = 10;
       if (!asCopy)
@@ -186,6 +186,60 @@ class Tilings: ACBase
       cSet.cy = vp+25;
    }
 
+   override bool notifyHandler(Widget w, Purpose p)
+   {
+      focusLayout();
+      switch (p)
+      {
+      case Purpose.XCOLOR:
+         lastOp = push!RGBA(this, baseColor, OP_COLOR);
+         setColor(false);
+         cSrc.setBase(baseColor);
+         setupColors();
+         break;
+      case Purpose.PATTERN:
+         int n = (cast(ComboBoxText) w).getActive();
+         if (pattern == n)
+         {
+            nop = true;
+            return true;
+         }
+         pattern = n;
+         dirty = true;
+         reBuild();
+         break;
+      case Purpose.DCOLORS:
+         int n = (cast(ComboBoxText) w).getActive();
+         if (shade == n)
+         {
+            nop =true;
+            return true;
+         }
+         shade = n;
+         setupColors();
+         break;
+      case Purpose.PIN:
+         irregular = !irregular;
+         dirty = true;
+         break;
+      case Purpose.PRINTRANDOM:
+         printRandom = !printRandom;
+         break;
+      case Purpose.REFRESH:
+         colorSeed += cSet.control? -1: 1;
+         setupColors();
+         break;
+      case Purpose.REDRAW:
+         shapeSeed += cSet.control? -1: 1;
+         dirty = true;
+         reBuild();
+         break;
+      default:
+         return false;
+      }
+      return true;
+   }
+/*
    override void onCSNotify(Widget w, Purpose wid)
    {
       focusLayout();
@@ -239,7 +293,7 @@ class Tilings: ACBase
       aw.dirty = true;
       reDraw();
    }
-
+*/
    override bool specificUndo(CheckPoint cp)
    {
       switch (cp.type)

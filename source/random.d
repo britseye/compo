@@ -81,8 +81,8 @@ class Random: LineSet
    this(AppWindow w, ACBase parent)
    {
       string s = "Random "~to!string(++nextOid);
-      super(w, parent, s, AC_RANDOM);
-      group = ACGroups.EFFECTS;
+      super(w, parent, s, AC_RANDOM, ACGroups.EFFECTS);
+      notifyHandlers ~= &Random.notifyHandler;
       closed = true;
       hOff = vOff = 0;
       lowerPc = 10;
@@ -147,6 +147,41 @@ class Random: LineSet
       cSet.cy = vp+25;
    }
 
+   override bool notifyHandler(Widget w, Purpose p)
+   {
+      focusLayout();
+      switch (p)
+      {
+      case Purpose.PATTERN:
+         element = (cast(ComboBoxText) w).getActive();
+         if (element == 0 || element == 2)
+         {
+            fill = true;
+            cSet.toggling(false);
+            cSet.setToggle(Purpose.FILL, true);
+            cSet.toggling(true);
+         }
+         else
+         {
+            fill = false;
+            cSet.toggling(false);
+            cSet.setToggle(Purpose.FILL, false);
+            cSet.toggling(true);
+         }
+         break;
+      case Purpose.PRINTRANDOM:
+         printRandom = !printRandom;
+         break;
+      case Purpose.MORE:
+         instanceSeed += cSet.control? -1: 1;
+         break;
+      default:
+         return false;
+      }
+      reBuild = true;
+      return true;
+   }
+/*
    override bool specificNotify(Widget w, Purpose wid)
    {
       focusLayout();
@@ -181,7 +216,7 @@ class Random: LineSet
       reBuild = true;
       return true;
    }
-
+*/
    override void onCSMoreLess(int instance, bool more, bool quickly)
    {
       focusLayout();

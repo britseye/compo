@@ -424,8 +424,9 @@ class StrokeSet : LineSet
    this(AppWindow w, ACBase parent)
    {
       string s = "StrokeSet "~to!string(++nextOid);
-      super(w, parent, s, AC_STROKESET);
-      group = ACGroups.GEOMETRIC;
+      super(w, parent, s, AC_STROKESET, ACGroups.GEOMETRIC);
+      notifyHandlers ~= &StrokeSet.notifyHandler;
+
       center.x = width/2;
       center.y = height/2;
       constructing = true;
@@ -486,6 +487,22 @@ class StrokeSet : LineSet
       }
    }
 
+   override bool notifyHandler(Widget w, Purpose p)
+   {
+      focusLayout();
+      switch (p)
+      {
+      case Purpose.REDRAW:
+         lastOp = push!(PathItem[])(this, pcPath, OP_REDRAW);
+         editing = !editing;
+         switchMode();
+         break;
+      default:
+         return false;
+      }
+      return true;
+   }
+/*
    override bool specificNotify(Widget w, Purpose wid)
    {
       focusLayout();
@@ -500,7 +517,7 @@ class StrokeSet : LineSet
          return false;
       }
    }
-
+*/
    void switchMode()
    {
       if (editing)

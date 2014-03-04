@@ -90,8 +90,9 @@ class RegularPolygon : LineSet
    this(AppWindow w, ACBase parent)
    {
       string s = "Regular Polygon "~to!string(++nextOid);
-      super(w, parent, s, AC_REGPOLYGON);
-      group = ACGroups.GEOMETRIC;
+      super(w, parent, s, AC_REGPOLYGON, ACGroups.GEOMETRIC);
+      notifyHandlers ~= &RegularPolygon.notifyHandler;
+
       closed = true;
       altColor = new RGBA(1,1,1,1);
       fill = false;
@@ -153,6 +154,21 @@ class RegularPolygon : LineSet
       numSides.setText(to!string(sides));
    }
 
+   override bool notifyHandler(Widget w, Purpose p)
+   {
+      focusLayout();
+      switch (p)
+      {
+      case Purpose.ASSTAR:
+         isStar = !isStar;
+         constructBase();
+         break;
+      default:
+         return false;
+      }
+      return true;
+   }
+/*
    override bool specificNotify(Widget w, Purpose wid)
    {
       focusLayout();
@@ -166,7 +182,7 @@ class RegularPolygon : LineSet
          return false;
       }
    }
-
+*/
    override void onCSMoreLess(int instance, bool more, bool quickly)
    {
       focusLayout();

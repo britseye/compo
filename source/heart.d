@@ -73,8 +73,9 @@ class Heart: LineSet
    this(AppWindow w, ACBase parent)
    {
       string s = "Heart "~to!string(++nextOid);
-      super(w, parent, s, AC_HEART);
-      group = ACGroups.SHAPES;
+      super(w, parent, s, AC_HEART, ACGroups.SHAPES);
+      notifyHandlers ~= &Heart.notifyHandler;
+
       closed = true;
       hOff = vOff = 0;
       altColor = new RGBA(1,0,0,1);
@@ -117,6 +118,8 @@ class Heart: LineSet
 
       cSet.cy = vp+40;
    }
+
+   override bool notifyHandler(Widget w, Purpose p) { return false; }
 
    override bool specificUndo(CheckPoint cp)
    {

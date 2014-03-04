@@ -84,8 +84,8 @@ class Shield: LineSet
    this(AppWindow w, ACBase parent)
    {
       string s = "Shield "~to!string(++nextOid);
-      super(w, parent, s, AC_SHIELD);
-      group = ACGroups.SHAPES;
+      super(w, parent, s, AC_SHIELD, ACGroups.SHAPES);
+      notifyHandlers ~= &Shield.notifyHandler;
       closed = true;
       hOff = vOff = 0;
       altColor = new RGBA(1,0,0,1);
@@ -152,6 +152,21 @@ class Shield: LineSet
       vOff *= vr;
    }
 
+   override bool notifyHandler(Widget w, Purpose p)
+   {
+      focusLayout();
+      switch (p)
+      {
+      case Purpose.PATTERN:
+         style = (cast(ComboBoxText) w).getActive();
+         constructBase();
+         break;
+      default:
+         return false;
+      }
+      return true;
+   }
+/*
    override bool specificNotify(Widget w, Purpose wid)
    {
       focusLayout();
@@ -166,7 +181,7 @@ class Shield: LineSet
       }
       return true;
    }
-
+*/
    override bool specificUndo(CheckPoint cp)
    {
       switch (cp.type)
