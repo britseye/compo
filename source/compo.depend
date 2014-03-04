@@ -4311,7 +4311,7 @@
 
 1393310060 /home/steve/COMPO/source/interfaces.d
 
-1393932884 source:/home/steve/COMPO/source/arrow.d
+1393956815 source:/home/steve/COMPO/source/arrow.d
 	<mainwin.d>
 	<constants.d>
 	<acomp.d>
@@ -4344,7 +4344,7 @@
 	<gtkc/cairotypes.d>
 	<cairo/Matrix.d>
 
-1393941975 /home/steve/COMPO/source/acomp.d
+1393956785 /home/steve/COMPO/source/acomp.d
 
 1393942532 /home/steve/COMPO/source/lineset.d
 
@@ -4755,7 +4755,7 @@
 
 1393940733 /home/steve/COMPO/source/richtext.d
 
-1393932884 /home/steve/COMPO/source/arrow.d
+1393956815 /home/steve/COMPO/source/arrow.d
 
 1393933058 /home/steve/COMPO/source/bevel.d
 

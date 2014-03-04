@@ -1110,7 +1110,7 @@ class ACBase : CSTarget     // Area Composition base class
             break;
          }
       }
-      assert(!handled, "No handler for "~to!string(p));
+      assert(handled, "No handler for "~to!string(p));
       if (!nop)   // nop to be set for operations that don't require save or a repaint
       {
          aw.dirty = true;
