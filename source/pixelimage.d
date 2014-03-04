@@ -13,6 +13,7 @@ import common;
 import constants;
 import types;
 import controlset;
+import mol;
 
 import std.stdio;
 import std.conv;
@@ -167,10 +168,13 @@ class PixelImage : ACBase
       return true;
    }
 
-   override void onCSMoreLess(int id, bool more, bool coarse)
+   override void onCSMoreLess(int id, bool more, bool quickly)
    {
       focusLayout();
       if (scaleType != 0)
+         return;
+      double result = sadj;
+      if (!molG!double(more, quickly, result, 0.01, 0.1, 1000))
          return;
       lastOp = pushC!double(this, sadj, OP_SCALE);
       if (lastOp != OP_SCALE)
@@ -179,21 +183,7 @@ class PixelImage : ACBase
          lcp.type = lastOp = OP_SCALE;
          pushOp(lcp);
       }
-      if (coarse)
-      {
-         if (more)
-            sadj *= 1.05;
-         else
-            sadj *= 0.95;
-      }
-      else
-      {
-         if (more)
-            sadj *= 1.01;
-         else
-            sadj *= 0.99;
-      }
-
+      sadj = result;
       aw.dirty = true;
       if (pxb !is null)
          reDraw();

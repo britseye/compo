@@ -34,9 +34,9 @@ class LineSet : ACBase
    bool les, closed;
    bool killAdjust;
 
-   this(AppWindow _aw, ACBase _parent, string _name, uint _type)
+   this(AppWindow _aw, ACBase _parent, string _name, uint _type, ACGroups g = ACGroups.UNSPECIFIED)
    {
-      super(_aw, _parent, _name, _type);
+      super(_aw, _parent, _name, _type, g);
 
       lineWidth = 0.5;
       les = cairo_line_cap_t.BUTT;

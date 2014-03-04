@@ -14,6 +14,7 @@ import common;
 import types;
 import controlset;
 import lineset;
+import mol;
 
 import std.stdio;
 import std.math;
@@ -181,49 +182,38 @@ class Random: LineSet
       return true;
    }
 
-   override void onCSMoreLess(int instance, bool more, bool coarse)
+   override void onCSMoreLess(int instance, bool more, bool quickly)
    {
-      if (instance == 0)
+      focusLayout();
+      int iresult;
+      switch (instance)
       {
-         lastOp = pushC!int(this, count, OP_IV0);
-         int d = more? 1: -1;
-         if (coarse) d *= 3;
-         count += d;
-         countLabel.setText(to!string(count));
-      }
-      else if (instance == 1)
-      {
-         lastOp = pushC!int(this, lowerPc, OP_IV1);
-         int d = 5;
-         if (more)
-         {
-            if (lowerPc < upperPc-d)
-               lowerPc += d;
-         }
-         else
-         {
-            if (lowerPc > 5)
-               lowerPc -= d;
-         }
-         minSize.setText(to!string(lowerPc));
-         lower = 0.01*lowerPc;
-      }
-      else
-      {
-         lastOp = pushC!int(this, upperPc, OP_IV2);
-         int d = 5;
-         if (more)
-         {
-            if (upperPc < 100)
-               upperPc += d;
-         }
-         else
-         {
-            if (upperPc > lowerPc+5)
-               upperPc -= d;
-         }
-         maxSize.setText(to!string(upperPc));
-         upper = 0.01*upperPc;
+         case 0:
+            iresult = count;
+            if (!molA!int(more, quickly, iresult, 1, 1, 100))
+               return;
+            lastOp = pushC!int(this, count, OP_IV0);
+            count = iresult;
+            countLabel.setText(to!string(count));
+            break;
+         case 1:
+            iresult = lowerPc;
+            if (!molA!int(more, quickly, iresult, 5, 5, upperPc-5))
+               return;
+            lastOp = pushC!int(this, lowerPc, OP_IV1);
+            lowerPc = iresult;
+            lower = 0.01*lowerPc;
+            break;
+         case 2:
+            iresult = upperPc;
+            if (!molA!int(more, quickly, iresult, 5, lowerPc+5, 100))
+               return;
+            lastOp = pushC!int(this, upperPc, OP_IV1);
+            upperPc = iresult;
+            upper = 0.01*upperPc;
+            break;
+         default:
+            return;
       }
       reBuild = true;
       aw.dirty = true;

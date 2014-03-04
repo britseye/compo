@@ -14,6 +14,7 @@ import common;
 import types;
 import controlset;
 import lineset;
+import mol;
 
 import std.stdio;
 import std.math;
@@ -91,11 +92,14 @@ class Arrow : LineSet
       syncControls();
    }
 
-   this(AppWindow w, ACBase parent)
+   this(AppWindow aw, ACBase parent)
    {
-      string s = "Arrow "~to!string(++nextOid);
-      group = ACGroups.SHAPES;
-      super(w, parent, s, AC_ARROW);
+      mixin Preamble!("Arrow", "SHAPES", AC_ARROW);
+      super(aw, parent, s, t, g);
+
+      //string s = "Arrow "~to!string(++nextOid);
+      //group = ACGroups.SHAPES;
+      //super(w, parent, s, AC_ARROW);
       altColor = new RGBA(0,0,0,1);
       les = true;
       closed = true;
@@ -224,26 +228,25 @@ class Arrow : LineSet
       }
    }
 
-   override void onCSMoreLess(int instance, bool more, bool coarse)
+   override void onCSMoreLess(int instance, bool more, bool quickly)
    {
       focusLayout();
-      if (instance == 1)
-         modifyTransform(xform, more, coarse);
-      else if (instance == 0)
+      switch (instance)
       {
-         double delta = coarse? 1.05: 1.01;
-         lastOp = pushC!double(this, size, OP_SIZE);
-         if (more)
-            size *= delta;
-         else
-         {
-            if (size > 0.1)
-               size /= delta;
-         }
-         constructBase();
+         case 0:
+            double result = size;
+            if (!molG!double(more, quickly, result, 0.01, 0.1, 1000))
+               return;
+            lastOp = pushC!double(this, size, OP_SIZE);
+            size = result;
+            constructBase();
+            break;
+         case 1:
+            modifyTransform(xform, more, quickly);
+            break;
+         default:
+            return;
       }
-      else
-         return;
       aw.dirty = true;
       reDraw();
    }

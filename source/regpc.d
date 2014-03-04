@@ -15,6 +15,7 @@ import common;
 import types;
 import controlset;
 import lineset;
+import mol;
 
 import std.stdio;
 import std.math;
@@ -611,49 +612,14 @@ class RegularPolycurve : LineSet
       }
    }
 
-   override void onCSMoreLess(int instance, bool more, bool much)
+   override void onCSMoreLess(int instance, bool more, bool quickly)
    {
       focusLayout();
-      int direction = more? 1: -1;
-
-      void doSides()
-      {
-         if (more)
-            sides++;
-         else
-         {
-            if (sides > 3)
-               sides--;
-         }
-         numSides.setText(to!string(sides));
-         constructBase();
-      }
-
-      void doTarget()
-      {
-         double delta = 1;
-         if (much) delta *= 5;
-         if (more)
-         {
-            if (target+delta > maxTarget)
-               target = maxTarget;
-            else
-               target += delta;
-         }
-         else
-         {
-            if (target-delta < 0)
-               target = 0;
-            else
-               target -= delta;
-         }
-         constructBase();
-      }
 
       void doCpRadius()
       {
          double delta = 1;
-         if (much) delta *= 5;
+         if (quickly) delta *= 5;
          if (more)
          {
             modifyRadius(delta);
@@ -671,7 +637,7 @@ class RegularPolycurve : LineSet
       void doCpAngle()
       {
          double delta = rads;  // One degree
-         if (much) delta *= 5;
+         if (quickly) delta *= 5;
          if (more)
          {
             modifyAngle(delta);
@@ -683,48 +649,28 @@ class RegularPolycurve : LineSet
          constructBase();
       }
 
-      void doJoinAngle()
-      {
-         double delta = rads;  // One degree
-         if (much) delta *= 5;
-         if (more)
-            joinAngle += delta;
-         else
-            joinAngle -= delta;
-         constructBase();
-      }
-
-      void doJoinRadius()
-      {
-         double delta = 1;
-         if (much) delta *= 5;
-         if (more)
-         {
-               joinRadius += delta;
-         }
-         else
-         {
-            if (joinRadius-delta < 0.1)
-               joinRadius = 0.1;
-            else
-               joinRadius -= delta;
-         }
-         constructBase();
-      }
-
-
       switch (instance)
       {
+         double result;
          case 0:
+            int iresult = sides;
+            if (!molA!int(more, quickly, iresult, 1, 3, 1000))
+               return;
             lastOp = push!int(this, sides, OP_IV1);
-            doSides();
+            sides = iresult;
+            numSides.setText(to!string(sides));
+            constructBase();
             break;
          case 1:
+            result = target;
+            if (!molG!double(more, quickly, result, 0.01, 0.01, maxTarget))
+               return;
             lastOp = pushC!double(this, target, OP_TARGET);
-            doTarget();
+            target = result;
+            constructBase();
             break;
          case 2:
-            modifyTransform(xform, more, much);
+            modifyTransform(xform, more, quickly);
             dirty = true;
             break;
          case 3:
@@ -750,12 +696,20 @@ class RegularPolycurve : LineSet
             doCpAngle();
             break;
          case 5:
+            result = joinAngle;
+            if (!molA!double(more, quickly, result, rads, -double.infinity, double.infinity))
+               return;
             lastOp = pushC!double(this, joinAngle, OP_LAGLEAD);
-            doJoinAngle();
+            joinAngle = result;
+            constructBase();
             break;
          case 6:
+            result = joinRadius;
+            if (!molG!double(more, quickly, result, 0.01, 0.1, double.infinity))
+               return;
             lastOp = pushC!double(this, joinRadius, OP_ALTRADIUS);
-            doJoinRadius();
+            joinRadius = result;
+            constructBase();
             break;
          default:
             return;

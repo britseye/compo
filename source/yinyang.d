@@ -14,6 +14,7 @@ import common;
 import types;
 import controlset;
 import lineset;
+import mol;
 
 import std.stdio;
 import std.conv;
@@ -166,32 +167,24 @@ class YinYang: LineSet
       }
    }
 
-   override void onCSMoreLess(int instance, bool more, bool coarse)
+   override void onCSMoreLess(int instance, bool more, bool quickly)
    {
       focusLayout();
-      if (instance == 0)
+      switch (instance)
       {
-         double delta = coarse? 1.05: 1.01;
-         if (more)
-         {
-            lastOp = pushC!double(this, unit, OP_SIZE);
-            unit *= delta;
-         }
-         else
-         {
-            if (unit > 0.1)
-            {
-               lastOp = pushC!double(this, unit, OP_SIZE);
-               unit /= delta;
-            }
-            else
+         case 0:
+            double result = unit;
+            if (!molG!double(more, quickly, result, 0.01, 0.1, 1000))
                return;
-         }
-         constructBase();
-      }
-      else
-      {
-         modifyTransform(xform, more, coarse);
+            lastOp = pushC!double(this, unit, OP_SIZE);
+            unit = result;
+            constructBase();
+            break;
+         case 1:
+            modifyTransform(xform, more, quickly);
+            break;
+         default:
+            return;
       }
       dirty = true;
       aw.dirty = true;

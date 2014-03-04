@@ -14,6 +14,7 @@ import common;
 import types;
 import controlset;
 import lineset;
+import mol;
 
 import std.stdio;
 import std.math;
@@ -217,55 +218,39 @@ class Crescent : LineSet
       return true;
    }
 
-   override void onCSMoreLess(int instance, bool more, bool coarse)
+   override void onCSMoreLess(int instance, bool more, bool quickly)
    {
       focusLayout();
-      if (instance == 0) // Size
+      switch (instance)
       {
-         lastOp = pushC!Coord(this, Coord(r0, r1), OP_SIZE);
-         double delta = coarse? 1.1: 1.01;
-         if (more)
-         {
-            r0 *= delta;
-            r1 *= delta;
-         }
-         else
-         {
-            if (r0 > 0.1)
-            {
-               r0 /= delta;
-               r1 /= delta;
-            }
-         }
+         case 0:
+            double result = r0;
+            if (!molG!double(more, quickly, result, 0.01, 0.1, 1000))
+               return;
+            lastOp = pushC!Coord(this, Coord(r0, r1), OP_SIZE);
+            r1 *= result/r0;
+            r0 = result;
+            break;
+         case 1:
+            double result = d;
+            if (!molA!double(more, quickly, result, 1, -1.0*width, 2.0*width))
+               return;
+            lastOp = pushC!double(this, d, OP_DV0);
+            d = result;
+            break;
+         case 2:
+            double result = r1;
+            if (!molA!double(more, quickly, result, 1, 5, r0))
+               return;
+            lastOp = pushC!double(this, r1, OP_DV1);
+            r1 = result;
+            break;
+         case 3:
+            modifyTransform(xform, more, quickly);
+            break;
+         default:
+            return;
       }
-      else if (instance == 1) // Distance between centers
-      {
-         lastOp = pushC!double(this, d, OP_DV0);
-         double dd = more? 1: -1;
-         d += dd;
-      }
-      else if (instance == 2)  // Radius of smaller circle
-      {
-         lastOp = pushC!double(this, r1, OP_DV1);
-         if (more)
-         {
-            if (r1+1 > r0)
-               r1 = r0;
-            else
-               r1 += 1;
-         }
-         else
-         {
-            if (r1-1 < 5)
-               r1 = 5;
-            else
-               r1 -= 1;
-         }
-      }
-      else if (instance == 3)
-         modifyTransform(xform, more, coarse);
-      else
-         return;
       dirty = true;
       aw.dirty = true;
       reDraw();

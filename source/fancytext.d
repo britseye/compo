@@ -15,6 +15,7 @@ import acomp;
 import tvitem;
 import common;
 import constants;
+import mol;
 
 import std.stdio;
 import std.conv;
@@ -324,24 +325,25 @@ class FancyText : TextViewItem
       reDraw();
    }
 
-   override void onCSMoreLess(int instance, bool more, bool far)
+   override void onCSMoreLess(int instance, bool more, bool quickly)
    {
-      int direction = more? 1: -1;
-      if (instance == 0)
+      focusLayout();
+      switch (instance)
       {
-         adjustFontSize(direction, far);
-         textChanged = true;
+         case 0:
+            adjustFontSize(more, quickly);
+            textChanged = true;
+            break;
+         case 1:
+            double result = angle;
+            if (!molA!double(more, quickly, result, rads/3, -double.infinity, double.infinity))
+               return;
+            lastOp = pushC!double(this, angle, OP_DV0);
+            angle = result;
+            break;
+         default:
+            return;
       }
-      else if (instance == 1)
-      {
-         lastOp = pushC!double(this, angle, OP_DV0);
-         double ra = far? rads*5: rads/3;
-         if (more)
-            ra = -ra;
-         angle -= ra;
-      }
-      else
-         return;
       aw.dirty = true;
       reDraw();
    }

@@ -15,6 +15,7 @@ import common;
 import types;
 import controlset;
 import lineset;
+import mol;
 
 import std.stdio;
 import std.math;
@@ -166,22 +167,20 @@ class RegularPolygon : LineSet
       }
    }
 
-   override void onCSMoreLess(int instance, bool more, bool much)
+   override void onCSMoreLess(int instance, bool more, bool quickly)
    {
       focusLayout();
       int direction = more? 1: -1;
 
       void doSides()
       {
-         lastOp = pushC!int(this, sides, OP_IV1);
-         if (more)
-            sides++;
-         else
-         {
-            if (sides > 3)
-               sides--;
-         }
+         int iresult = sides;
+         if (!molA!int(more, quickly, iresult, 1, 3, 1000))
+            return;
+         lastOp = push!int(this, sides, OP_IV1);
+         sides = iresult;
          numSides.setText(to!string(sides));
+
          if (sides & 1)
          {
             cSet.disable(Purpose.ASSTAR);
@@ -195,33 +194,22 @@ class RegularPolygon : LineSet
          constructBase();
       }
 
-      void doIndent()
-      {
-         lastOp = pushC!double(this, starIndent, OP_DV1);
-         if (more)
-         {
-            if (starIndent < 1.0)
-               starIndent += 0.05;
-         }
-         else
-         {
-            if (starIndent > 0.05)
-               starIndent -= 0.05;
-         }
-         constructBase();
-      }
-
       switch (instance)
       {
          case 0:
             doSides();
             break;
          case 1:
-            modifyTransform(xform, more, much);
+            modifyTransform(xform, more, quickly);
             dirty = true;
             break;
          case 2:
-            doIndent();
+            double result = starIndent;
+            if (!molG!double(more, quickly, result, 0.01, 0.05, 1))
+               return;
+            lastOp = pushC!double(this, starIndent, OP_DV1);
+            starIndent = result;
+            constructBase();
             break;
          default:
             return;

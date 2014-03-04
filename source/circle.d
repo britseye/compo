@@ -14,6 +14,7 @@ import common;
 import types;
 import controlset;
 import lineset;
+import mol;
 
 import std.math;
 import std.stdio;
@@ -132,30 +133,25 @@ class Circle : LineSet
       return true;
    }
 
-   override void onCSMoreLess(int instance, bool more, bool coarse)
+   override void onCSMoreLess(int instance, bool more, bool quickly)
    {
       focusLayout();
-      if (instance == 0)
+      switch (instance)
       {
-         double factor = coarse? 1.2: 1.05;
-         if (more)
-         {
-            lastOp = pushC!double(this, radius, OP_SIZE);
-            radius *= factor;
-         }
-         else
-         {
-            if (radius/factor < lineWidth)
+         case 0:
+            double result = radius;
+            if (!molG!double(more, quickly, result, 0.01, 0.1, 1000))
                return;
             lastOp = pushC!double(this, radius, OP_SIZE);
-            radius /= factor;
-         }
-      }
-      else
-      {
-         int[] xft = [0,2,5,6,7];
-         int tt = xft[xform];
-         modifyTransform(tt, more, coarse);
+            radius = result;
+            break;
+         case 1:
+            int[] xft = [0,2,5,6,7];
+            int tt = xft[xform];
+            modifyTransform(tt, more, quickly);
+            break;
+         default:
+            return;
       }
       dirty = true;
       aw.dirty = true;

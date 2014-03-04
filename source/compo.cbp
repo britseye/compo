@@ -152,6 +152,7 @@
 		<Unit filename="mesh.d">
 			<Option target="Debug" />
 		</Unit>
+		<Unit filename="mol.d" />
 		<Unit filename="moon.d">
 			<Option target="Debug" />
 		</Unit>
@@ -225,9 +226,6 @@
 			<Option target="Debug" />
 		</Unit>
 		<Unit filename="settings.d">
-			<Option target="Debug" />
-		</Unit>
-		<Unit filename="shapelib.d">
 			<Option target="Debug" />
 		</Unit>
 		<Unit filename="sheets.d">

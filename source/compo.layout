@@ -4,20 +4,20 @@
 	<File name="about.d" open="0" top="0" tabpos="0">
 		<Cursor position="961" topLine="0" />
 	</File>
-	<File name="acomp.d" open="0" top="0" tabpos="3">
-		<Cursor position="21995" topLine="969" />
+	<File name="acomp.d" open="1" top="0" tabpos="3">
+		<Cursor position="9801" topLine="476" />
 	</File>
-	<File name="arrow.d" open="0" top="0" tabpos="2">
-		<Cursor position="4959" topLine="148" />
+	<File name="arrow.d" open="1" top="1" tabpos="2">
+		<Cursor position="2224" topLine="68" />
 	</File>
 	<File name="bevel.d" open="0" top="0" tabpos="1">
 		<Cursor position="0" topLine="75" />
 	</File>
 	<File name="brushdabs.d" open="0" top="0" tabpos="0">
-		<Cursor position="4793" topLine="150" />
+		<Cursor position="4726" topLine="165" />
 	</File>
 	<File name="circle.d" open="0" top="0" tabpos="2">
-		<Cursor position="3073" topLine="113" />
+		<Cursor position="3073" topLine="92" />
 	</File>
 	<File name="common.d" open="0" top="0" tabpos="3">
 		<Cursor position="3194" topLine="124" />
@@ -32,7 +32,7 @@
 		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="controlset.d" open="0" top="0" tabpos="2">
-		<Cursor position="523" topLine="64" />
+		<Cursor position="523" topLine="109" />
 	</File>
 	<File name="corners.d" open="0" top="0" tabpos="0">
 		<Cursor position="3835" topLine="162" />
@@ -41,7 +41,7 @@
 		<Cursor position="2137" topLine="63" />
 	</File>
 	<File name="cross.d" open="0" top="0" tabpos="0">
-		<Cursor position="1845" topLine="30" />
+		<Cursor position="4385" topLine="132" />
 	</File>
 	<File name="csv.d" open="0" top="0" tabpos="3">
 		<Cursor position="0" topLine="0" />
@@ -77,10 +77,13 @@
 		<Cursor position="8874" topLine="293" />
 	</File>
 	<File name="line.d" open="0" top="0" tabpos="2">
-		<Cursor position="5005" topLine="185" />
+		<Cursor position="2749" topLine="104" />
 	</File>
-	<File name="lineset.d" open="0" top="0" tabpos="1">
-		<Cursor position="3950" topLine="112" />
+	<File name="lineborders.d" open="1" top="0" tabpos="1">
+		<Cursor position="4325" topLine="159" />
+	</File>
+	<File name="lineset.d" open="1" top="0" tabpos="4">
+		<Cursor position="761" topLine="13" />
 	</File>
 	<File name="mainwin.d" open="0" top="0" tabpos="0">
 		<Cursor position="10164" topLine="452" />
@@ -125,7 +128,7 @@
 		<Cursor position="6442" topLine="270" />
 	</File>
 	<File name="polycurve.d" open="0" top="0" tabpos="1">
-		<Cursor position="9764" topLine="370" />
+		<Cursor position="26083" topLine="942" />
 	</File>
 	<File name="polygon.d" open="0" top="0" tabpos="3">
 		<Cursor position="8483" topLine="322" />

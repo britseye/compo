@@ -14,6 +14,7 @@ import acomp;
 import mainwin;
 import sheets;
 import graphics;
+import mol;
 
 import std.stdio;
 import std.conv;
@@ -165,18 +166,16 @@ class Container: ACBase
       return true;
    }
 
-   override void onCSMoreLess(int instance, bool more, bool coarse)
+   override void onCSMoreLess(int instance, bool more, bool quickly)
    {
       focusLayout();
-      double delta = 1.0;
-      if (coarse)
-         delta *= 10;
-      if (!more)
-         delta = -delta;
+      double result = glUseV? hOff: vOff;
+      if (!molA!double(more, quickly, result, 1, 0, 1.0*width))
+         return;
       if (glUseV)
-         hOff += delta;
+         hOff = result;
       else
-         vOff += delta;
+         vOff = result;
       reDraw();
    }
 

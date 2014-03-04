@@ -14,6 +14,7 @@ import common;
 import types;
 import controlset;
 import lineset;
+import mol;
 
 import std.stdio;
 import std.conv;
@@ -193,27 +194,36 @@ class Corners : LineSet
       return true;
    }
 
-   override void onCSMoreLess(int instance, bool more, bool coarse)
+   override void onCSMoreLess(int instance, bool more, bool quickly)
    {
       focusLayout();
-      int n = more? 1: -1;
-      if (coarse)
-         n *= 10;
-      if (instance == 0)
+      double result;
+      switch (instance)
       {
-         lastOp = pushC!double(this, cw, OP_HSIZE);
-         cw += n;
-      }
-      else if (instance == 1)
-      {
-         lastOp = pushC!double(this, ch, OP_VSIZE);
-         ch += n;
-      }
-      else
-      {
-         lastOp = pushC!double(this, inset, OP_DV1);
-         n = more? 1: -1;
-         inset += n;
+         case 0:
+            result = cw;
+            if (!molA!double(more, quickly, result, 1, 1, cast(double) width))
+               return;
+            lastOp = pushC!double(this, cw, OP_HSIZE);
+            cw = result;
+            break;
+         case 1:
+            result = ch;
+            if (!molA!double(more, quickly, result, 1, 1, cast(double) height))
+               return;
+            lastOp = pushC!double(this, ch, OP_VSIZE);
+            ch = result;
+            break;
+         case 2:
+            double lim = ((width < height)? width: height)/3;
+            result = inset;
+            if (!molA!double(more, quickly, result, 1, 1, lim))
+               return;
+            lastOp = pushC!double(this, ch, OP_DV1);
+            inset = result;
+            break;
+         default:
+            return;
       }
       aw.dirty = true;
       reDraw();

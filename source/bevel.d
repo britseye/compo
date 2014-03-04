@@ -13,6 +13,7 @@ import acomp;
 import common;
 import types;
 import controlset;
+import mol;
 
 import std.stdio;
 import std.conv;
@@ -98,18 +99,15 @@ class Bevel: ACBase
       cSet.cy = 35;
    }
 
-   override void onCSMoreLess(int id, bool more, bool coarse)
+   override void onCSMoreLess(int id, bool more, bool quickly)
    {
       focusLayout();
+
+      double result = bt;
+      if (!molA!double(more, quickly, result, 0.6, 2, 40))
+         return;
       lastOp = pushC!double(this, bt, OP_THICK);
-      if (more && bt > 40)
-         return;
-      if (!more && bt < 2)
-         return;
-      int delta = more? 1: -1;
-      if (coarse)
-         delta *= 3;
-      bt += delta;
+      bt = result;
       aw.dirty = true;
       reDraw();
    }

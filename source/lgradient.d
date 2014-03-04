@@ -13,6 +13,7 @@ import acomp;
 import common;
 import types;
 import controlset;
+import mol;
 
 import std.stdio;
 import std.math;
@@ -265,89 +266,49 @@ class LGradient: ACBase
       }
    }
 
-   override void onCSMoreLess(int instance, bool more, bool coarse)
+   override void onCSMoreLess(int instance, bool more, bool quickly)
    {
       focusLayout();
-      double n = more? 1: -1;
-      if (coarse)
-         n *= 10;
-      if (instance == 0)
+      switch (instance)
       {
-         lastOp = pushC!double(this, maxOpacity, OP_OPACITY);
-         double nv;
-         if (more)
-         {
-            if (maxOpacity == 0)
-               nv = 0.1;
-            else
-            {
-               nv = maxOpacity*1.05;
-               if (nv > 1)
-                  nv = 1;
-            }
-         }
-         else
-         {
-            nv = maxOpacity*0.95;
-            if (nv <= 0.1)
-               nv = 0;
-         }
-         maxOpacity = nv;
-         string t = to!string(maxOpacity);
-         if (t.length > 4)
-         t = t[0..4];
-         ov.setText(t);
-         dirty = true;
+         case 0:
+            double result = maxOpacity;
+            if (!molA!double(more, quickly, result, 0.01, 0, 1))
+               return;
+            lastOp = pushC!double(this, maxOpacity, OP_OPACITY);
+            maxOpacity = result;
+            string t = to!string(maxOpacity);
+            if (t.length > 4)
+            t = t[0..4];
+            ov.setText(t);
+            break;
+         case 1:
+            double result = fw;
+            if (!molA!double(more, quickly, result, 0.01, 0.05, 1))
+               return;
+            lastOp = pushC!double(this, fw, OP_HSIZE);
+            fw = result;
+            break;
+         case 2:
+            double result = fp;
+            if (!molA!double(more, quickly, result, 0.01, 0, 1-fw))
+               return;
+            lastOp = pushC!double(this, fp, OP_VSIZE);
+            fp = result;
+            break;
+         case 3:
+            double result = angle;
+            more = !more;  // Just the way angle goes - make more clockwise
+            if (!molA!double(more, quickly, result, 0.01, -double.infinity, double.infinity))
+               return;
+            lastOp = pushC!double(this, angle, OP_DV0);
+            angle = result;
+            break;
+         default:
+            return;
       }
-      else if (instance == 1)
-      {
-         double delta = coarse? 0.05: 0.01;
-         lastOp = pushC!double(this, fw, OP_HSIZE);
-         if (more)
-         {
-            if (fw+delta > 1)
-               fw = 1;
-            else
-               fw += delta;
-         }
-         else
-         {
-            if (fw-delta < 0.05)
-               fw = 0.05;
-            else
-               fw -= delta;
-         }
+      if (instance <=3)
          dirty = true;
-      }
-      else if (instance == 2)
-      {
-         double delta = coarse? 0.05: 0.01;
-         lastOp = pushC!double(this, fp, OP_VSIZE);
-         if (more)
-         {
-            if (fp+delta > 1-fw)
-               fp = 1-fw;
-            else
-               fp += delta;
-         }
-         else
-         {
-            if (fp-delta < 0)
-               fp = 0;
-            else
-               fp -= delta;
-         }
-         dirty = true;
-      }
-      else if (instance == 3)
-      {
-         double theta = coarse? 5*rads: 1*rads;
-         lastOp = pushC!double(this, angle, OP_DV0);
-         if (!more) theta = -theta;
-         angle -= theta;
-         setOrientation(4);
-         dirty = true;
-      }
       aw.dirty = true;
       reDraw();
    }

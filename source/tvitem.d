@@ -18,6 +18,7 @@ import controlsdlg;
 import tb2pm;
 import morphtext;
 import richtext;
+import mol;
 
 import std.stdio;
 import std.conv;
@@ -350,24 +351,14 @@ class TextViewItem : ACBase
       return writer.data;
    }
 
-   void adjustFontSize(int direction, int far)
+   void adjustFontSize(bool more, bool quickly)
    {
       int fs = pfd.getSize();
-      lastOp = push!int(this, fs, OP_SIZE);
-      if (direction > 0)
-      {
-         if (far)
-            fs *= 1.5;
-         else
-            fs *= 1.05;
-      }
-      else
-      {
-         if (far)
-            fs *= 0.66;
-         else
-            fs *= 0.95;
-      }
+      double result = fs;
+      if (!molG!double(more, quickly, result, 0.01, 0.1, double.infinity))
+         return;
+      lastOp = pushC!int(this, fs, OP_SIZE);
+      fs = to!int(result);
       pfd.setSize(fs);
       te.modifyFont(pfd);
       cSet.setTextParams(alignment, sensibleFontName());
@@ -452,8 +443,7 @@ class TextViewItem : ACBase
    {
       if (instance == 0)
       {
-         int direction = more? 1: -1;
-         adjustFontSize(direction, far);
+         adjustFontSize(more, far);
          aw.dirty = true;
          reDraw();
       }

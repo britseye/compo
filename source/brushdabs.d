@@ -13,6 +13,7 @@ import acomp;
 import common;
 import types;
 import controlset;
+import mol;
 
 import std.stdio;
 import std.math;
@@ -285,99 +286,44 @@ class BrushDabs : ACBase
       reDraw();
    }
 
-   override void onCSMoreLess(int instance, bool more, bool much)
+   override void onCSMoreLess(int instance, bool more, bool quickly)
    {
       focusLayout();
-      if (instance == 0)
+      double result;
+      switch (instance)
       {
-         if (more)
-         {
-            if (nDabs < 0x2000)
-            {
-               lastOp = pushC!int(this, nDabs, OP_IV1);
-               nDabs *= 2;
-            }
-            else
+         case 0:
+            int iresult = nDabs;
+            if (!molG!int(more, quickly, iresult, 2, 1, 0x2000))
                return;
-         }
-         else
-         {
-            if (nDabs > 1)
-            {
-               lastOp = pushC!int(this, nDabs, OP_IV1);
-               nDabs /=2;
-            }
-            else
+            lastOp = pushC!int(this, nDabs, OP_IV1);
+            nDabs = iresult;
+            break;
+         case 1:
+            result = w;
+            if (!molG!double(more, quickly, result, 0.01, 3, 100))
                return;
-         }
+            lastOp = pushC!double(this, w, OP_DV0);
+            w = result;
+            break;
+         case 2:
+            result = tcp;
+            if (!molG!double(more, quickly, result, 0.01, 0.1, 4))
+               return;
+            lastOp = pushC!double(this, tcp, OP_DV1);
+            tcp = result;
+            break;
+         case 3:
+            result = angle;
+            if (!molA!double(more, quickly, result, PI/40, -4*PI, 4*PI))
+               return;
+            lastOp = pushC!double(this, angle, OP_DV2);
+            angle = result;
+            break;
+         default:
+            return;
       }
-      else if (instance == 1)
-      {
-         if (more)
-         {
-            if (w < 100)
-            {
-               lastOp = pushC!double(this, w, OP_DV0);
-               w++;
-            }
-            else
-               return;
-         }
-         else
-         {
-            if (w > 3)
-            {
-               lastOp = pushC!double(this, w, OP_DV0);
-               w--;
-            }
-            else
-               return;
-         }
-         constructBase();
-      }
-      else if (instance == 2)
-      {
-         if (more)
-         {
-            if (tcp < 4)
-            {
-               lastOp = pushC!double(this, tcp, OP_DV1);
-               tcp += 0.05;
-            }
-            else
-               return;
-         }
-         else
-         {
-            if (tcp > 0.1)
-            {
-               lastOp = pushC!double(this, tcp, OP_DV1);
-               tcp -= 0.05;
-            }
-            else
-               return;
-         }
-         constructBase();
-      }
-      else if (instance == 3)
-      {
-         lastOp = pushC!double(this, angle, OP_DV2);
-         if (more)
-         {
-            if (angle < 2*PI)
-               angle += PI/8;
-            else
-               angle = PI/8;
-         }
-         else
-         {
-            if (angle > 0)
-               angle -= PI/8;
-            else
-               angle = 7*PI/8;
-         }
-         constructBase();
-      }
+      constructBase();
       generate();
       aw.dirty = true;
       reDraw();

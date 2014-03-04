@@ -13,6 +13,7 @@ import acomp;
 import common;
 import types;
 import controlset;
+import mol;
 
 import std.stdio;
 import std.math;
@@ -213,57 +214,40 @@ class RGradient: ACBase
       return true;
    }
 
-   override void onCSMoreLess(int instance, bool more, bool coarse)
+   override void onCSMoreLess(int instance, bool more, bool quickly)
    {
       focusLayout();
-      double n = more? 1: -1;
-      if (coarse)
-         n *= 10;
-      if (instance == 0)
+      dirty = true;
+      switch (instance)
       {
-         double nv;
-         if (more)
-         {
-            if (maxOpacity == 0)
-               nv = 0.1;
-            else
-            {
-               nv = maxOpacity*1.05;
-               if (nv > 1)
-                  nv = 1;
-            }
-         }
-         else
-         {
-            nv = maxOpacity*0.95;
-            if (nv <= 0.1)
-               nv = 0;
-         }
-         lastOp = pushC!double(this, maxOpacity, OP_OPACITY);
-         maxOpacity = nv;
-         string t = to!string(maxOpacity);
-         if (t.length > 4)
-         t = t[0..4];
-         ov.setText(t);
-         dirty = true;
-      }
-      else if (instance == 1)
-      {
-         if (n > 0 && inrad+n >= outrad)
+         case 0:
+            double result = maxOpacity;
+            if (!molA!double(more, quickly, result, 0.01, 0, 1))
+               return;
+            lastOp = pushC!double(this, maxOpacity, OP_OPACITY);
+            maxOpacity = result;
+            string t = to!string(maxOpacity);
+            if (t.length > 4)
+            t = t[0..4];
+            ov.setText(t);
+            break;
+         case 1:
+            double result = inrad;
+            if (!molA!double(more, quickly, result, 0.5, 5, outrad))
+               return;
+            lastOp = pushC!double(this, inrad, OP_VSIZE);
+            inrad = result;
+            break;
+         case 2:
+            double result = outrad;
+            if (!molA!double(more, quickly, result, 0.5, 5, 1000))
+               return;
+            lastOp = pushC!double(this, outrad, OP_HSIZE);
+            outrad = result;
+            break;
+         default:
+            dirty = false;
             return;
-         if (n < 0 && inrad+n < 5)
-            return;
-         lastOp = pushC!double(this, inrad, OP_VSIZE);
-         inrad += n;
-         dirty = true;
-      }
-      else if (instance == 2)
-      {
-         if (n < 0 && outrad+n <= inrad)
-            return;
-         lastOp = pushC!double(this, outrad, OP_HSIZE);
-         outrad += n;
-         dirty = true;
       }
       aw.dirty = true;
       reDraw();

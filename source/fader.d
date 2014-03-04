@@ -13,6 +13,7 @@ import acomp;
 import common;
 import types;
 import controlset;
+import mol;
 
 import std.stdio;
 import std.math;
@@ -198,48 +199,38 @@ class Fader: ACBase
       reDraw();
    }
 
-   override void onCSMoreLess(int instance, bool more, bool coarse)
+   override void onCSMoreLess(int instance, bool more, bool quickly)
    {
       focusLayout();
-      double n = more? 1: -1;
-      if (coarse)
-         n *= 10;
-      if (instance == 0)
+      switch (instance)
       {
-         lastOp = pushC!double(this, opacity, OP_OPACITY);
-         double nv;
-         if (more)
-         {
-            if (opacity == 0)
-               nv = 0.1;
-            else
-            {
-               nv = opacity*1.05;
-               if (nv > 1)
-                  nv = 1;
-            }
-         }
-         else
-         {
-            nv=opacity*0.95;
-            if (nv <= 0.1)
-               nv = 0;
-         }
-         opacity = nv;
-         string t = to!string(opacity);
-         if (t.length > 4)
-         t = t[0..4];
-         ov.setText(t);
-      }
-      else if (instance == 1)
-      {
-         lastOp = pushC!double(this, rw, OP_HSIZE);
-         rw += n;
-      }
-      else if (instance == 2)
-      {
-         lastOp = pushC!double(this, rh, OP_VSIZE);
-         rh += n;
+         case 0:
+            double result = opacity;
+            if (!molA!double(more, quickly, result, 0.01, 0, 1))
+               return;
+            lastOp = pushC!double(this, opacity, OP_OPACITY);
+            opacity = result;
+            string t = to!string(opacity);
+            if (t.length > 4)
+            t = t[0..4];
+            ov.setText(t);
+            break;
+         case 1:
+            double result = rw;
+            if (!molA!double(more, quickly, result, 0.01, 0, cast(double) width))
+               return;
+            lastOp = pushC!double(this, rw, OP_HSIZE);
+            rw = result;
+            break;
+         case 2:
+            double result = rh;
+            if (!molA!double(more, quickly, result, 0.01, 0, cast(double) height))
+               return;
+            lastOp = pushC!double(this, rh, OP_VSIZE);
+            rh = result;
+            break;
+         default:
+            return;
       }
       aw.dirty = true;
       reDraw();

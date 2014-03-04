@@ -14,6 +14,7 @@ import common;
 import types;
 import controlset;
 import lineset;
+import mol;
 
 import std.stdio;
 import std.math;
@@ -250,45 +251,35 @@ class Moon : LineSet
       }
    }
 
-   override void onCSMoreLess(int instance, bool more, bool coarse)
+   override void onCSMoreLess(int instance, bool more, bool quickly)
    {
       focusLayout();
-      if (instance == 0)
+      switch (instance)
       {
-         double delta = coarse? 1.05: 1.01;
-         if (more)
-         {
+         case 0:
+            double result = radius;
+            if (!molG!double(more, quickly, result, 0.01, 10, 1000))
+               return;
             lastOp = pushC!double(this, radius, OP_SIZE);
-            radius *= delta;
-         }
-         else
-         {
-            if (radius > 10)
-            {
-               lastOp = pushC!double(this, radius, OP_SIZE);
-               radius /= delta;
-            }
-         }
-         constructTable();
+            radius = result;
+            constructTable();
+            break;
+         case 1:
+            int iresult = day;
+            if (!molA!int(more, quickly, iresult, 1, -1, 28))
+               return;
+            lastOp = pushC!int(this, day, OP_IV0);
+            if (iresult < 0) iresult = 27;
+            if (iresult == 28) iresult = 0;
+            day = iresult;
+            setPhaseDesc();
+            break;
+         case 2:
+            modifyTransform(xform, more, quickly);
+            break;
+         default:
+            return;
       }
-      else if (instance == 1)
-      {
-         lastOp = push!int(this, day, OP_IV0);
-         if (more)
-            day = (day+1)%28;
-         else
-         {
-            if (day-1 < 0)
-               day = 27;
-            else
-               day--;
-         }
-         setPhaseDesc();
-      }
-      else if (instance == 2)
-         modifyTransform(xform, more, coarse);
-      else
-         return;
       dirty = true;
       aw.dirty = true;
       reDraw();

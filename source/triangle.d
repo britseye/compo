@@ -14,6 +14,7 @@ import common;
 import types;
 import controlset;
 import lineset;
+import mol;
 
 import std.math;
 import std.stdio;
@@ -237,33 +238,26 @@ class Triangle : LineSet
       }
    }
 
-   override void onCSMoreLess(int instance, bool more, bool coarse)
+   override void onCSMoreLess(int instance, bool more, bool quickly)
    {
       focusLayout();
-      if (instance == 0)
+      switch (instance)
       {
-         double factor = coarse? 1.5: 1.05;
-         if (more)
-         {
-            Coord t = Coord(w, h);
-            lastOp = pushC!Coord(this, t, OP_SIZE);
-            w *= factor;
-            h *= factor;
-         }
-         else
-         {
-            if (0.5*(w+h)/factor < lineWidth)
+         case 0:
+            double result = 1;
+            if (!molG!double(more, quickly, result, 0.01, 0.01, 5000))
                return;
             Coord t = Coord(w, h);
             lastOp = pushC!Coord(this, t, OP_SIZE);
-            w /= factor;
-            h /= factor;
-         }
-         figurePath();
-      }
-      else
-      {
-         modifyTransform(xform, more, coarse);
+            w *= result;
+            h *= result;
+            figurePath();
+            break;
+         case 1:
+            modifyTransform(xform, more, quickly);
+            break;
+         default:
+            return;
       }
       aw.dirty = true;
       reDraw();

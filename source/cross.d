@@ -14,6 +14,7 @@ import common;
 import types;
 import controlset;
 import lineset;
+import mol;
 
 import std.stdio;
 import std.math;
@@ -173,8 +174,7 @@ class Cross : LineSet
          cbW = cp.dVal;
          break;
       case OP_DV2:
-         cbPos = cp.dVal;
-         cbOff = (cbPos-h/2)/-h;
+         cbOff = cp.dVal;
          break;
       case OP_DV3:
          ar = cp.dVal;
@@ -240,56 +240,54 @@ class Cross : LineSet
       oPath[11] = Coord(ho, rise);
    }
 
-   override void onCSMoreLess(int instance, bool more, bool coarse)
+   override void onCSMoreLess(int instance, bool more, bool quickly)
    {
-      if (instance == 0)
+      focusLayout();
+      double result;
+      switch (instance)
       {
-         lastOp = pushC!double(this, size, OP_SIZE);
-         double delta = coarse? 1.05: 1.01;
-         if (more)
-            size *= delta;
-         else
-         {
-            if (size > 0.1)
-               size /= delta;
-         }
-         constructBase();
+         case 0:
+            result = size;
+            if (!molG!double(more, quickly, result, 0.01, 0.05, 1.1))
+               return;
+            lastOp = pushC!double(this, size, OP_SIZE);
+            size = result;
+            break;
+         case 1:
+            result = urW;
+            if (!molA!double(more, quickly, result, 0.01, 0.01, 0.9))
+               return;
+            lastOp = pushC!double(this, urW, OP_DV0);
+            urW = result;
+            break;
+         case 2:
+            result = cbW;
+            if (!molA!double(more, quickly, result, 0.01, 0.01, 0.9))
+               return;
+            lastOp = pushC!double(this, cbW, OP_DV1);
+            cbW = result;
+            break;
+         case 3:
+            result = cbOff;
+            if (!molA!double(more, quickly, result, 0.01, vo/h, 1-vo/h))
+               return;
+            lastOp = pushC!double(this, cbOff, OP_DV2);
+            cbOff = result;
+            break;
+         case 4:
+            result = ar;
+            if (!molA!double(more, quickly, result, 0.01, 0.25, 2))
+               return;
+            lastOp = pushC!double(this, ar, OP_DV3);
+            ar = result;
+            break;
+         case 5:
+            modifyTransform(xform, more, quickly);
+            break;
+         default:
+            return;
       }
-      else if (instance == 1)  // Upright width
-      {
-         lastOp = pushC!double(this, urW, OP_DV0);
-         if (more)
-         {
-            if (urW+0.05 > 0.8)
-               return;
-            urW += 0.05;
-         }
-         else
-         {
-            if (urW-0.05 <= 0.05)
-               return;
-            urW -= 0.05;
-         }
-         constructBase();
-      }
-      else if (instance == 2)
-      {
-         lastOp = pushC!double(this, cbW, OP_DV1);
-         if (more)
-         {
-            if (cbW+0.05 > 0.8)
-               return;
-            cbW += 0.05;
-         }
-         else
-         {
-            if (cbW-0.05 <= 0.05)
-               return;
-            cbW -= 0.05;
-         }
-         constructBase();
-      }
-      else if (instance == 3)
+      /*else if (instance == 3)
       {
          lastOp = pushC!double(this, cbPos, OP_DV2);
          if (more)
@@ -308,29 +306,9 @@ class Cross : LineSet
          }
          cbOff = (cbPos-h/2)/-h;
          constructBase();
-      }
-      else if (instance == 4)
-      {
-         lastOp = pushC!double(this, ar, OP_DV3);
-         if (more)
-         {
-            if (ar+0.05 > 2)
-               return;
-            ar += 0.05;
-         }
-         else
-         {
-            if (ar-0.05 <= 0.25)
-               return;
-            ar -= 0.05;
-         }
+      }*/
+      if (instance < 5)
          constructBase();
-      }
-      else if (instance == 5)
-         modifyTransform(xform, more, coarse);
-      else
-         return;
-      focusLayout();
       aw.dirty = true;
       reDraw();
    }

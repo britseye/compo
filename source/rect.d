@@ -14,6 +14,7 @@ import common;
 import types;
 import controlset;
 import lineset;
+import mol;
 
 import std.math;
 import std.stdio;
@@ -108,7 +109,7 @@ class Rectangle : LineSet
       hOff = vOff = 0;
       altColor = new RGBA(0,0,0,1);
       fill = false;
-      ar = 2;
+      ar = (1.0*width)/height;
       size = (width > height)? 0.75*height: 0.75*width;
       center = Coord(0.5*width, 0.5*height);
       figureWH();
@@ -220,8 +221,9 @@ class Rectangle : LineSet
       vOff *= vr;
    }
 
-   void figureWH()
+   void figureWH(bool arChange = false)
    {
+//writefln("size %f, ar %f", size, ar);
       if (width > height)
       {
          w = size*ar;
@@ -232,55 +234,58 @@ class Rectangle : LineSet
          w = size;
          h = size*ar;
       }
+
+      if (rounded)
+      {
+         if (w < 2*rr)
+            w = 2*rr;
+         if (h < 2*rr)
+            h = 2*rr;
+         ar = w/h;
+      }
+
       topLeft = square? Coord(center.x-0.5*size, center.y-0.5*size):
                         Coord(center.x-0.5*w, center.y-0.5*h);
       bottomRight = square? Coord(center.x+0.5*size, center.y+0.5*size):
                             Coord(center.x+0.5*w, center.y+0.5*h);
    }
 
-   override void onCSMoreLess(int instance, bool more, bool coarse)
+   override void onCSMoreLess(int instance, bool more, bool quickly)
    {
-      int direction = more? 1: -1;
       focusLayout();
-      if (instance == 0)
+      switch (instance)
       {
-         lastOp = pushC!double(this, rr, OP_DV0);
-         double cw, ch;
-         double lim = ((w > h)? h: w)*0.5 - lineWidth;
-         double t = rr+direction;
-         if (t > lim || t < 0)
-            return;
-         rr = t;
-      }
-      else if (instance == 1)
-      {
-         double factor = coarse? 1.5: 1.05;
-         if (more)
-         {
-            lastOp = pushC!double(this, size, OP_SIZE);
-            size *= factor;
-         }
-         else
-         {
-            if (0.5*(w+h)/factor < lineWidth)
+         case 0:
+            double result = rr;
+            double lim = ((w > h)? h: w)*0.5 - lineWidth;
+            if (!molA!double(more, quickly, result, 0.5, 0, lim))
+               return;
+            lastOp = pushC!double(this, rr, OP_DV0);
+            rr = result;
+            break;
+         case 1:
+            double result = size;
+            if (!molG!double(more, quickly, result, 0.01, 2*lineWidth, 1000))
                return;
             lastOp = pushC!double(this, size, OP_SIZE);
-            size /= factor;
-         }
-         figureWH();
-      }
-      else if (instance == 2)
-      {
-         lastOp = pushC!double(this, ar, OP_HSIZE);
-         double factor = more? (coarse? 1.05: 1.01): (coarse? 0.95: 0.99);
-         ar *= factor;
-         figureWH();
-      }
-      else
-      {
-         int[] xft = [0,1,2,5,6,7];
-         int tt = xft[xform];
-         modifyTransform(tt, more, coarse);
+            size = result;
+            figureWH();
+            break;
+         case 2:
+            double result = ar;
+            if (!molA!double(more, quickly, result, 0.02, 0, double.infinity))
+               return;
+            lastOp = pushC!double(this, ar, OP_HSIZE);
+            figureWH();
+            ar = result;
+            break;
+         case 3:
+            int[] xft = [0,1,2,5,6,7];
+            int tt = xft[xform];
+            modifyTransform(tt, more, quickly);
+            break;
+         default:
+            return;
       }
       aw.dirty = true;
       reDraw();

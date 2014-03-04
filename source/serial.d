@@ -15,6 +15,7 @@ import common;
 import constants;
 import types;
 import controlset;
+import mol;
 
 import std.stdio;
 import std.conv;
@@ -146,24 +147,17 @@ writeln("buffer "~te.getBuffer().getText());
       return true;
    }
 
-   override void onCSMoreLess(int instance, bool more, bool far)
+   override void onCSMoreLess(int instance, bool more, bool quickly)
    {
       if (instance== 0)
       {
-         TextViewItem.onCSMoreLess(instance, more, far);
+         TextViewItem.onCSMoreLess(instance, more, quickly);
          return;
       }
-      int d = more? 1: -1;
-      if (more)
-      {
-         if (padLength < 10)
-            padLength += d;
-      }
-      else
-      {
-         if (padLength > 3)
-            padLength += d;
-      }
+      int result = padLength;
+      if (!molA!int(more, quickly, result, 1, 3, 10))
+         return;
+      padLength = result;
       cSet.setLabel(Purpose.MLABEL0, to!string(padLength));
       aw.dirty = true;
       reDraw();
@@ -187,7 +181,6 @@ writeln("buffer "~te.getBuffer().getText());
       else
       {
          text = te.getBuffer().getText();
-writeln("toggle "~text);
          if (text.length == 0)
          {
             number = 0;

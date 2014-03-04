@@ -431,7 +431,18 @@ enum ACGroups
    DRAWING,
    REFERENCE,
    DRAWINGS,
-   CONTAINER
+   CONTAINER,
+
+   UNSPECIFIED = 100
+}
+
+struct ACInit
+{
+   AppWindow aw;
+   ACBase parent;
+   string name;
+   uint type;
+   ACGroups g;
 }
 
 class ACBase : CSTarget     // Area Composition base class
@@ -485,7 +496,14 @@ class ACBase : CSTarget     // Area Composition base class
    Transform tf;
    int xform;
 
-   this(AppWindow w, ACBase _parent, string _name, uint _type)
+   mixin template Preamble(alias NAME, alias GNAME, alias T)
+   {
+      string s = NAME~" "~to!string(nextOid);
+      ACGroups g = mixin("ACGroups."~GNAME);
+      static int t = T;
+   }
+
+   this(AppWindow w, ACBase _parent, string _name, uint _type, ACGroups = ACGroups.UNSPECIFIED)
    {
       aw = w;
       name = _name;

@@ -14,6 +14,7 @@ import constants;
 import types;
 import controlset;
 import rsvgwrap;
+import mol;
 
 import std.stdio;
 import std.conv;
@@ -147,27 +148,16 @@ class SVGImage : ACBase
       return true;
    }
 
-   override void onCSMoreLess(int id, bool more, bool coarse)
+   override void onCSMoreLess(int id, bool more, bool quickly)
    {
       focusLayout();
       if (scaleType != 0)
          return;
+      double result = scaleX;
+      if (!molG!double(more, quickly, result, 0.01, 0.1, 1000))
+         return;
       lastOp = pushC!double(this, scaleX, OP_DV0);
-      if (coarse)
-      {
-         if (more)
-            scaleX *= 1.05;
-         else
-            scaleX *= 0.95;
-      }
-      else
-      {
-         if (more)
-            scaleX *= 1.01;
-         else
-            scaleX *= 0.99;
-      }
-
+      scaleX = result;
       aw.dirty = true;
       reDraw();
    }
