@@ -388,6 +388,8 @@ class Polygon : LineSet
       string s = "Polygon "~to!string(++nextOid);
       super(w, parent, s, AC_POLYGON, ACGroups.GEOMETRIC);
       notifyHandlers ~= &Polygon.notifyHandler;
+      undoHandlers ~= &Polygon.undoHandler;
+
       closed = true;
       constructing = true;
       altColor = new RGBA(1,1,1,1);
@@ -504,44 +506,7 @@ class Polygon : LineSet
       }
       return false;
    }
-/*
-   override bool specificNotify(Widget w, Purpose wid)
-   {
-      switch (wid)
-      {
-      case Purpose.REDRAW:
-         lastOp = push!Path_t(this, oPath, OP_REDRAW);
-         editing = !editing;
-         switchMode();
-         return true;
-      case Purpose.REFLECT:
-         lastOp = push!Path_t(this, oPath, OP_REDRAW);
-         if (unreflected !is null)
-         {
-            oPath = unreflected;
-            unreflected = null;
-            rfb.setLabel("Reflect");
-         }
-         else
-         {
-            reflect();
-            rfb.setLabel("Unreflect");
-         }
-         return true;
-      case Purpose.OPEN:
-         open = !open;
-         if (open)
-            cSet.disable(Purpose.FILLTYPE);
-         else
-            cSet.enable(Purpose.FILLTYPE);
-         current = 0;
-         figureNextPrev();
-         return true;
-      default:
-         return false;
-      }
-   }
-*/
+
    void switchMode()
    {
       if (editing)
@@ -560,7 +525,7 @@ class Polygon : LineSet
       reDraw();
    }
 
-   override bool specificUndo(CheckPoint cp)
+   override bool undoHandler(CheckPoint cp)
    {
       switch (cp.type)
       {

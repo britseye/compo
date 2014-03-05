@@ -75,6 +75,7 @@ class RGradient: ACBase
       string s = "RGradient "~to!string(++nextOid);
       super(w, parent, s, AC_RGRADIENT, ACGroups.EFFECTS);
       notifyHandlers ~= &RGradient.notifyHandler;
+      undoHandlers ~= &RGradient.undoHandler;
 
       baseColor = new RGBA(1,1,1);
       maxOpacity = 1.0;
@@ -192,29 +193,8 @@ class RGradient: ACBase
       }
       return true;
    }
-/*
-   override bool specificNotify(Widget w, Purpose wid)
-   {
-      switch (wid)
-      {
-      case Purpose.SOLID:
-         mark = !mark;
-         break;
-      case Purpose.FADELEFT:
-         revfade = !revfade;
-         dirty = true;
-         break;
-      case Purpose.PATTERN:
-         gType = (cast(ComboBoxText) w).getActive();
-         dirty = true;
-         break;
-      default:
-         return false;
-      }
-      return true;
-   }
-*/
-   override bool specificUndo(CheckPoint cp)
+
+   override bool undoHandler(CheckPoint cp)
    {
       switch (cp.type)
       {

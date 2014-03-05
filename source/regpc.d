@@ -163,6 +163,7 @@ class RegularPolycurve : LineSet
       string s = "Regular Polycurve "~to!string(++nextOid);
       super(w, parent, s, AC_REGPOLYCURVE, ACGroups.GEOMETRIC);
       notifyHandlers ~= &RegularPolycurve.notifyHandler;
+      undoHandlers ~= &RegularPolycurve.undoHandler;
 
       closed = true;
       altColor = new RGBA(1,1,1,1);
@@ -376,72 +377,6 @@ class RegularPolycurve : LineSet
       return true;
    }
 
-   override bool specificNotify(Widget w, Purpose p)
-   {
-      focusLayout();
-      if (p >= Purpose.CP1 && p <= Purpose.ACPBOTH)
-      {
-         if ((cast(ToggleButton) w).getActive())
-         {
-            if (activeCP == p-Purpose.CP1)
-               return true;
-            lastOp = push!int(this, activeCP, OP_IV0);
-            activeCP = p-Purpose.CP1;
-         }
-         return true;
-      }
-      if (p == Purpose.REDRAW)
-      {
-         editMode = !editMode;
-         switchMode();
-         return true;
-      }
-      if (p == Purpose.PATTERN)
-      {
-         lastOp = push!int(this, symmetry, OP_ALIGN);
-         symmetry = (cast(ComboBoxText) w).getActive();
-         if (symmetry == SS)
-         {
-            cSet.disable(Purpose.CP1);
-            cSet.disable(Purpose.CP2);
-            cSet.disable(Purpose.CPBOTH);
-            cSet.disable(Purpose.ACP1);
-            cSet.disable(Purpose.ACP2);
-            cSet.disable(Purpose.ACPBOTH);
-         }
-         else if (symmetry == SA || symmetry == DS)
-         {
-            cSet.enable(Purpose.CP1);
-            cSet.enable(Purpose.CP2);
-            cSet.enable(Purpose.CPBOTH);
-            cSet.disable(Purpose.ACP1);
-            cSet.disable(Purpose.ACP2);
-            cSet.disable(Purpose.ACPBOTH);
-         }
-         else
-         {
-            cSet.enable(Purpose.CP1);
-            cSet.enable(Purpose.CP2);
-            cSet.enable(Purpose.CPBOTH);
-            cSet.enable(Purpose.ACP1);
-            cSet.enable(Purpose.ACP2);
-            cSet.enable(Purpose.ACPBOTH);
-         }
-         constructBase();
-         return true;
-      }
-      else if (p == Purpose.ANTI)
-      {
-         if (cfr == CairoFillRule.EVEN_ODD)
-            cfr = CairoFillRule.WINDING;
-         else
-            cfr = CairoFillRule.EVEN_ODD;
-         return true;
-      }
-      else
-         return false;
-   }
-
    void switchMode()
    {
          if (editMode)
@@ -460,7 +395,7 @@ class RegularPolycurve : LineSet
          }
    }
 
-   override bool specificUndo(CheckPoint cp)
+   override bool undoHandler(CheckPoint cp)
    {
       switch (cp.type)
       {

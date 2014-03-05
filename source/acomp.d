@@ -135,6 +135,7 @@ enum
    OP_PCA,
    OP_ORIENT,
    OP_ROWCOLS,
+   OP_XSCALE,
 
    OP_UNDEF
 }
@@ -502,12 +503,7 @@ class ACBase : CSTarget     // Area Composition base class
    bduh[] undoHandlers;
    bool nop;
 
-   mixin template Preamble(alias NAME, alias GNAME, alias T)
-   {
-      string s = NAME~" "~to!string(nextOid);
-      ACGroups g = mixin("ACGroups."~GNAME);
-      static int t = T;
-   }
+   //static this() { emptyCP.type = OP_NONE; }
 
    this(AppWindow w, ACBase _parent, string _name, uint _type, ACGroups = ACGroups.UNSPECIFIED)
    {
@@ -595,8 +591,41 @@ class ACBase : CSTarget     // Area Composition base class
       }
       return true;
    }
-   bool undoHandler(CheckPoint cp) { return false; }
 
+   bool undoHandler(CheckPoint cp)
+   {
+      focusLayout();
+      switch (cp.type)
+      {
+      case OP_NAME:
+         name = cp.s;
+         nameEntry.setText(name);
+         aw.tv.queueDraw();
+         break;
+      case OP_COLOR:
+         baseColor = cp.color.copy();
+         break;
+      case OP_MOVE:
+         Coord t = cp.coord;
+         hOff = t.x;
+         vOff = t.y;
+         break;
+      case OP_SCALE:
+      case OP_HSC:
+      case OP_VSC:
+      case OP_HSK:
+      case OP_VSK:
+      case OP_ROT:
+      case OP_HFLIP:
+      case OP_VFLIP:
+         tf = cp.transform;
+         break;
+      default:
+         return false;
+      }
+      lastOp = OP_UNDEF;
+      return true;
+   }
 
    void setNameEntry(Entry e) { nameEntry = e; }
    void onCSCompass(int instance, double angle, bool coarse) {}
@@ -671,56 +700,32 @@ class ACBase : CSTarget     // Area Composition base class
       if (csTop < 0)
       {
          aw.popupMsg("Sorry, no further undo actions are available", MessageType.INFO);
+         emptyCP.type = OP_NONE;
          return emptyCP;
       }
       CheckPoint cp = cpStack[csTop--];
       return cp;
    }
 
-   bool specificUndo(CheckPoint cp) { return false; }
-
-   void undo()
+   final void undo()
    {
-      CheckPoint cp;
-      cp = popOp();
-      if (cp.type == 0)
+      CheckPoint cp = popOp();
+      if (cp.type == OP_NONE)
          return;
-      focusLayout();
-      switch (cp.type)
+      bool handled = false;
+      foreach (bduh uh; undoHandlers)
       {
-      case OP_NAME:
-         name = cp.s;
-         nameEntry.setText(name);
-         aw.tv.queueDraw();
-         lastOp = OP_UNDEF;
-         break;
-      case OP_COLOR:
-         baseColor = cp.color.copy();
-         break;
-      case OP_MOVE:
-         Coord t = cp.coord;
-         hOff = t.x;
-         vOff = t.y;
-         lastOp = OP_UNDEF;
-         break;
-      case OP_SCALE:
-      case OP_HSC:
-      case OP_VSC:
-      case OP_HSK:
-      case OP_VSK:
-      case OP_ROT:
-      case OP_HFLIP:
-      case OP_VFLIP:
-         tf = cp.transform;
-         break;
-      default:
-         if (!specificUndo(cp))
-            return;
-         break;
+         if (uh(cp))
+         {
+            handled = true;
+            break;
+         }
       }
+      assert(handled, "No handler for "~to!string(cp));
       aw.dirty = true;
       reDraw();
    }
+
 
    bool setFocusLayout(Event e, Widget w)
    {
@@ -1095,8 +1100,6 @@ class ACBase : CSTarget     // Area Composition base class
       aw.dirty = true;
       reDraw();
    }
-
-   bool specificNotify(Widget w, Purpose p) { return false; }
 
    final void onCSNotify(Widget w, Purpose p)
    {

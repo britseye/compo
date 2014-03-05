@@ -97,6 +97,7 @@ class Tilings: ACBase
       string s = "Color Tilings "~to!string(++nextOid);
       super(w, parent, s, AC_TILINGS, ACGroups.EFFECTS);
       notifyHandlers ~= &Tilings.notifyHandler;
+      undoHandlers ~= &Tilings.undoHandler;
 
       rows = 9;
       cols = 10;
@@ -239,62 +240,8 @@ class Tilings: ACBase
       }
       return true;
    }
-/*
-   override void onCSNotify(Widget w, Purpose wid)
-   {
-      focusLayout();
-      switch (wid)
-      {
-      case Purpose.XCOLOR:
-         lastOp = push!RGBA(this, baseColor, OP_COLOR);
-         setColor(false);
-         cSrc.setBase(baseColor);
-         setupColors();
-         break;
-      case Purpose.PATTERN:
-         int n = (cast(ComboBoxText) w).getActive();
-         if (pattern == n)
-            return;
-         pattern = n;
-         dirty = true;
-         reBuild();
-         break;
-      case Purpose.DCOLORS:
-         int n = (cast(ComboBoxText) w).getActive();
-         if (shade == n)
-            return;
-         shade = n;
-         setupColors();
-         break;
-      case Purpose.PIN:
-         irregular = !irregular;
-         dirty = true;
-         break;
-      case Purpose.PRINTRANDOM:
-         printRandom = !printRandom;
-         break;
-      case Purpose.REFRESH:
-         colorSeed += cSet.control? -1: 1;
-         setupColors();
-         break;
-      case Purpose.REDRAW:
-         shapeSeed += cSet.control? -1: 1;
-         dirty = true;
-         reBuild();
-         break;
-      case Purpose.HIDE:
-         hidden = !hidden;
-         break;
-      default:
-         if (!specificNotify(w, wid))
-            return;  // Ingore whatever
-         break;
-      }
-      aw.dirty = true;
-      reDraw();
-   }
-*/
-   override bool specificUndo(CheckPoint cp)
+
+   override bool undoHandler(CheckPoint cp)
    {
       switch (cp.type)
       {
@@ -330,7 +277,7 @@ class Tilings: ACBase
          setupColors();
          break;
       default:
-         break;
+         return false;
       }
       lastOp = OP_UNDEF;
       return true;

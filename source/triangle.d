@@ -94,8 +94,10 @@ class Triangle : LineSet
    this(AppWindow appw, ACBase parent)
    {
       string s = "Triangle "~to!string(++nextOid);
-      super(appw, parent, s, AC_TRIANGLE);
-      group = ACGroups.SHAPES;
+      super(appw, parent, s, AC_TRIANGLE, ACGroups.SHAPES);
+      notifyHandlers ~= &Triangle.notifyHandler;
+      undoHandlers ~= &Triangle.undoHandler;
+
       closed = true;
       hOff = vOff = 0;
       altColor = new RGBA(1,1,1,1);
@@ -169,23 +171,8 @@ class Triangle : LineSet
       }
       return true;
    }
-/*
-   override bool specificNotify(Widget w, Purpose wid)
-   {
-      focusLayout();
-      switch (wid)
-      {
-      case Purpose.PATTERN:
-         ttype = (cast(ComboBoxText) w).getActive();
-         dirty = true;
-         break;
-      default:
-         return false;
-      }
-      return true;
-   }
-*/
-   override bool specificUndo(CheckPoint cp)
+
+   override bool undoHandler(CheckPoint cp)
    {
       switch (cp.type)
       {

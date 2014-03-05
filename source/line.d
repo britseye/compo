@@ -77,9 +77,10 @@ class Line : LineSet
    this(AppWindow w, ACBase parent)
    {
       string s = "Line "~to!string(++nextOid);
-      super(w, parent, s, AC_LINE);
-      aw = w;
-      group = ACGroups.GEOMETRIC;
+      super(w, parent, s, AC_LINE, ACGroups.GEOMETRIC);
+      notifyHandlers ~= &Line.notifyHandler;
+      undoHandlers ~= &Line.undoHandler;
+
       tm = new Matrix(&tmData);
 
       center.x = 0.5*width;
@@ -136,27 +137,8 @@ class Line : LineSet
          return false;
       return true;
    }
-/*
-   override bool specificNotify(Widget w, Purpose wid)
-   {
-      if (wid >= SP && wid <= ALL)
-      {
-         if ((cast(ToggleButton) w).getActive())
-         {
-            if (active == wid-SP)
-               return false;
-            active = wid-SP;
-         }
-         return true;
-      }
-      else if (wid == Purpose.EDITMODE)
-         showSe = !showSe;
-      else
-         return false;
-      return true;
-   }
-*/
-   override bool specificUndo(CheckPoint cp)
+
+   override bool undoHandler(CheckPoint cp)
    {
       switch (cp.type)
       {

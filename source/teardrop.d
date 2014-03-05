@@ -78,6 +78,8 @@ class Teardrop: LineSet
       string s = "Teardrop "~to!string(++nextOid);
       super(w, parent, s, AC_TEARDROP, ACGroups.SHAPES);
       notifyHandlers ~= &Teardrop.notifyHandler;
+      undoHandlers ~= &Teardrop.undoHandler;
+
       closed = true;
       hOff = vOff = 0;
       altColor = new RGBA(1,0,0,1);
@@ -123,7 +125,7 @@ class Teardrop: LineSet
 
    override bool notifyHandler(Widget w, Purpose p) { return false; }
 
-   override bool specificUndo(CheckPoint cp)
+   override bool undoHandler(CheckPoint cp)
    {
       switch (cp.type)
       {

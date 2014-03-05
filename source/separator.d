@@ -71,6 +71,7 @@ class Separator : LineSet
       string s = "Separator "~to!string(++nextOid);
       super(w, parent, s, AC_SEPARATOR, ACGroups.EFFECTS);
       notifyHandlers ~= &Separator.notifyHandler;
+      undoHandlers ~= &Separator.undoHandler;
 
       horizontal = true;
       lineWidth = 1.0;
@@ -124,25 +125,7 @@ class Separator : LineSet
       }
       return true;
    }
-/*
-   override bool specificNotify(Widget w, Purpose wid)
-   {
-      switch (wid)
-      {
-      case Purpose.HORIZONTAL:
-         if ((cast(RadioButton) w).getActive())
-            horizontal = true;
-         break;
-      case Purpose.VERTICAL:
-         if ((cast(RadioButton) w).getActive())
-            horizontal = false;
-         break;
-      default:
-         return false;
-      }
-      return true;
-   }
-*/
+
    override void onCSMoreLess(int instance, bool more, bool far)
    {
       focusLayout();
@@ -167,7 +150,7 @@ class Separator : LineSet
       reDraw();
    }
 
-   override bool specificUndo(CheckPoint cp)
+   override bool undoHandler(CheckPoint cp)
    {
       switch (cp.type)
       {

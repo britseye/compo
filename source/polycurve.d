@@ -447,6 +447,8 @@ class Polycurve : LineSet
       string s = "Polycurve "~to!string(++nextOid);
       super(w, parent, s, AC_POLYCURVE, ACGroups.GEOMETRIC);
       notifyHandlers ~= &Polycurve.notifyHandler;
+      undoHandlers ~= &Polycurve.undoHandler;
+
       closed = true;
       center.x = 0.5*width;
       center.y = 0.5*height;
@@ -566,47 +568,7 @@ class Polycurve : LineSet
       }
       return true;
    }
-/*
-   override bool specificNotify(Widget w, Purpose wid)
-   {
-      switch (wid)
-      {
-      case Purpose.REDRAW:
-         lastOp = push!(PathItem[])(this, pcPath, OP_REDRAW);
-         editing = !editing;
-         switchMode();
-         focusLayout();
-         return true;
-      case Purpose.REFLECT:
-         lastOp = push!Path_t(this, oPath, OP_REDRAW);
-         if (unreflected !is null)
-         {
-            pcPath = unreflected;
-            unreflected = null;
-            rfb.setLabel("Reflect");
-         }
-         else
-         {
-            reflect();
-            rfb.setLabel("Unreflect");
-         }
-         return true;
-      case Purpose.OPEN:
-         open = !open;
-         if (open)
-            cSet.disable(Purpose.FILLTYPE);
-         else
-            cSet.enable(Purpose.FILLTYPE);
-         if (!constructing)
-            correctEnd();
-         current = 0;
-         figureNextPrev();
-         return true;
-      default:
-         return false;
-      }
-   }
-*/
+
    void correctEnd()
    {
       double dx = pcPath[0].start.x-pcPath[$-1].end.x;
@@ -632,7 +594,7 @@ class Polycurve : LineSet
       reDraw();
    }
 
-   override bool specificUndo(CheckPoint cp)
+   override bool undoHandler(CheckPoint cp)
    {
       switch (cp.type)
       {

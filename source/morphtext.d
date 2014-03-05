@@ -113,6 +113,8 @@ class MorphText : TextViewItem
       string s = "Morphed Text "~to!string(++nextOid);
       super(w, parent, s, AC_MORPHTEXT);
       notifyHandlers ~= &MorphText.notifyHandler;
+      undoHandlers ~= &MorphText.undoHandler;
+
       altColor = new RGBA(0,0,0,1);
       fill = false;
       olt = 0.5;
@@ -310,99 +312,11 @@ class MorphText : TextViewItem
       }
       return true;
    }
-/*
-   override bool specificNotify(Widget w, Purpose wid)
+
+   override bool undoHandler(CheckPoint cp)
    {
-      switch (wid)
-      {
-      case Purpose.FILLCOLOR:
-         setColor(true);
-         break;
-      case Purpose.FILL:
-         fill = !fill;
-         break;
-      case Purpose.OUTLINE:
-         outline = !outline;
-         break;
-      case Purpose.FILLOPTIONS:
-         int n = fillOptions.getActive();
-         if (n == 0)
-            return false;
-         FillSpec fs = FillSpec(fill, outline, altColor, fillFromPattern, fillUid);
-         lastOp = push!FillSpec(this, fs, OP_FILL);
-         if (n == 1)
-         {
-            setColor(true);
-            fillFromPattern = false;
-            fill = true;
-            fillType.setText("(C)");
-         }
-         else if (n == 2)
-         {
-            fillFromPattern = false;
-            fill = false;
-            fillType.setText("(N)");
-         }
-         else if (n == 3)
-         {
-            updateFillOptions(this);
-            fillOptions.setActive(0);
-            return false;
-         }
-         else
-         {
-            fillFromPattern = true;
-            fillUid = others[n-4];
-            fill = true;
-            fillType.setText("(P)");
-         }
-         fillOptions.setActive(0);
-         updateFillUI();
-         break;
-      case Purpose.MORE:
-         if (mdShowing)
-         {
-            md.hide();
-            mdShowing = false;
-            cSet.setLabel(Purpose.MORE, "More");
-         }
-         else
-         {
-            md.showAll();
-            mdShowing = true;
-            cSet.setLabel(Purpose.MORE, "Less");
-         }
-         break;
-      case Purpose.MORPHCB:
-         cm = (cast(ComboBoxText) w).getActive();
-         changeMorph();
-         break;
-      case Purpose.XFORMCB:
-         xform = (cast(ComboBoxText) w).getActive();
-         break;
-      default:
-         return false;
-      }
-      return true;
-   }
-*/
-   override void undo()
-   {
-      CheckPoint cp;
-      cp = popOp();
-      if (cp.type == 0)
-         return;
       switch (cp.type)
       {
-      case OP_FONT:
-         pfd = PgFontDescription.fromString(cp.s);
-         lastOp = OP_UNDEF;
-         te.modifyFont(pfd);
-         break;
-      case OP_COLOR:
-         applyColor(cp.color, false);
-         lastOp = OP_UNDEF;
-         break;
       case OP_TEXT:
          disableHandlers = true;
          if (cp.s is null)
@@ -413,26 +327,8 @@ class MorphText : TextViewItem
          lastOp = OP_UNDEF;
          te.queueDraw();
          break;
-      case OP_SCALE:
-      case OP_HSC:
-      case OP_VSC:
-      case OP_HSK:
-      case OP_VSK:
-      case OP_ROT:
-      case OP_HFLIP:
-      case OP_VFLIP:
-         //dirty = true;  // Must recalculate the render path
-         tf = cp.transform;
-         lastOp = OP_UNDEF;
-         break;
       case OP_PARAMS:
          mp = cp.paramBlock;
-         lastOp = OP_UNDEF;
-         break;
-      case OP_MOVE:
-         Coord t = cp.coord;
-         hOff = t.x;
-         vOff = t.y;
          lastOp = OP_UNDEF;
          break;
       case OP_FILL:
@@ -447,11 +343,10 @@ class MorphText : TextViewItem
          cSet.setLineWidth(olt);
          break;
       default:
-         break;
+         return false;
       }
-      te.grabFocus();
-      aw.dirty = true;
-      reDraw();
+      lastOp = OP_UNDEF;
+      return true;
    }
 
    override void onCSLineWidth(double lt)

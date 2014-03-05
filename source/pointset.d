@@ -373,22 +373,7 @@ class PointSet : LineSet
       }
       return true;
    }
-/*
-   override bool specificNotify(Widget w, Purpose wid)
-   {
-      switch (wid)
-      {
-      case Purpose.REDRAW:
-         focusLayout();
-         lastOp = push!Path_t(this, oPath, OP_REDRAW);
-         editing = !editing;
-         switchMode();
-         return true;
-      default:
-         return false;
-      }
-   }
-*/
+
    void switchMode()
    {
       if (editing)

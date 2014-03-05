@@ -90,6 +90,8 @@ class BrushDabs : ACBase
       string s = "Brush Dabs "~to!string(++nextOid);
       super(mw, parent, s, AC_BRUSHDABS, ACGroups.EFFECTS);
       notifyHandlers ~= &BrushDabs.notifyHandler;
+      undoHandlers ~= &BrushDabs.undoHandler;
+
       baseColor = new RGBA(0,0,1,1);
       center.x= 0.5*width;
       center.y = 0.5*height;
@@ -219,49 +221,8 @@ class BrushDabs : ACBase
       }
       return true;
    }
-/*
-   override bool specificNotify(Widget w, Purpose p)
-   {
-      focusLayout();
-      switch (p)
-      {
-      case Purpose.REFRESH:
-         lastOp = push!uint(this, colorSeed, OP_CSEED);
-         colorSeed += cSet.control? -1: 1;
-         break;
-      case Purpose.REDRAW:
-         lastOp = push!uint(this, colorSeed, OP_SSEED);
-         shapeSeed += cSet.control? -1: 1;
-         generate();
-         break;
-      case Purpose.PRINTRANDOM:
-         printRandom = !printRandom;
-         break;
-      case Purpose.GLWHICH:
-         pointed = !pointed;
-         constructBase();
-         generate();
-         break;
-      case Purpose.XCOLOR:   // We need to augment the default handling associated with Purpose.COLOR
-         lastOp = push!RGBA(this, baseColor, OP_XCOLOR);
-         setColor(false);
-         cSrc.setBase(baseColor);
-         break;
-      case Purpose.DCOLORS:
-         int n = (cast(ComboBoxText) w).getActive();
-         if (shade == n)
-            return false;
-         lastOp = push!int(this, shade, OP_IV0);
-         shade = n;
-         cSrc.setShadeBand(shade);
-         break;
-      default:
-         return false;
-      }
-      return true;
-   }
-*/
-   override bool specificUndo(CheckPoint cp)
+
+   override bool undoHandler(CheckPoint cp)
    {
       switch (cp.type)
       {
@@ -307,7 +268,7 @@ class BrushDabs : ACBase
          cSet.setPalette(pca.ptr);
          break;
       default:
-         break;
+         return false;
       }
       lastOp = OP_UNDEF;
       return true;

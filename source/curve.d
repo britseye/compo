@@ -91,7 +91,7 @@ class Curve : LineSet
       string s = "Curve "~to!string(++nextOid);
       super(w, parent, s, AC_CURVE, ACGroups.GEOMETRIC);
       notifyHandlers ~= &Curve.notifyHandler;
-      aw = w;
+      undoHandlers ~= &Curve.undoHandler;
 
       center.x = 0.5*width;
       center.y = 0.5*height;
@@ -163,28 +163,8 @@ class Curve : LineSet
       else
          return false;
    }
-/*
-   override bool specificNotify(Widget w, Purpose wid)
-   {
 
-      if (wid >= SP && wid <= ALL)
-      {
-         if ((cast(RadioButton) w).getActive())
-         {
-            if (active == wid-SP)
-               return false;
-            active = wid-SP;
-         }
-         return true;
-      }
-      else if (wid == Purpose.SHOWMARKERS)
-         showCp = !showCp;
-      else
-         return false;
-      return true;
-   }
-*/
-   override bool specificUndo(CheckPoint cp)
+   override bool undoHandler(CheckPoint cp)
    {
       switch (cp.type)
       {

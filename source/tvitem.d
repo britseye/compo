@@ -83,6 +83,7 @@ class TextViewItem : ACBase
       super(_aw, _parent, _name, _type);
       group = ACGroups.TEXT;
       notifyHandlers ~= &TextViewItem.notifyHandler;
+      undoHandlers ~= &TextViewItem.undoHandler;
 
       editMode = true;
       if (type != AC_RICHTEXT)
@@ -164,33 +165,7 @@ class TextViewItem : ACBase
       }
       return true;
    }
-/*
-   override void onCSNotify(Widget w, Purpose wid)
-   {
-      switch (wid)
-      {
-      case Purpose.COLOR:
-         lastOp = push!RGBA(this, baseColor, OP_COLOR);
-         onCSSaveSelection();
-         setColor(false);
-         focusLayout();
-         break;
-      case Purpose.EDITMODE:
-         if (editMode)
-            cSet.setInfo("Design mode: Set parameters for the layer.");
-         else
-            cSet.setInfo("Edit mode: Modify the text as required.");
-         editMode = !editMode;
-         toggleView();
-         break;
-      default:
-         if (!specificNotify(w, wid))
-         return;
-      }
-      aw.dirty = true;
-      reDraw();
-   }
-*/
+
    void pushTS(string s)
    {
       if (teSP >= 19)
@@ -246,41 +221,20 @@ class TextViewItem : ACBase
       te.queueDraw();
    }
 
-   override void undo()
+   override bool undoHandler(CheckPoint cp)
    {
-      if (editMode)
+      if (editMode && type != AC_RICHTEXT)
       {
          teUndo();
-         return;
+         return true;
       }
-      CheckPoint cp;
-      cp = popOp();
-      if (cp.type == 0)
-         return;
       switch (cp.type)
       {
-      case OP_NAME:
-         name = cp.s;
-         nameEntry.setText(name);
-         aw.tv.queueDraw();
-         lastOp = OP_UNDEF;
-         break;
       case OP_FONT:
          pfd = PgFontDescription.fromString(cp.s);
-         lastOp = OP_UNDEF;
          te.modifyFont(pfd);
          cSet.setTextParams(alignment, sensibleFontName());
          dirty = true;
-         break;
-      case OP_COLOR:
-         applyColor(cp.color, false);
-         lastOp = OP_UNDEF;
-         break;
-      case OP_MOVE:
-         Coord t = cp.coord;
-         hOff = t.x;
-         vOff = t.y;
-         lastOp = OP_UNDEF;
          break;
       case OP_SIZE:
          pfd.setSize(cp.iVal);
@@ -298,13 +252,11 @@ class TextViewItem : ACBase
          setOrientation(orientation);
          break;
       default:
-         if (!specificUndo(cp))
-            return;
-         break;
+         return false;
       }
+      lastOp = OP_UNDEF;
       te.grabFocus();
-      aw.dirty = true;
-      reDraw();
+      return true;
    }
 
    void textInsertion(TextIter ti, string s, int len, TextBuffer tb)

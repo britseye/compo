@@ -68,6 +68,7 @@ class Fader: ACBase
       string s = "Fader "~to!string(++nextOid);
       super(w, parent, s, AC_FADER, ACGroups.EFFECTS);
       notifyHandlers ~= &Fader.notifyHandler;
+      undoHandlers ~= &Fader.undoHandler;
 
       hOff = width/4;
       vOff = height/4;
@@ -161,37 +162,11 @@ class Fader: ACBase
       }
       return true;
    }
-/*
-   override bool specificNotify(Widget w, Purpose wid)
+
+   override bool undoHandler(CheckPoint cp)
    {
-      switch (wid)
-      {
-      case Purpose.PIN:
-         pin = !pin;
-         if (pin)
-            outline= false;
-         break;
-      case Purpose.FILLOUTLINE:
-         outline = !outline;
-         break;
-      default:
-         return false;
-      }
-      return true;
-   }
-*/
-   override void undo()
-   {
-      CheckPoint cp;
-      cp = popOp();
-      if (cp.type == 0)
-         return;
       switch (cp.type)
       {
-      case OP_COLOR:
-         baseColor = cp.color.copy();
-         lastOp = OP_UNDEF;
-         break;
       case OP_OPACITY:
          opacity = cp.dVal;
          ov.setText(to!string(opacity));
@@ -205,17 +180,11 @@ class Fader: ACBase
          rw = cp.dVal;
          lastOp = OP_UNDEF;
          break;
-      case OP_MOVE:
-         Coord t = cp.coord;
-         hOff = t.x;
-         vOff = t.y;
-         lastOp = OP_UNDEF;
-         break;
       default:
-         return;
+         return false;
       }
-      aw.dirty = true;
-      reDraw();
+      lastOp = OP_UNDEF;
+      return true;
    }
 
    override void onCSMoreLess(int instance, bool more, bool quickly)

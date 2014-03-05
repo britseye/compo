@@ -76,6 +76,8 @@ class SVGImage : ACBase
       string s = "SVGImage "~to!string(++nextOid);
       super(w, parent, s, AC_SVGIMAGE, ACGroups.SVG);
       notifyHandlers ~= &SVGImage.notifyHandler;
+      undoHandlers ~= &SVGImage.undoHandler;
+
       scaleType = 0;
       scaleX = 1.0;
       useFile = false;
@@ -147,45 +149,7 @@ class SVGImage : ACBase
       }
       return true;
    }
-/*
-   override bool specificNotify(Widget w, Purpose wid)
-   {
-      switch (wid)
-      {
-      case Purpose.OPENFILE:
-         onCFB();
-         focusLayout();
-         return true;
-      case Purpose.SCALEPROP:
-         if ((cast(RadioButton) w).getActive())
-         {
-            scaleType = 0;
-            return true;
-         }
-         break;
-      case Purpose.SCALEFIT:
-         if ((cast(RadioButton) w).getActive())
-         {
-            scaleType = 1;
-            return true;
-         }
-         break;
-      case Purpose.SCALENON:
-         if ((cast(RadioButton) w).getActive())
-         {
-            scaleType = 2;
-            return true;
-         }
-         break;
-      case Purpose.USEFILE:
-         useFile = !useFile;
-         break;
-      default:
-         return false;
-      }
-      return true;
-   }
-*/
+
    override void onCSMoreLess(int id, bool more, bool quickly)
    {
       focusLayout();
@@ -200,7 +164,7 @@ class SVGImage : ACBase
       reDraw();
    }
 
-   override bool specificUndo(CheckPoint cp)
+   override bool undoHandler(CheckPoint cp)
    {
       switch (cp.type)
       {

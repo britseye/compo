@@ -86,6 +86,8 @@ class Shield: LineSet
       string s = "Shield "~to!string(++nextOid);
       super(w, parent, s, AC_SHIELD, ACGroups.SHAPES);
       notifyHandlers ~= &Shield.notifyHandler;
+      undoHandlers ~= &Shield.undoHandler;
+
       closed = true;
       hOff = vOff = 0;
       altColor = new RGBA(1,0,0,1);
@@ -166,23 +168,8 @@ class Shield: LineSet
       }
       return true;
    }
-/*
-   override bool specificNotify(Widget w, Purpose wid)
-   {
-      focusLayout();
-      switch (wid)
-      {
-      case Purpose.PATTERN:
-         style = (cast(ComboBoxText) w).getActive();
-         constructBase();
-         break;
-      default:
-         return false;
-      }
-      return true;
-   }
-*/
-   override bool specificUndo(CheckPoint cp)
+
+   override bool undoHandler(CheckPoint cp)
    {
       switch (cp.type)
       {

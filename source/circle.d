@@ -81,6 +81,8 @@ class Circle : LineSet
       string s = "Circle "~to!string(++nextOid);
       super(w, parent, s, AC_CIRCLE, ACGroups.SHAPES);
       notifyHandlers ~= &Circle.notifyHandler;
+      undoHandlers ~= &Circle.undoHandler;
+
       closed = true;
       hOff = vOff = 0;
       altColor = new RGBA(0,0,0,1);
@@ -121,7 +123,7 @@ class Circle : LineSet
 
    override bool notifyHandler(Widget, Purpose) { return false; }
 
-   override bool specificUndo(CheckPoint cp)
+   override bool undoHandler(CheckPoint cp)
    {
       switch (cp.type)
       {

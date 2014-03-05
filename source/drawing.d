@@ -62,6 +62,7 @@ class Drawing : ACBase
    {
       super(w, parent, "", AC_DRAWING, ACGroups.DRAWINGS);
       notifyHandlers ~= &Drawing.notifyHandler;
+
       center = Coord(0.5*width, 0.5*height);
       tm = new Matrix(&tmData);
 
@@ -124,50 +125,6 @@ class Drawing : ACBase
          return false;
       }
       return true;
-   }
-/*
-   override bool specificNotify(Widget w, Purpose wid)
-   {
-      switch (wid)
-      {
-      case Purpose.XFORMCB:
-         xform = (cast(ComboBoxText) w).getActive();
-         break;
-      default:
-         return false;
-      }
-      return true;
-   }
-*/
-   override void undo()
-   {
-      CheckPoint cp;
-      cp = popOp();
-      if (cp.type == 0)
-         return;
-      switch (cp.type)
-      {
-      case OP_MOVE:
-         Coord t = cp.coord;
-         hOff = t.x;
-         vOff = t.y;
-         lastOp = OP_UNDEF;
-         break;
-      case OP_SCALE:
-      case OP_HSC:
-      case OP_VSC:
-      case OP_HSK:
-      case OP_VSK:
-      case OP_ROT:
-      case OP_HFLIP:
-      case OP_VFLIP:
-         tf = cp.transform;
-         break;
-      default:
-         return;
-      }
-      aw.dirty = true;
-      reDraw();
    }
 
    override void preResize(int oldW, int oldH)

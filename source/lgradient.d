@@ -64,6 +64,7 @@ class LGradient: ACBase
       string s = "LGradient "~to!string(++nextOid);
       super(w, parent, s, AC_LGRADIENT, ACGroups.EFFECTS);
       notifyHandlers ~= &LGradient.notifyHandler;
+      undoHandlers ~= &LGradient.undoHandler;
 
       fw = 0.3333333;
       fp = 0.3333333;
@@ -182,30 +183,7 @@ class LGradient: ACBase
       }
       return true;
    }
-/*
-   override bool specificNotify(Widget w, Purpose wid)
-   {
 
-      switch (wid)
-      {
-      case Purpose.FADELEFT:
-         revfade = !revfade;
-         dirty = true;
-         break;
-      case Purpose.SHOWMARKERS:
-         showGuides = !showGuides;
-         dirty = true;
-         break;
-      case Purpose.PATTERN:
-         gType = (cast(ComboBoxText) w).getActive();
-         dirty = true;
-         break;
-      default:
-         return false;
-      }
-      return true;
-   }
-*/
    void setOrientation(int o)
    {
       void figureSE(double a)
@@ -337,10 +315,8 @@ class LGradient: ACBase
       reDraw();
    }
 
-   override bool specificUndo(CheckPoint cp)
+   override bool undoHandler(CheckPoint cp)
    {
-      if (cp.type == 0)
-         return false;
       switch (cp.type)
       {
       case OP_OPACITY:

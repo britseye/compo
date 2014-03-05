@@ -105,6 +105,8 @@ class Rectangle : LineSet
       string s = "Rectangle "~to!string(++nextOid);
       super(appw, parent, s, AC_RECT, ACGroups.SHAPES);
       notifyHandlers ~= &Rectangle.notifyHandler;
+      undoHandlers ~= &Rectangle.undoHandler;
+
       closed = true;
       hOff = vOff = 0;
       altColor = new RGBA(0,0,0,1);
@@ -189,26 +191,8 @@ class Rectangle : LineSet
       }
       return true;
    }
-/*
-   override bool specificNotify(Widget w, Purpose wid)
-   {
-      focusLayout();
-      switch (wid)
-      {
-      case Purpose.ROUNDED:
-         rounded = !rounded;
-         break;
-      case Purpose.PIN:
-         square = !square;
-         figureWH();
-         break;
-      default:
-         return false;
-      }
-      return true;
-   }
-*/
-   override bool specificUndo(CheckPoint cp)
+
+   override bool undoHandler(CheckPoint cp)
    {
       switch (cp.type)
       {

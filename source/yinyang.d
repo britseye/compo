@@ -88,6 +88,8 @@ class YinYang: LineSet
       string s = "YinYang "~to!string(++nextOid);
       super(w, parent, s, AC_YINYANG, ACGroups.SHAPES);
       notifyHandlers ~= &YinYang.notifyHandler;
+      undoHandlers ~= &YinYang.undoHandler;
+
       closed = true;
       hOff = vOff = 0;
       altColor = new RGBA(1,1,1,1);
@@ -133,7 +135,7 @@ class YinYang: LineSet
 
    override bool notifyHandler(Widget w, Purpose p) { return false; }
 
-   override bool specificUndo(CheckPoint cp)
+   override bool undoHandler(CheckPoint cp)
    {
       switch (cp.type)
       {

@@ -78,7 +78,8 @@ class Partition: ACBase
       string s = "Partition "~to!string(++nextOid);
       super(w, parent, s, AC_PARTITION, ACGroups.EFFECTS);
       notifyHandlers ~= &Partition.notifyHandler;
-      hOff = vOff = 0;
+      undoHandlers ~= &Partition.undoHandler;
+
       lineWidth = 0.5;
       x = 0.25*width;
       y = 0.75*height;
@@ -168,56 +169,8 @@ class Partition: ACBase
       }
       return true;
    }
-/*
-   override bool specificNotify(Widget w, Purpose wid)
-   {
-      switch (wid)
-      {
-      case Purpose.FILLOUTLINE:
-         outline = !outline;
-         break;
-      case Purpose.PATTERN:
-         choice = (cast(ComboBoxText) w).getActive();
-         switch (choice)
-         {
-         case VERTICAL:
-            y = 0.75*height;
-            hOff = 0;
-            break;
-         case HORIZONTAL:
-            x = 0.25*width;
-            vOff = 0;
-            break;
-         case ARCLEFT:
-            x = 0.25*width;
-            vOff = 0;
-            break;
-         case ARCRIGHT:
-            x = 0.75*width;
-            vOff = 0;
-            break;
-         case WAVE:
-            y = 0.6*height;
-            hOff = 0;
-            break;
-         case EXPLEFT:
-         case EXPRIGHT:
-            x = 0.5*width;
-            vOff = 0;
-            break;
-         case HILLNDALE:
-            break;
-         default:
-            return false;
-         }
-         break;
-      default:
-         return false;
-      }
-      return true;
-   }
-*/
-   override bool specificUndo(CheckPoint cp)
+
+   override bool undoHandler(CheckPoint cp)
    {
       switch (cp.type)
       {

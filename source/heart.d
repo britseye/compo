@@ -75,6 +75,7 @@ class Heart: LineSet
       string s = "Heart "~to!string(++nextOid);
       super(w, parent, s, AC_HEART, ACGroups.SHAPES);
       notifyHandlers ~= &Heart.notifyHandler;
+      undoHandlers ~= &Heart.undoHandler;
 
       closed = true;
       hOff = vOff = 0;
@@ -121,7 +122,7 @@ class Heart: LineSet
 
    override bool notifyHandler(Widget w, Purpose p) { return false; }
 
-   override bool specificUndo(CheckPoint cp)
+   override bool undoHandler(CheckPoint cp)
    {
       switch (cp.type)
       {

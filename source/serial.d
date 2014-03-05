@@ -79,12 +79,10 @@ class Serial : TextViewItem
 
       text = other.text.idup;
       number = other.number;
-writefln("number %d text %s", number, text);
       pad = other.pad;
       padLength = other.padLength;
       string s = other.te.getBuffer().getText();
       te.getBuffer().setText(s);
-writeln("buffer "~te.getBuffer().getText());
       syncControls();
    }
 
@@ -92,6 +90,7 @@ writeln("buffer "~te.getBuffer().getText());
    {
       string s = "Serial Number "~to!string(++nextOid);
       super(w, parent, s, AC_SERIAL);
+      notifyHandlers ~= &Serial.notifyHandler;
       number = 0;
       text = "000";
       pad = true;
@@ -146,20 +145,7 @@ writeln("buffer "~te.getBuffer().getText());
       }
       return true;
    }
-/*
-   override bool specificNotify(Widget w, Purpose wid)
-   {
-      switch (wid)
-      {
-      case Purpose.FILL:
-         pad = !pad;
-         break;
-      default:
-         return false;
-      }
-      return true;
-   }
-*/
+
    override void onCSMoreLess(int instance, bool more, bool quickly)
    {
       if (instance== 0)

@@ -98,6 +98,8 @@ class Arrow : LineSet
       group = ACGroups.SHAPES;
       super(aw, parent, s, AC_ARROW, ACGroups.SHAPES);
       notifyHandlers ~= &Arrow.notifyHandler;
+      undoHandlers ~= &Arrow.undoHandler;
+
       altColor = new RGBA(0,0,0,1);
       les = true;
       closed = true;
@@ -185,28 +187,8 @@ class Arrow : LineSet
       }
       return true;
    }
-/*
-   override bool specificNotify(Widget w, Purpose wid)
-   {
-      switch (wid)
-      {
-      case Purpose.MEDIUM:
-      case Purpose.NARROW:
-      case Purpose.WIDE:
-         if (hw == wid-Purpose.MEDIUM)
-            // Don't go through the whole performance for nothing
-            return true;
-         lastOp = push!int(this, hw, OP_IV0);
-         hw = wid-Purpose.MEDIUM;
-         constructBase();
-         break;
-      default:
-         return false;
-      }
-      return true;
-   }
-*/
-   override bool specificUndo(CheckPoint cp)
+
+   override bool undoHandler(CheckPoint cp)
    {
       switch (cp.type)
       {

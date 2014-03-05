@@ -71,6 +71,7 @@ class Bevel: ACBase
       string s = "Bevel "~to!string(++nextOid);
       super(w, parent, s, AC_BEVEL, ACGroups.EFFECTS);
       notifyHandlers ~= &Bevel.notifyHandler;
+      undoHandlers ~= &Bevel.undoHandler;
 
       hOff = vOff = 0;
       bt = 10.0;
@@ -115,27 +116,18 @@ class Bevel: ACBase
       reDraw();
    }
 
-   override void undo()
+   override bool undoHandler(CheckPoint cp)
    {
-      CheckPoint cp;
-      cp = popOp();
-      if (cp.type == 0)
-         return;
       switch (cp.type)
       {
-      case OP_COLOR:
-         baseColor = cp.color.copy();
-         lastOp = OP_UNDEF;
-         break;
       case OP_THICK:
          bt = cp.dVal;
          lastOp = OP_UNDEF;
          break;
       default:
-         return;
+         return false;
       }
-      aw.dirty = true;
-      reDraw();
+      return true;
    }
 
    override string onCSInch(int id, int direction, bool coarse)

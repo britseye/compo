@@ -86,6 +86,7 @@ class PlainText : TextViewItem
       string s = "Text "~to!string(++nextOid);
       super(w, parent, s, AC_TEXT);
       notifyHandlers ~= &PlainText.notifyHandler;
+
       centerText = shrink2Fit = true;
       setupControls(1);
       positionControls(true);
@@ -143,23 +144,7 @@ class PlainText : TextViewItem
       }
       return true;
    }
-/*
-   override bool specificNotify(Widget w, Purpose wid)
-   {
-      switch (wid)
-      {
-      case Purpose.CENTERTEXT:
-         centerText = !centerText;
-         break;
-      case Purpose.SHRINK2FIT:
-         shrink2Fit = !shrink2Fit;
-         break;
-      default:
-         return false;
-      }
-      return true;
-   }
-*/
+
    override void toggleView()
    {
       // editMode to be set before view is toggled

@@ -107,6 +107,7 @@ class Crescent : LineSet
       string s = "Crescent "~to!string(++nextOid);
       super(w, parent, s, AC_CRESCENT, ACGroups.SHAPES);
       notifyHandlers ~= &Crescent.notifyHandler;
+      undoHandlers ~= &Crescent.undoHandler;
 
       altColor = new RGBA(0,0,0,1);
       les = true;
@@ -166,9 +167,7 @@ class Crescent : LineSet
       cSet.cy = vp+35;
    }
 
-   override bool notifyHandler(Widget w, Purpose p) { return false; }
-
-   override bool specificUndo(CheckPoint cp)
+   override bool undoHandler(CheckPoint cp)
    {
       switch (cp.type)
       {
@@ -206,9 +205,9 @@ class Crescent : LineSet
       dirty = true;
    }
 
-   override bool specificNotify(Widget w, Purpose wid)
+   override bool notifyHandler(Widget w, Purpose p)
    {
-      switch (wid)
+      switch (p)
       {
       case Purpose.SHOWMARKERS:
          guidelines = !guidelines;

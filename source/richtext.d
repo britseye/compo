@@ -118,6 +118,7 @@ class RichText : TextViewItem
       string s = "Rich Text "~to!string(++nextOid);
       super(w, parent, s, AC_RICHTEXT);
       notifyHandlers ~= &RichText.notifyHandler;
+      undoHandlers ~= &RichText.undoHandler;
 
       tb.addOnApplyTag(&tagApplied);
       rtStack.length = 20;
@@ -215,47 +216,15 @@ class RichText : TextViewItem
       te.queueDraw();
    }
 
-   override void undo()
+   override bool undoHandler(CheckPoint)
    {
       if (editMode)
       {
          rtUndo();
-         return;
+         te.grabFocus();
+         return true;
       }
-      CheckPoint cp;
-      cp = popOp();
-      if (cp.type == 0)
-         return;
-      switch (cp.type)
-      {
-      case OP_NAME:
-         name = cp.s;
-         nameEntry.setText(name);
-         aw.tv.queueDraw();
-         lastOp = OP_UNDEF;
-         break;
-      case OP_FONT:
-         pfd = PgFontDescription.fromString(cp.s);
-         lastOp = OP_UNDEF;
-         te.modifyFont(pfd);
-         break;
-      case OP_COLOR:
-         applyColor(cp.color, false);
-         lastOp = OP_UNDEF;
-         te.queueDraw();
-         break;
-      case OP_MOVE:
-         Coord t = cp.coord;
-         hOff = t.x;
-         vOff = t.y;
-         lastOp = OP_UNDEF;
-         break;
-      default:
-         break;
-      }
-      te.grabFocus();
-      aw.dirty = true;
-      reDraw();
+      return false;
    }
 
    override void toggleView()

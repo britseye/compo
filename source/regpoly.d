@@ -168,21 +168,7 @@ class RegularPolygon : LineSet
       }
       return true;
    }
-/*
-   override bool specificNotify(Widget w, Purpose wid)
-   {
-      focusLayout();
-      switch (wid)
-      {
-      case Purpose.ASSTAR:
-         isStar = !isStar;
-         constructBase();
-         return true;
-      default:
-         return false;
-      }
-   }
-*/
+
    override void onCSMoreLess(int instance, bool more, bool quickly)
    {
       focusLayout();

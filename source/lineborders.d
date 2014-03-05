@@ -159,8 +159,8 @@ class LineBorders: LineSet
    static int nextOid = 0;
    BSegment bsh, bsv;
    bool doubled;
-   double slh, slv, sd, inset;
-   int baseN, nh, nv;
+   double slh, slv, sd, inset, unit;
+   int baseN, nh, nv, nmh, nmv;
 
    override void syncControls()
    {
@@ -191,13 +191,33 @@ class LineBorders: LineSet
       string s = "LineBorders "~to!string(++nextOid);
       super(wa, parent, s, AC_LINEBORDERS, ACGroups.EFFECTS);
       notifyHandlers ~= &LineBorders.notifyHandler;
-      hOff = vOff = 0;
+      undoHandlers ~= &LineBorders.undoHandler;
 
       lineWidth = 0.5;
       baseColor = new RGBA(0,0,0);
       center = Coord(0.5*width, 0.5*height);
 
+      bool landscape = false;
       inset = 5;
+      double least = (width > height)? landscape = true, height: width;
+      least -= 2*inset;
+      unit = least/48;
+      if (landscape)
+      {
+         nmv = 12;
+         nmh = nmv;
+         double t = 4*nmh*unit+inset;
+         for (; t < width-2*inset; nmh++)
+         {
+writefln("nmh %d, nmv %d %f %f", nmh, nmv, t, width-2*inset);
+            t = 4*nmh*unit+inset;
+         }
+      }
+      else
+      {
+         nmh = 12;
+         nmv = cast(int) floor((height-2*inset)/unit);
+      }
       doubled = false;
       baseN = 5;
       figureWaves();
@@ -240,23 +260,12 @@ class LineBorders: LineSet
       }
       return true;
    }
-/*
-   override bool specificNotify(Widget w, Purpose p)
+
+   override bool undoHandler(CheckPoint cp)
    {
-      focusLayout();
-      switch (p)
-      {
-      case Purpose.FULLDATA:
-      doubled = !doubled;
-         bsh = BSegment(slh, sd, false, doubled);
-         bsv = BSegment(slv, sd, true, doubled);
-         break;
-      default:
-         return false;
-      }
-      return true;
+      return false;
    }
-*/
+
    void figureWaves()
    {
       bool wmost = (width > height);
@@ -469,35 +478,54 @@ class LineBorders: LineSet
       c.restore();
    }
 
-   void renderMaze(Context c)
+   void renderMeander(Context c)
    {
       c.translate(hOff, vOff);
       c.setLineWidth(lineWidth);
       c.setLineJoin(CairoLineJoin.MITER);
       c.setSourceRgb(baseColor.red, baseColor.green, baseColor.blue);
 
-      double unit = 10;
       double x = inset;
-      double y = inset;
+      double y = height-inset;
 
-      c.moveTo(inset, inset);
-      x += 2*unit;
-      for (int i =0; i < 10; i++)
+      c.moveTo(x+4*unit, y);
+      c.lineTo(x, y);
+      for (int i = 0; i < nmv-1; i++)
       {
-         c.lineTo(x, y);
-         c.lineTo(x, y+unit);
-         c.lineTo(x-unit, y+unit);
-         c.lineTo(x-unit, y+2*unit);
-         c.lineTo(x+unit, y+2*unit);
-         c.lineTo(x+unit, y);
-         x += 3*unit;
+         c.lineTo(x, y-3*unit);
+         c.lineTo(x+2*unit, y-3*unit);
+         c.lineTo(x+2*unit, y-2*unit);
+         c.lineTo(x+unit, y-2*unit);
+         c.lineTo(x+unit, y-unit);
+         c.lineTo(x+3*unit, y-unit);
+         c.lineTo(x+3*unit, y-4*unit);
+         c.lineTo(x, y-4*unit);
+         y -= 4*unit;
+      }
+      c.stroke();
+
+      x = inset;
+      y = inset;
+      c.moveTo(x, y+4*unit);
+      c.lineTo(x, y);
+      for (int i = 0; i < nmh-2; i++)
+      {
+         c.lineTo(x+3*unit, y);
+         c.lineTo(x+3*unit, y+2*unit);
+         c.lineTo(x+2*unit, y+2*unit);
+         c.lineTo(x+2*unit, y+unit);
+         c.lineTo(x+unit, y+unit);
+         c.lineTo(x+unit, y+3*unit);
+         c.lineTo(x+4*unit, y+3*unit);
+         c.lineTo(x+4*unit, y);
+         x += 4*unit;
       }
       c.stroke();
    }
 
    override void render(Context c)
    {
-      renderMaze(c);
+      renderMeander(c);
    }
 }
 

@@ -131,22 +131,7 @@ class Pattern : LineSet
       }
       return true;
    }
-/*
-   override bool specificNotify(Widget w, Purpose wid)
-   {
-      switch (wid)
-      {
-      case Purpose.PATTERN:
-         lastOp = push!int(this, choice, OP_IV0);
-         choice = (cast(ComboBoxText) w).getActive();
-         dirty = true;
-         break;
-      default:
-         return false;
-      }
-      return true;
-   }
-*/
+
    override void onCSMoreLess(int instance, bool more, bool coarse)
    {
       focusLayout();
@@ -157,17 +142,6 @@ class Pattern : LineSet
       dirty = true;
       aw.dirty = true;
       reDraw();
-   }
-
-   override bool specificUndo(CheckPoint cp)
-   {
-      switch (cp.type)
-      {
-      default:
-         break;
-      }
-      lastOp = OP_UNDEF;
-      return true;
    }
 
    override void preResize(int oldW, int oldH)

@@ -86,6 +86,8 @@ class PixelImage : ACBase
       string s = "Picture "~to!string(++nextOid);
       super(w, parent, s, AC_PIXBUF, ACGroups.PIXMAP);
       notifyHandlers ~= &PixelImage.notifyHandler;
+      undoHandlers ~= &PixelImage.undoHandler;
+
       group = ACGroups.PIXMAP;
       scaleType = 0;
       sadj = 1.0;
@@ -168,51 +170,7 @@ class PixelImage : ACBase
       }
       return true;
    }
-/*
-   override bool specificNotify(Widget w, Purpose wid)
-   {
-      switch (wid)
-      {
-      case Purpose.OPENFILE:
-         onCFB();
-         focusLayout();
-         return true;
-      case Purpose.SCALEPROP:
-         if ((cast(RadioButton) w).getActive())
-         {
-            hOff = vOff = 0;
-            scaleType = 0;
-            setScaling();
-            return true;
-         }
-         break;
-      case Purpose.SCALEFIT:
-         if ((cast(RadioButton) w).getActive())
-         {
-            hOff = vOff = 0;
-            scaleType = 1;
-            setScaling();
-            return true;
-         }
-         break;
-      case Purpose.SCALENON:
-         if ((cast(RadioButton) w).getActive())
-         {
-            hOff = vOff = 0;
-            scaleType = 2;
-            setScaling();
-            return true;
-         }
-         break;
-      case Purpose.USEFILE:
-         useFile = !useFile;
-         break;
-      default:
-         return false;
-      }
-      return true;
-   }
-*/
+
    override void onCSMoreLess(int id, bool more, bool quickly)
    {
       focusLayout();
@@ -221,11 +179,11 @@ class PixelImage : ACBase
       double result = sadj;
       if (!molG!double(more, quickly, result, 0.01, 0.1, 1000))
          return;
-      lastOp = pushC!double(this, sadj, OP_SCALE);
-      if (lastOp != OP_SCALE)
+      lastOp = pushC!double(this, sadj, OP_XSCALE);
+      if (lastOp != OP_XSCALE)
       {
          lcp.dVal = sadj;
-         lcp.type = lastOp = OP_SCALE;
+         lcp.type = lastOp = OP_XSCALE;
          pushOp(lcp);
       }
       sadj = result;
@@ -234,31 +192,19 @@ class PixelImage : ACBase
          reDraw();
    }
 
-
-   override void undo()
+   override bool undoHandler(CheckPoint cp)
    {
-      CheckPoint cp;
-      cp = popOp();
-      if (cp.type == 0)
-         return;
       switch (cp.type)
       {
-      case OP_SCALE:
+      case OP_XSCALE:
          sadj = cp.dVal;
          lastOp = OP_UNDEF;
          setScaling();
          break;
-      case OP_MOVE:
-         Coord t = cp.coord;
-         hOff = t.x;
-         vOff = t.y;
-         lastOp = OP_UNDEF;
-         break;
       default:
-         break;
+         return false;
       }
-      aw.dirty = true;
-      reDraw();
+      return true;
    }
 
    override void preResize(int oldW, int oldH)

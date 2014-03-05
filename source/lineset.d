@@ -38,6 +38,7 @@ class LineSet : ACBase
    {
       super(_aw, _parent, _name, _type, g);
       notifyHandlers ~= &LineSet.notifyHandler;
+      undoHandlers ~= &LineSet.undoHandler;
 
       lineWidth = 0.5;
       les = cairo_line_cap_t.BUTT;
@@ -168,93 +169,11 @@ class LineSet : ACBase
       }
       return true;
    }
-/*
-   override void onCSNotify(Widget w, Purpose wid)
-   {
-      switch (wid)
-      {
-      case Purpose.COLOR:
-         lastOp = push!RGBA(this, baseColor, OP_COLOR);
-         setColor(false);
-         break;
-      case Purpose.LESROUND:
-         if ((cast(RadioButton) w).getActive())
-            les = false;
-         break;
-      case Purpose.LESSHARP:
-         if ((cast(RadioButton) w).getActive())
-            les = true;
-         break;
-      case Purpose.OUTLINE:
-         FillSpec fs = FillSpec(fill, outline, altColor, fillFromPattern, fillUid);
-         lastOp = push!FillSpec(this, fs, OP_FILL);
-         outline = !outline;
-         break;
-      case Purpose.FILLOPTIONS:
-         int n = fillOptions.getActive();
-         if (n == 0)
-            return;
-         FillSpec fs = FillSpec(fill, outline, altColor, fillFromPattern, fillUid);
-         lastOp = push!FillSpec(this, fs, OP_FILL);
-         if (n == 1)
-         {
-            setColor(true);
-            fillFromPattern = false;
-            fill = true;
-         }
-         else if (n == 2)
-         {
-            fillFromPattern = false;
-            fill = false;
-         }
-         else if (n == 3)
-         {
-            updateFillOptions(this);
-            fillOptions.setActive(0);
-            return;
-         }
-         else
-         {
-            fillFromPattern = true;
-            fillUid = others[n-4];
-            fill = true;
-         }
-         fillOptions.setActive(0);
-         updateFillUI();
-         break;
-      case Purpose.XFORMCB:
-         xform = (cast(ComboBoxText) w).getActive();
-         break;
-      default:
-         if (!specificNotify(w, wid))
-            return;  // Ingore whatever
-         break;
-      }
-      aw.dirty = true;
-      reDraw();
-   }
-*/
 
-   override bool specificUndo(CheckPoint cp) { return false; }
-
-   override void undo()
+   override bool undoHandler(CheckPoint cp)
    {
-      CheckPoint cp;
-      cp = popOp();
-      bool here = true;
-      if (cp.type == 0)
-         return;
       switch (cp.type)
       {
-      case OP_NAME:
-         name = cp.s;
-         nameEntry.setText(name);
-         aw.tv.queueDraw();
-         lastOp = OP_UNDEF;
-         break;
-      case OP_COLOR:
-         baseColor = cp.color.copy();
-         break;
       case OP_ALTCOLOR:
          altColor = cp.color.copy();
          break;
@@ -266,22 +185,6 @@ class LineSet : ACBase
          oPath = cp.path;
          dirty = true;
          break;
-      case OP_SCALE:
-      case OP_HSC:
-      case OP_VSC:
-      case OP_HSK:
-      case OP_VSK:
-      case OP_ROT:
-      case OP_HFLIP:
-      case OP_VFLIP:
-         dirty = true;  // Must recalculate the render path
-         tf = cp.transform;
-         break;
-      case OP_MOVE:
-         Coord t = cp.coord;
-         hOff = t.x;
-         vOff = t.y;
-         break;
       case OP_FILL:
          FillSpec t = cp.fillSpec;
          fill = t.fill, outline = t.outline, fillFromPattern = t.fillFromPattern;
@@ -290,15 +193,10 @@ class LineSet : ACBase
          updateFillUI();
          break;
       default:
-         here = false;
-         if (!specificUndo(cp))
-            return;
-         break;
+         return false;
       }
-      if (here)
-         lastOp = OP_UNDEF;
-      aw.dirty = true;
-      reDraw();
+      lastOp = OP_UNDEF;
+      return true;
    }
 
    void changeTransform(ComboBox cb)

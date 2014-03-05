@@ -64,6 +64,7 @@ class Noise : LineSet
       string s = "Noise "~to!string(++nextOid);
       super(w, parent, s, AC_NOISE, ACGroups.EFFECTS);
       notifyHandlers ~= &Noise.notifyHandler;
+
       lineWidth = 1.0;
       level = 2;
       dots = 5000;
@@ -122,27 +123,7 @@ class Noise : LineSet
       }
       return true;
    }
-/*
-   override bool specificNotify(Widget w, Purpose wid)
-   {
-      switch (wid)
-      {
-      case Purpose.PATTERN:
-         level = (cast(ComboBoxText) w).getActive();
-         dots = ndots[level];
-         break;
-      case Purpose.REDRAW:
-         instanceSeed += cSet.control? -1: 1;
-         break;
-      case Purpose.PRINTRANDOM:
-         printRandom = !printRandom;
-         break;
-      default:
-         return false;
-      }
-      return true;
-   }
-*/
+
    override void render(Context c)
    {
       c.translate(hOff, vOff);

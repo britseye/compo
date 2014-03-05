@@ -84,6 +84,7 @@ class Container: ACBase
    {
       string s = "Container "~to!string(++nextOid);
       super(w, null, s, AC_CONTAINER);
+      notifyHandlers ~= &Container.notifyHandler;
       children.length = 1;
       baseColor = new RGBA(1,1,1,1);
    }
@@ -166,35 +167,6 @@ class Container: ACBase
       }
       return true;
    }
-/*
-   override bool specificNotify(Widget w, Purpose wid)
-   {
-      focusLayout();
-      switch (wid)
-      {
-      case Purpose.GUIDELINE:
-         glShowing = !glShowing;
-         reDraw();
-         break;
-      case Purpose.GLWHICH:
-         glUseV = !glUseV;
-         if (glUseV)
-         {
-            hOff = glSaved;
-            glSaved = vOff;
-         }
-         else
-         {
-            vOff = glSaved;
-            glSaved = hOff;
-         }
-         break;
-      default:
-         return false;
-      }
-      return true;
-   }
-*/
    override void onCSMoreLess(int instance, bool more, bool quickly)
    {
       focusLayout();

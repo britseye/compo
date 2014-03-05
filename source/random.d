@@ -83,6 +83,8 @@ class Random: LineSet
       string s = "Random "~to!string(++nextOid);
       super(w, parent, s, AC_RANDOM, ACGroups.EFFECTS);
       notifyHandlers ~= &Random.notifyHandler;
+      undoHandlers ~= &Random.undoHandler;
+
       closed = true;
       hOff = vOff = 0;
       lowerPc = 10;
@@ -181,42 +183,7 @@ class Random: LineSet
       reBuild = true;
       return true;
    }
-/*
-   override bool specificNotify(Widget w, Purpose wid)
-   {
-      focusLayout();
-      switch (wid)
-      {
-      case Purpose.PATTERN:
-         element = (cast(ComboBoxText) w).getActive();
-         if (element == 0 || element == 2)
-         {
-            fill = true;
-            cSet.toggling(false);
-            cSet.setToggle(Purpose.FILL, true);
-            cSet.toggling(true);
-         }
-         else
-         {
-            fill = false;
-            cSet.toggling(false);
-            cSet.setToggle(Purpose.FILL, false);
-            cSet.toggling(true);
-         }
-         break;
-      case Purpose.PRINTRANDOM:
-         printRandom = !printRandom;
-         break;
-      case Purpose.MORE:
-         instanceSeed += cSet.control? -1: 1;
-         break;
-      default:
-         return false;
-      }
-      reBuild = true;
-      return true;
-   }
-*/
+
    override void onCSMoreLess(int instance, bool more, bool quickly)
    {
       focusLayout();
@@ -255,30 +222,28 @@ class Random: LineSet
       reDraw();
    }
 
-   override bool specificUndo(CheckPoint cp)
+   override bool undoHandler(CheckPoint cp)
    {
       switch (cp.type)
       {
       case OP_IV0:
          count = cp.iVal;
          countLabel.setText(to!string(count));
-         lastOp = OP_UNDEF;
          break;
       case OP_IV1:
          lowerPc = cp.iVal;
          lower = 0.01*lowerPc;
          minSize.setText(to!string(lowerPc));
-         lastOp = OP_UNDEF;
          break;
       case OP_IV2:
          upperPc = cp.iVal;
          upper = 0.01*upperPc;
          maxSize.setText(to!string(upperPc));
-         lastOp = OP_UNDEF;
          break;
       default:
          return false;
       }
+      lastOp = OP_UNDEF;
       reBuild = true;
       return true;
    }

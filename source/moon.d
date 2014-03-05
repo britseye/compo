@@ -115,6 +115,7 @@ class Moon : LineSet
       string s = "Moon "~to!string(++nextOid);
       super(w, parent, s, AC_MOON, ACGroups.SHAPES);
       notifyHandlers ~= &Moon.notifyHandler;
+      undoHandlers ~= &Moon.undoHandler;
 
       closed = true;
       altColor = new RGBA(0,0,0,1);
@@ -169,7 +170,7 @@ class Moon : LineSet
 
    override bool notifyHandler(Widget w, Purpose p) { return false; }
 
-   override bool specificUndo(CheckPoint cp)
+   override bool undoHandler(CheckPoint cp)
    {
       switch (cp.type)
       {

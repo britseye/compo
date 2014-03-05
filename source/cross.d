@@ -96,6 +96,8 @@ class Cross : LineSet
       string s = "Cross "~to!string(++nextOid);
       super(w, parent, s, AC_CROSS, ACGroups.SHAPES);
       notifyHandlers ~= &Cross.notifyHandler;
+      undoHandlers ~= &Cross.undoHandler;
+
       closed = true;
       altColor = new RGBA(0,0,0,1);
       les = true;
@@ -162,7 +164,7 @@ class Cross : LineSet
 
    override bool notifyHandler(Widget w, Purpose p) { return false; }
 
-   override bool specificUndo(CheckPoint cp)
+   override bool undoHandler(CheckPoint cp)
    {
       switch (cp.type)
       {
