@@ -104,10 +104,8 @@ class Crescent : LineSet
 
    this(AppWindow w, ACBase parent)
    {
-      string s = "Crescent "~to!string(++nextOid);
-      super(w, parent, s, AC_CRESCENT, ACGroups.SHAPES);
-      notifyHandlers ~= &Crescent.notifyHandler;
-      undoHandlers ~= &Crescent.undoHandler;
+      mixin(initString!Crescent());
+      super(w, parent, sname, AC_CRESCENT, ACGroups.SHAPES, ahdg);
 
       altColor = new RGBA(0,0,0,1);
       les = true;

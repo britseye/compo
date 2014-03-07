@@ -72,10 +72,8 @@ class RGradient: ACBase
 
    this(AppWindow w, ACBase parent)
    {
-      string s = "RGradient "~to!string(++nextOid);
-      super(w, parent, s, AC_RGRADIENT, ACGroups.EFFECTS);
-      notifyHandlers ~= &RGradient.notifyHandler;
-      undoHandlers ~= &RGradient.undoHandler;
+      mixin(initString!RGradient());
+      super(w, parent, sname, AC_RGRADIENT, ACGroups.EFFECTS, ahdg);
 
       baseColor = new RGBA(1,1,1);
       maxOpacity = 1.0;

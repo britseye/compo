@@ -87,9 +87,8 @@ class USPS : TextViewItem
 
    this(AppWindow w, ACBase parent)
    {
-      string s = "USPS Address "~to!string(++nextOid);
-      super(w, parent, s, AC_USPS);
-      notifyHandlers ~= &USPS.notifyHandler;
+      mixin(initString!USPS());
+      super(w, parent, sname, AC_USPS, ahdg);
 
       shrink2Fit = showData = true;
       strokeData[0] = '!';
@@ -142,6 +141,8 @@ class USPS : TextViewItem
       }
       return true;
    }
+
+   override bool undoHandler(CheckPoint) { return false; }
 
    override void toggleView()
    {

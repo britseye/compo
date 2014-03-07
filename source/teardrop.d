@@ -75,10 +75,8 @@ class Teardrop: LineSet
 
    this(AppWindow w, ACBase parent)
    {
-      string s = "Teardrop "~to!string(++nextOid);
-      super(w, parent, s, AC_TEARDROP, ACGroups.SHAPES);
-      notifyHandlers ~= &Teardrop.notifyHandler;
-      undoHandlers ~= &Teardrop.undoHandler;
+      mixin(initString!Teardrop());
+      super(w, parent, sname, AC_TEARDROP, ACGroups.SHAPES, ahdg);
 
       closed = true;
       hOff = vOff = 0;

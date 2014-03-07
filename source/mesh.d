@@ -113,10 +113,8 @@ class Mesh : ACBase
 
    this(AppWindow w, ACBase parent)
    {
-      string s = "Mesh Pattern "~to!string(++nextOid);
-      super(w, parent, s, AC_MESH, ACGroups.EFFECTS);
-      notifyHandlers ~= &Mesh.notifyHandler;
-      undoHandlers ~= &Mesh.undoHandler;
+      mixin(initString!Mesh());
+      super(w, parent, sname, AC_MESH, ACGroups.EFFECTS, ahdg);
 
       center = Coord(0.5*width, 0.5*height);
       tm = new Matrix(&tmData);

@@ -68,10 +68,8 @@ class Separator : LineSet
 
    this(AppWindow w, ACBase parent)
    {
-      string s = "Separator "~to!string(++nextOid);
-      super(w, parent, s, AC_SEPARATOR, ACGroups.EFFECTS);
-      notifyHandlers ~= &Separator.notifyHandler;
-      undoHandlers ~= &Separator.undoHandler;
+      mixin(initString!Separator());
+      super(w, parent, sname, AC_SEPARATOR, ACGroups.EFFECTS, ahdg);
 
       horizontal = true;
       lineWidth = 1.0;

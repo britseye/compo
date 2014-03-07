@@ -76,10 +76,8 @@ class Line : LineSet
 
    this(AppWindow w, ACBase parent)
    {
-      string s = "Line "~to!string(++nextOid);
-      super(w, parent, s, AC_LINE, ACGroups.GEOMETRIC);
-      notifyHandlers ~= &Line.notifyHandler;
-      undoHandlers ~= &Line.undoHandler;
+      mixin(initString!Line());
+      super(w, parent, sname, AC_LINE, ACGroups.GEOMETRIC, ahdg);
 
       tm = new Matrix(&tmData);
 

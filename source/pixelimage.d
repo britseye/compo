@@ -83,10 +83,8 @@ class PixelImage : ACBase
 
    this(AppWindow w, ACBase parent)
    {
-      string s = "Picture "~to!string(++nextOid);
-      super(w, parent, s, AC_PIXBUF, ACGroups.PIXMAP);
-      notifyHandlers ~= &PixelImage.notifyHandler;
-      undoHandlers ~= &PixelImage.undoHandler;
+      mixin(initString!PixelImage());
+      super(w, parent, sname, AC_PIXBUF, ACGroups.PIXMAP, ahdg);
 
       group = ACGroups.PIXMAP;
       scaleType = 0;

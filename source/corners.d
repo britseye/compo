@@ -85,10 +85,8 @@ class Corners : LineSet
 
    this(AppWindow w, ACBase parent)
    {
-      string s = "Corners "~to!string(++nextOid);
-      super(w, parent, s, AC_CORNERS, ACGroups.EFFECTS);
-      notifyHandlers ~= &Corners.notifyHandler;
-      undoHandlers ~= &Corners.undoHandler;
+      mixin(initString!Corners());
+      super(w, parent, sname, AC_CORNERS, ACGroups.EFFECTS, ahdg);
 
       hOff = vOff = 0;
       cw = 0.2*width;

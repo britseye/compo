@@ -88,10 +88,8 @@ class Curve : LineSet
 
    this(AppWindow w, ACBase parent)
    {
-      string s = "Curve "~to!string(++nextOid);
-      super(w, parent, s, AC_CURVE, ACGroups.GEOMETRIC);
-      notifyHandlers ~= &Curve.notifyHandler;
-      undoHandlers ~= &Curve.undoHandler;
+      mixin(initString!Curve());
+      super(w, parent, sname, AC_CURVE, ACGroups.GEOMETRIC, ahdg);
 
       center.x = 0.5*width;
       center.y = 0.5*height;

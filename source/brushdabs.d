@@ -87,10 +87,8 @@ class BrushDabs : ACBase
 
    this(AppWindow mw, ACBase parent, bool asCopy = false)
    {
-      string s = "Brush Dabs "~to!string(++nextOid);
-      super(mw, parent, s, AC_BRUSHDABS, ACGroups.EFFECTS);
-      notifyHandlers ~= &BrushDabs.notifyHandler;
-      undoHandlers ~= &BrushDabs.undoHandler;
+      mixin(initString!BrushDabs());
+      super(mw, parent, sname, AC_BRUSHDABS, ACGroups.EFFECTS, ahdg);
 
       baseColor = new RGBA(0,0,1,1);
       center.x= 0.5*width;

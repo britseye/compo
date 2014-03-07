@@ -63,9 +63,8 @@ class Reference : ACBase
 
    this(AppWindow w, ACBase parent)
    {
-      string s = "Reference "~to!string(++nextOid);
-      super(w, parent, s, AC_REFERENCE, ACGroups.REFERENCE);
-      notifyHandlers ~= &Reference.notifyHandler;
+      mixin(initString!Reference());
+      super(w, parent, sname, AC_REFERENCE, ACGroups.REFERENCE, ahdg);
 
       tm = new Matrix(&tmData);
 
@@ -181,6 +180,8 @@ class Reference : ACBase
       }
       return true;
    }
+
+   override bool undoHandler(CheckPoint) { return false; }
 
    override void preResize(int oldW, int oldH)
    {

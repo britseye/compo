@@ -437,13 +437,16 @@ enum ACGroups
    UNSPECIFIED = 100
 }
 
-struct ACInit
+struct HandlerDelegates
 {
-   AppWindow aw;
-   ACBase parent;
-   string name;
-   uint type;
-   ACGroups g;
+   bool delegate(Widget, Purpose) notifyDg;
+   bool delegate(CheckPoint) undoDg;
+}
+
+string initString(T)()
+{
+   return "string sname = \""~T.stringof~"\"~to!string(++nextOid);"
+   "HandlerDelegates[] ahdg = [ HandlerDelegates( &"~T.stringof~".notifyHandler, &"~T.stringof~".undoHandler)];";
 }
 
 class ACBase : CSTarget     // Area Composition base class
@@ -452,6 +455,7 @@ class ACBase : CSTarget     // Area Composition base class
    static CheckPoint emptyCP;
    static bool svgFlag = false;
    static bool printFlag = false;
+   static HandlerDelegates[] hdamt;
    AppWindow aw;
    UUID uuid;
    UUID[] others;
@@ -503,9 +507,7 @@ class ACBase : CSTarget     // Area Composition base class
    bduh[] undoHandlers;
    bool nop;
 
-   //static this() { emptyCP.type = OP_NONE; }
-
-   this(AppWindow w, ACBase _parent, string _name, uint _type, ACGroups = ACGroups.UNSPECIFIED)
+   this(AppWindow w, ACBase _parent, string _name, uint _type, ACGroups g, HandlerDelegates[] hda = hdamt)
    {
       aw = w;
       name = _name;
@@ -519,6 +521,11 @@ class ACBase : CSTarget     // Area Composition base class
       }
       notifyHandlers ~= &ACBase.notifyHandler;
       undoHandlers ~= &ACBase.undoHandler;
+      foreach_reverse ( HandlerDelegates dgs; hda)
+      {
+         notifyHandlers ~= dgs.notifyDg;
+         undoHandlers ~= dgs.undoDg;
+      }
       csTop = -1;
       hOff = vOff = lpX = lpY = 0.0;
       parent = _parent;
@@ -721,7 +728,12 @@ class ACBase : CSTarget     // Area Composition base class
             break;
          }
       }
-      assert(handled, "No handler for "~to!string(cp));
+      if (!handled)
+      {
+         aw.popupMsg("No handler for "~name~" undo ID"~to!string(cp.type), MessageType.ERROR);
+         return;
+      }
+      //assert(handled, "No handler for "~to!string(cp));
       aw.dirty = true;
       reDraw();
    }
@@ -1113,7 +1125,12 @@ class ACBase : CSTarget     // Area Composition base class
             break;
          }
       }
-      assert(handled, "No handler for "~to!string(p));
+      if (!handled)
+      {
+         aw.popupMsg("No handler for "~name~" Purpose."~to!string(p), MessageType.ERROR);
+         return;
+      }
+      //assert(handled, "No handler for "~to!string(p));
       if (!nop)   // nop to be set for operations that don't require save or a repaint
       {
          aw.dirty = true;
@@ -1121,33 +1138,6 @@ class ACBase : CSTarget     // Area Composition base class
       }
    }
 
-/*
-   void onCSNotify(Widget w, Purpose wid)
-   {
-      switch (wid)
-      {
-      case Purpose.COLOR:
-         focusLayout();
-         lastOp = push!RGBA(this, baseColor, OP_COLOR);
-         setColor(false);
-         break;
-      case Purpose.FILLCOLOR:
-         focusLayout();
-         lastOp = push!RGBA(this, altColor, OP_ALTCOLOR);
-         setColor(true);
-         break;
-      case Purpose.HIDE:
-         hidden = !hidden;
-         break;
-      default:
-         if (!specificNotify(w, wid))
-            return;  // Ingore whatever
-         break;
-      }
-      aw.dirty = true;
-      reDraw();
-   }
-*/
    void onCSTextParam(Purpose p, string sv, int iv) {}
    void onCSLineWidth(double lw) {}
    void onCSMoreLess(int instance, bool more, bool coarse) {}

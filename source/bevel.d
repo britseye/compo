@@ -68,12 +68,9 @@ class Bevel: ACBase
 
    this(AppWindow w, ACBase parent)
    {
-      string s = "Bevel "~to!string(++nextOid);
-      super(w, parent, s, AC_BEVEL, ACGroups.EFFECTS);
-      notifyHandlers ~= &Bevel.notifyHandler;
-      undoHandlers ~= &Bevel.undoHandler;
+      mixin(initString!Bevel());
+      super(w, parent, sname, AC_BEVEL, ACGroups.EFFECTS, ahdg);
 
-      hOff = vOff = 0;
       bt = 10.0;
       lineWidth = 0.5;
       baseColor = new RGBA(0.7, 0.7, 0.7);

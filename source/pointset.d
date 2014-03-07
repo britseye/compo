@@ -306,15 +306,14 @@ class PointSet : LineSet
 
    this(AppWindow w, ACBase parent)
    {
-      string s = "PointSet "~to!string(++nextOid);
-      super(w, parent, s, AC_POINTSET, ACGroups.GEOMETRIC);
-      notifyHandlers ~= &PointSet.notifyHandler;
+      mixin(initString!PointSet());
+      super(w, parent, sname, AC_POINTSET, ACGroups.GEOMETRIC, ahdg);
 
       constructing = true;
       les = true;
       current = 0;
       esf = 1;
-      md = new PointSetEditDlg("Edit "~s, this);
+      md = new PointSetEditDlg("Edit "~sname, this);
       md.setSizeRequest(240, 200);
       md.setPosition(GtkWindowPosition.POS_NONE);
       int px, py;
@@ -373,6 +372,8 @@ class PointSet : LineSet
       }
       return true;
    }
+
+   override bool undoHandler(CheckPoint) { return false; }
 
    void switchMode()
    {

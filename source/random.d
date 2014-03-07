@@ -80,10 +80,8 @@ class Random: LineSet
 
    this(AppWindow w, ACBase parent)
    {
-      string s = "Random "~to!string(++nextOid);
-      super(w, parent, s, AC_RANDOM, ACGroups.EFFECTS);
-      notifyHandlers ~= &Random.notifyHandler;
-      undoHandlers ~= &Random.undoHandler;
+      mixin(initString!Random());
+      super(w, parent, sname, AC_RANDOM, ACGroups.EFFECTS, ahdg);
 
       closed = true;
       hOff = vOff = 0;

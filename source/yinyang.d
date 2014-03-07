@@ -85,10 +85,8 @@ class YinYang: LineSet
 
    this(AppWindow w, ACBase parent)
    {
-      string s = "YinYang "~to!string(++nextOid);
-      super(w, parent, s, AC_YINYANG, ACGroups.SHAPES);
-      notifyHandlers ~= &YinYang.notifyHandler;
-      undoHandlers ~= &YinYang.undoHandler;
+      mixin(initString!YinYang());
+      super(w, parent, sname, AC_YINYANG, ACGroups.SHAPES, ahdg);
 
       closed = true;
       hOff = vOff = 0;

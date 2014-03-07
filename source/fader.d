@@ -65,10 +65,8 @@ class Fader: ACBase
 
    this(AppWindow w, ACBase parent)
    {
-      string s = "Fader "~to!string(++nextOid);
-      super(w, parent, s, AC_FADER, ACGroups.EFFECTS);
-      notifyHandlers ~= &Fader.notifyHandler;
-      undoHandlers ~= &Fader.undoHandler;
+      mixin(initString!Fader());
+      super(w, parent, sname, AC_FADER, ACGroups.EFFECTS, ahdg);
 
       hOff = width/4;
       vOff = height/4;

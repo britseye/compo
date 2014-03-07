@@ -88,9 +88,9 @@ class Serial : TextViewItem
 
    this(AppWindow w, ACBase parent)
    {
-      string s = "Serial Number "~to!string(++nextOid);
-      super(w, parent, s, AC_SERIAL);
-      notifyHandlers ~= &Serial.notifyHandler;
+      mixin(initString!Serial());
+      super(w, parent, sname, AC_SERIAL, ahdg);
+
       number = 0;
       text = "000";
       pad = true;
@@ -145,6 +145,8 @@ class Serial : TextViewItem
       }
       return true;
    }
+
+   override bool undoHandler(CheckPoint) { return false; }
 
    override void onCSMoreLess(int instance, bool more, bool quickly)
    {
@@ -227,7 +229,6 @@ class Serial : TextViewItem
 
    override void render(Context c)
    {
-writefln("render %s number %d text %s", name, number, text);
       if (printFlag)
          number++;
       text = to!string(number);

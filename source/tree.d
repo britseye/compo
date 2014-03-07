@@ -26,7 +26,7 @@ class ACTreeModel : TreeModel
    public this(AppWindow _aw, int w, int h)
    {
       aw = _aw;
-      root = new ACBase(null, null, "<root>", AC_ROOT);
+      root = new ACBase(null, null, "<root>", AC_ROOT, ACGroups.UNSPECIFIED);
       root.width = w;
       root.height = h;
       stamp = uniform(0, int.max);

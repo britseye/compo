@@ -110,10 +110,8 @@ class MorphText : TextViewItem
 
    this(AppWindow w, ACBase parent, bool delayCM = false)
    {
-      string s = "Morphed Text "~to!string(++nextOid);
-      super(w, parent, s, AC_MORPHTEXT);
-      notifyHandlers ~= &MorphText.notifyHandler;
-      undoHandlers ~= &MorphText.undoHandler;
+      mixin(initString!MorphText());
+      super(w, parent, sname, AC_MORPHTEXT, ahdg);
 
       altColor = new RGBA(0,0,0,1);
       fill = false;

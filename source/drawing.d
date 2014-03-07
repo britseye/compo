@@ -60,8 +60,8 @@ class Drawing : ACBase
 
    this(AppWindow w, ACBase parent)
    {
-      super(w, parent, "", AC_DRAWING, ACGroups.DRAWINGS);
-      notifyHandlers ~= &Drawing.notifyHandler;
+      mixin(initString!Drawing());
+      super(w, parent, "", AC_DRAWING, ACGroups.DRAWINGS, ahdg);
 
       center = Coord(0.5*width, 0.5*height);
       tm = new Matrix(&tmData);
@@ -74,8 +74,8 @@ class Drawing : ACBase
    {
       dName = drawingName;
       string s = dName~" "~to!string(++nextOid);
-      super(w, parent, s, AC_DRAWING, ACGroups.DRAWINGS);
-      notifyHandlers ~= &Drawing.notifyHandler;
+      mixin(initString!Drawing());
+      super(w, parent, s, AC_DRAWING, ACGroups.DRAWINGS, ahdg);
 
       center = Coord(0.5*width, 0.5*height);
       tm = new Matrix(&tmData);
@@ -126,6 +126,8 @@ class Drawing : ACBase
       }
       return true;
    }
+
+   override bool undoHandler(CheckPoint) {return false; }
 
    override void preResize(int oldW, int oldH)
    {

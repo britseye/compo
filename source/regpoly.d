@@ -89,9 +89,8 @@ class RegularPolygon : LineSet
 
    this(AppWindow w, ACBase parent)
    {
-      string s = "Regular Polygon "~to!string(++nextOid);
-      super(w, parent, s, AC_REGPOLYGON, ACGroups.GEOMETRIC);
-      notifyHandlers ~= &RegularPolygon.notifyHandler;
+      mixin(initString!RegularPolygon());
+      super(w, parent, sname, AC_REGPOLYGON, ACGroups.GEOMETRIC, ahdg);
 
       closed = true;
       altColor = new RGBA(1,1,1,1);
@@ -168,6 +167,8 @@ class RegularPolygon : LineSet
       }
       return true;
    }
+
+   override bool undoHandler(CheckPoint) { return false; }
 
    override void onCSMoreLess(int instance, bool more, bool quickly)
    {

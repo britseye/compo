@@ -72,10 +72,8 @@ class Heart: LineSet
 
    this(AppWindow w, ACBase parent)
    {
-      string s = "Heart "~to!string(++nextOid);
-      super(w, parent, s, AC_HEART, ACGroups.SHAPES);
-      notifyHandlers ~= &Heart.notifyHandler;
-      undoHandlers ~= &Heart.undoHandler;
+      mixin(initString!Heart());
+      super(w, parent, sname, AC_HEART, ACGroups.SHAPES, ahdg);
 
       closed = true;
       hOff = vOff = 0;

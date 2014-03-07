@@ -423,10 +423,8 @@ class StrokeSet : LineSet
 
    this(AppWindow w, ACBase parent)
    {
-      string s = "StrokeSet "~to!string(++nextOid);
-      super(w, parent, s, AC_STROKESET, ACGroups.GEOMETRIC);
-      notifyHandlers ~= &StrokeSet.notifyHandler;
-      undoHandlers ~= &StrokeSet.undoHandler;
+      mixin(initString!StrokeSet());
+      super(w, parent, sname, AC_STROKESET, ACGroups.GEOMETRIC, ahdg);
 
       center.x = width/2;
       center.y = height/2;
@@ -434,7 +432,7 @@ class StrokeSet : LineSet
       les = true;
       editOpacity = 0.5;
       esf = 1;
-      md = new StrokesDlg("Edit "~s, this);
+      md = new StrokesDlg("Edit "~sname, this);
       md.setSizeRequest(240, 200);
       md.setPosition(GtkWindowPosition.POS_NONE);
       editOpacity = 0.5;

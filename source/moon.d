@@ -112,10 +112,8 @@ class Moon : LineSet
 
    this(AppWindow w, ACBase parent)
    {
-      string s = "Moon "~to!string(++nextOid);
-      super(w, parent, s, AC_MOON, ACGroups.SHAPES);
-      notifyHandlers ~= &Moon.notifyHandler;
-      undoHandlers ~= &Moon.undoHandler;
+      mixin(initString!Moon());
+      super(w, parent, sname, AC_MOON, ACGroups.SHAPES, ahdg);
 
       closed = true;
       altColor = new RGBA(0,0,0,1);

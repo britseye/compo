@@ -444,10 +444,8 @@ class Polycurve : LineSet
 
    this(AppWindow w, ACBase parent)
    {
-      string s = "Polycurve "~to!string(++nextOid);
-      super(w, parent, s, AC_POLYCURVE, ACGroups.GEOMETRIC);
-      notifyHandlers ~= &Polycurve.notifyHandler;
-      undoHandlers ~= &Polycurve.undoHandler;
+      mixin(initString!Polycurve());
+      super(w, parent, sname, AC_POLYCURVE, ACGroups.GEOMETRIC, ahdg);
 
       closed = true;
       center.x = 0.5*width;
@@ -458,7 +456,7 @@ class Polycurve : LineSet
       editOpacity = 0.5;
       esf = 1;
       les = true;
-      md = new PolyCurveDlg("Edit "~s, this);
+      md = new PolyCurveDlg("Edit "~sname, this);
       md.setSizeRequest(240, 200);
       md.setPosition(GtkWindowPosition.POS_NONE);
       int px, py;

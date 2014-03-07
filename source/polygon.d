@@ -385,8 +385,8 @@ class Polygon : LineSet
 
    this(AppWindow w, ACBase parent)
    {
-      string s = "Polygon "~to!string(++nextOid);
-      super(w, parent, s, AC_POLYGON, ACGroups.GEOMETRIC);
+      mixin(initString!Polygon());
+      super(w, parent, sname, AC_POLYGON, ACGroups.GEOMETRIC, ahdg);
       notifyHandlers ~= &Polygon.notifyHandler;
       undoHandlers ~= &Polygon.undoHandler;
 
@@ -398,7 +398,7 @@ class Polygon : LineSet
       zw = 0;
       zh = 0;
       les = true;
-      md = new PolyEditDlg("Edit "~s, this);
+      md = new PolyEditDlg("Edit "~sname, this);
       md.setSizeRequest(240, 200);
       md.setPosition(GtkWindowPosition.POS_NONE);
       int px, py;

@@ -94,10 +94,8 @@ class Tilings: ACBase
 
    this(AppWindow w, ACBase parent, bool asCopy = false)
    {
-      string s = "Color Tilings "~to!string(++nextOid);
-      super(w, parent, s, AC_TILINGS, ACGroups.EFFECTS);
-      notifyHandlers ~= &Tilings.notifyHandler;
-      undoHandlers ~= &Tilings.undoHandler;
+      mixin(initString!Tilings());
+      super(w, parent, sname, AC_TILINGS, ACGroups.EFFECTS, ahdg);
 
       rows = 9;
       cols = 10;

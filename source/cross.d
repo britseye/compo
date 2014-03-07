@@ -93,8 +93,8 @@ class Cross : LineSet
 
    this(AppWindow w, ACBase parent)
    {
-      string s = "Cross "~to!string(++nextOid);
-      super(w, parent, s, AC_CROSS, ACGroups.SHAPES);
+      mixin(initString!Cross());
+      super(w, parent, sname, AC_CROSS, ACGroups.SHAPES, ahdg);
       notifyHandlers ~= &Cross.notifyHandler;
       undoHandlers ~= &Cross.undoHandler;
 

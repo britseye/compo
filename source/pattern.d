@@ -59,9 +59,8 @@ class Pattern : LineSet
 
    this(AppWindow w, ACBase parent)
    {
-      string s = "Pattern "~to!string(++nextOid);
-      super(w, parent, s, AC_PATTERN, ACGroups.EFFECTS);
-      notifyHandlers ~= &Pattern.notifyHandler;
+      mixin(initString!Pattern());
+      super(w, parent, sname, AC_PATTERN, ACGroups.EFFECTS, ahdg);
 
       center = Coord(0.5*width, 0.5*height);
       diagonal = 1.1*sqrt(cast(double)(width*width+height*height));
@@ -131,6 +130,8 @@ class Pattern : LineSet
       }
       return true;
    }
+
+   override bool undoHandler(CheckPoint) { return false; }
 
    override void onCSMoreLess(int instance, bool more, bool coarse)
    {

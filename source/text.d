@@ -83,9 +83,8 @@ class PlainText : TextViewItem
 
    this(AppWindow w, ACBase parent)
    {
-      string s = "Text "~to!string(++nextOid);
-      super(w, parent, s, AC_TEXT);
-      notifyHandlers ~= &PlainText.notifyHandler;
+      mixin(initString!PlainText());
+      super(w, parent, sname, AC_TEXT, ahdg);
 
       centerText = shrink2Fit = true;
       setupControls(1);
@@ -144,6 +143,8 @@ class PlainText : TextViewItem
       }
       return true;
    }
+
+   override bool undoHandler(CheckPoint) { return false; }
 
    override void toggleView()
    {

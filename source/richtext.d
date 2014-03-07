@@ -115,10 +115,8 @@ class RichText : TextViewItem
 
    this(AppWindow w, ACBase parent)
    {
-      string s = "Rich Text "~to!string(++nextOid);
-      super(w, parent, s, AC_RICHTEXT);
-      notifyHandlers ~= &RichText.notifyHandler;
-      undoHandlers ~= &RichText.undoHandler;
+      mixin(initString!RichText());
+      super(w, parent, sname, AC_RICHTEXT, ahdg);
 
       tb.addOnApplyTag(&tagApplied);
       rtStack.length = 20;

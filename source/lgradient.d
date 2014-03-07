@@ -61,10 +61,8 @@ class LGradient: ACBase
 
    this(AppWindow w, ACBase parent)
    {
-      string s = "LGradient "~to!string(++nextOid);
-      super(w, parent, s, AC_LGRADIENT, ACGroups.EFFECTS);
-      notifyHandlers ~= &LGradient.notifyHandler;
-      undoHandlers ~= &LGradient.undoHandler;
+      mixin(initString!LGradient());
+      super(w, parent, sname, AC_LGRADIENT, ACGroups.EFFECTS, ahdg);
 
       fw = 0.3333333;
       fp = 0.3333333;

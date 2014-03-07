@@ -78,12 +78,14 @@ class TextViewItem : ACBase
       cursorColor = new RGBA(0,0,0,1);
    }
 
-   this(AppWindow _aw, ACBase _parent, string _name, uint _type)
+   this(AppWindow _aw, ACBase _parent, string _name, uint _type, HandlerDelegates[] hda = hdamt)
    {
-      super(_aw, _parent, _name, _type);
-      group = ACGroups.TEXT;
-      notifyHandlers ~= &TextViewItem.notifyHandler;
-      undoHandlers ~= &TextViewItem.undoHandler;
+      HandlerDelegates[] thda = [ HandlerDelegates( &TextViewItem.notifyHandler, &TextViewItem.undoHandler)];
+      if (hda != hdamt)
+         thda ~= hda;
+      super(_aw, _parent, _name, _type, ACGroups.TEXT, thda);
+      //notifyHandlers ~= &TextViewItem.notifyHandler;
+      //undoHandlers ~= &TextViewItem.undoHandler;
 
       editMode = true;
       if (type != AC_RICHTEXT)

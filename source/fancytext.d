@@ -142,10 +142,8 @@ class FancyText : TextViewItem
 
    this(AppWindow w, ACBase parent)
    {
-      string s = "Fancy Text "~to!string(++nextOid);
-      super(w, parent, s, AC_FANCYTEXT);
-      notifyHandlers ~= &FancyText.notifyHandler;
-      undoHandlers ~= &FancyText.undoHandler;
+      mixin(initString!FancyText());
+      super(w, parent, sname, AC_FANCYTEXT, ahdg);
 
       olt = 0.2;
       altColor = new RGBA(0,0,0,1);

@@ -73,10 +73,8 @@ class SVGImage : ACBase
 
    this(AppWindow w, ACBase parent)
    {
-      string s = "SVGImage "~to!string(++nextOid);
-      super(w, parent, s, AC_SVGIMAGE, ACGroups.SVG);
-      notifyHandlers ~= &SVGImage.notifyHandler;
-      undoHandlers ~= &SVGImage.undoHandler;
+      mixin(initString!SVGImage());
+      super(w, parent, sname, AC_SVGIMAGE, ACGroups.SVG, ahdg);
 
       scaleType = 0;
       scaleX = 1.0;
@@ -112,7 +110,7 @@ class SVGImage : ACBase
       cSet.cy = vp+50;
    }
 
-   override boolnotifyHandler(Widget w, Purpose p)
+   override bool notifyHandler(Widget w, Purpose p)
    {
       switch (p)
       {

@@ -83,10 +83,8 @@ class Shield: LineSet
 
    this(AppWindow w, ACBase parent)
    {
-      string s = "Shield "~to!string(++nextOid);
-      super(w, parent, s, AC_SHIELD, ACGroups.SHAPES);
-      notifyHandlers ~= &Shield.notifyHandler;
-      undoHandlers ~= &Shield.undoHandler;
+      mixin(initString!Shield());
+      super(w, parent, sname, AC_SHIELD, ACGroups.SHAPES, ahdg);
 
       closed = true;
       hOff = vOff = 0;

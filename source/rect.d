@@ -102,10 +102,8 @@ class Rectangle : LineSet
 
    this(AppWindow appw, ACBase parent)
    {
-      string s = "Rectangle "~to!string(++nextOid);
-      super(appw, parent, s, AC_RECT, ACGroups.SHAPES);
-      notifyHandlers ~= &Rectangle.notifyHandler;
-      undoHandlers ~= &Rectangle.undoHandler;
+      mixin(initString!Rectangle());
+      super(appw, parent, sname, AC_RECT, ACGroups.SHAPES, ahdg);
 
       closed = true;
       hOff = vOff = 0;

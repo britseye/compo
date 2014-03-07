@@ -82,18 +82,16 @@ class Container: ACBase
 
    this (AppWindow  w)
    {
-      string s = "Container "~to!string(++nextOid);
-      super(w, null, s, AC_CONTAINER);
-      notifyHandlers ~= &Container.notifyHandler;
+      mixin(initString!Container());
+      super(w, null, sname, AC_CONTAINER, ACGroups.CONTAINER, ahdg);
       children.length = 1;
       baseColor = new RGBA(1,1,1,1);
    }
 
    this(AppWindow w, ACBase parent)
    {
-      string s= "Container "~ to!string(++nextOid);
-      super(w, parent, s, AC_CONTAINER, ACGroups.CONTAINER);
-      notifyHandlers ~= &Container.notifyHandler;
+      mixin(initString!Container());
+      super(w, parent, sname, AC_CONTAINER, ACGroups.CONTAINER, ahdg);
 
       baseColor = new RGBA(1,1,1,1);
       glShowing = false;
@@ -167,6 +165,9 @@ class Container: ACBase
       }
       return true;
    }
+
+   override bool undoHandler(CheckPoint) { return false; }
+
    override void onCSMoreLess(int instance, bool more, bool quickly)
    {
       focusLayout();

@@ -61,9 +61,8 @@ class Noise : LineSet
 
    this(AppWindow w, ACBase parent)
    {
-      string s = "Noise "~to!string(++nextOid);
-      super(w, parent, s, AC_NOISE, ACGroups.EFFECTS);
-      notifyHandlers ~= &Noise.notifyHandler;
+      mixin(initString!Noise());
+      super(w, parent, sname, AC_NOISE, ACGroups.EFFECTS, ahdg);
 
       lineWidth = 1.0;
       level = 2;
@@ -123,6 +122,8 @@ class Noise : LineSet
       }
       return true;
    }
+
+   override bool undoHandler(CheckPoint) { return false; }
 
    override void render(Context c)
    {

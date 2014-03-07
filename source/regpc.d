@@ -160,10 +160,8 @@ class RegularPolycurve : LineSet
 
    this(AppWindow w, ACBase parent)
    {
-      string s = "Regular Polycurve "~to!string(++nextOid);
-      super(w, parent, s, AC_REGPOLYCURVE, ACGroups.GEOMETRIC);
-      notifyHandlers ~= &RegularPolycurve.notifyHandler;
-      undoHandlers ~= &RegularPolycurve.undoHandler;
+      mixin(initString!RegularPolycurve());
+      super(w, parent, sname, AC_REGPOLYCURVE, ACGroups.GEOMETRIC, ahdg);
 
       closed = true;
       altColor = new RGBA(1,1,1,1);

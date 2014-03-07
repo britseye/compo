@@ -94,11 +94,8 @@ class Arrow : LineSet
 
    this(AppWindow aw, ACBase parent)
    {
-      string s = "Arrow "~to!string(++nextOid);
-      group = ACGroups.SHAPES;
-      super(aw, parent, s, AC_ARROW, ACGroups.SHAPES);
-      notifyHandlers ~= &Arrow.notifyHandler;
-      undoHandlers ~= &Arrow.undoHandler;
+      mixin(initString!Arrow());
+      super(aw, parent, sname, AC_ARROW, ACGroups.SHAPES, ahdg);
 
       altColor = new RGBA(0,0,0,1);
       les = true;

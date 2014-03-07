@@ -78,10 +78,8 @@ class Circle : LineSet
 
    this(AppWindow w, ACBase parent)
    {
-      string s = "Circle "~to!string(++nextOid);
-      super(w, parent, s, AC_CIRCLE, ACGroups.SHAPES);
-      notifyHandlers ~= &Circle.notifyHandler;
-      undoHandlers ~= &Circle.undoHandler;
+      mixin(initString!Circle());
+      super(w, parent, sname, AC_CIRCLE, ACGroups.SHAPES, ahdg);
 
       closed = true;
       hOff = vOff = 0;

@@ -75,10 +75,8 @@ class Partition: ACBase
 
    this(AppWindow w, ACBase parent)
    {
-      string s = "Partition "~to!string(++nextOid);
-      super(w, parent, s, AC_PARTITION, ACGroups.EFFECTS);
-      notifyHandlers ~= &Partition.notifyHandler;
-      undoHandlers ~= &Partition.undoHandler;
+      mixin(initString!Partition());
+      super(w, parent, sname, AC_PARTITION, ACGroups.EFFECTS, ahdg);
 
       lineWidth = 0.5;
       x = 0.25*width;

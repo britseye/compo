@@ -93,10 +93,8 @@ class Triangle : LineSet
 
    this(AppWindow appw, ACBase parent)
    {
-      string s = "Triangle "~to!string(++nextOid);
-      super(appw, parent, s, AC_TRIANGLE, ACGroups.SHAPES);
-      notifyHandlers ~= &Triangle.notifyHandler;
-      undoHandlers ~= &Triangle.undoHandler;
+      mixin(initString!Triangle());
+      super(appw, parent, sname, AC_TRIANGLE, ACGroups.SHAPES, ahdg);
 
       closed = true;
       hOff = vOff = 0;

@@ -34,9 +34,12 @@ class LineSet : ACBase
    bool les, closed;
    bool killAdjust;
 
-   this(AppWindow _aw, ACBase _parent, string _name, uint _type, ACGroups g = ACGroups.UNSPECIFIED)
+   this(AppWindow _aw, ACBase _parent, string _name, uint _type, ACGroups g, HandlerDelegates[] hda = hdamt)
    {
-      super(_aw, _parent, _name, _type, g);
+      HandlerDelegates[] thda = [ HandlerDelegates( &LineSet.notifyHandler, &LineSet.undoHandler)];
+      if (hda != hdamt)
+         thda ~= hda;
+      super(_aw, _parent, _name, _type, g, thda);
       notifyHandlers ~= &LineSet.notifyHandler;
       undoHandlers ~= &LineSet.undoHandler;
 
