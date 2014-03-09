@@ -44,11 +44,13 @@ class Mesh : ACBase
 {
    static uint[4][] preDefined;
    static int nextOid = 0;
+   MeshPattern mesh;
    Coord center;
    ComboBoxText cicb;
    PartColor[4] pca;
    double diagonal;
-   int pattern;
+   Coord p0, p1, p2, p3;
+   int pattern, activeCP;
    Mt19937 gen;
    uint tempSeed, instanceSeed = 42;
    bool printRandom;
@@ -61,6 +63,7 @@ class Mesh : ACBase
       preDefined ~= [ 0xf61613, 0x631d1b, 0x631d1b, 0xf61613 ];
       preDefined ~= [ 0,0,0,0 ];
       preDefined ~= [ 0,0,0,0 ];
+      preDefined ~= [ 0xfcf3ac, 0xcfae44, 0xfcf3ac, 0xcfae44 ];
    }
 
    static PartColor uint2PartColor(uint u)
@@ -122,6 +125,11 @@ class Mesh : ACBase
       diagonal = 1.1*sqrt(cast(double)(width*width+height*height));
       tempSeed = unpredictableSeed();
 
+      p0 = Coord(0, center.y+1000);
+      p1 = Coord(center.x-1000, 0);
+      p2 = Coord(0, center.y-1000);
+      p3 = Coord(center.x+1000, 0);
+
       setupControls(3);
       positionControls(true);
    }
@@ -150,6 +158,7 @@ class Mesh : ACBase
       cbb.appendText("Shaded Spheres");
       cbb.appendText("Random");
       cbb.appendText("Corrugated");
+      cbb.appendText("Dunes");
       cbb.setActive(0);
       cbb.setSizeRequest(100, -1);
       cSet.add(cbb, ICoord(0, vp), Purpose.PATTERN);
@@ -170,11 +179,25 @@ class Mesh : ACBase
 
       vp += 35;
       Button b=new Button("Refresh Random");
-      cSet.add(b, ICoord(0, vp), Purpose.REDRAW);
+      cSet.add(b, ICoord(200, vp), Purpose.REDRAW);
       CheckButton cb=new CheckButton("Print Random");
-      cSet.add(cb, ICoord(200, vp), Purpose.PRINTRANDOM);
+      cSet.add(cb, ICoord(200, vp+25), Purpose.PRINTRANDOM);
 
-      cSet.cy = vp+32;
+      vp += 5;
+      new Compass(cSet, 0, ICoord(0, vp));
+      RadioButton rbg = new RadioButton("P0");
+      rbg.setActive(1);
+      cSet.add(rbg, ICoord(70, vp+5), Purpose.CP1);
+      RadioButton rb = new RadioButton(rbg, "P1");
+      cSet.add(rb, ICoord(70, vp+25), Purpose.CP2);
+      rb = new RadioButton(rbg, "P2");
+      cSet.add(rb, ICoord(110, vp+5), Purpose.ACP1);
+      rb = new RadioButton(rbg, "P3");
+      cSet.add(rb, ICoord(110, vp+25), Purpose.ACP2);
+
+      cSet.cy = vp+60;
+
+
    }
 
    override bool notifyHandler(Widget w, Purpose p)
@@ -182,6 +205,17 @@ class Mesh : ACBase
       focusLayout();
       switch (p)
       {
+      case Purpose.CP1:
+      case Purpose.CP2:
+      case Purpose.ACP1:
+      case Purpose.ACP2:
+         activeCP = p-Purpose.CP1;
+         if (p > Purpose.CP2)
+            activeCP--;
+         Coord[] t = [p0, p1, p2, p3];
+         lastOp = push!(Coord[])(this, t, OP_PARAMS);
+         nop = true;
+         return true;
       case Purpose.PATTERN:
          pattern = (cast(ComboBoxText) w).getActive();
          pca = predefPC(pattern);
@@ -201,10 +235,14 @@ class Mesh : ACBase
             }
             lastOp = push!PartColor(this, pca[index], OP_MC0+index);
             pca[index] = PartColor(rgba.red, rgba.green, rgba.blue, 1);
+            reDraw();
             cicb.setActive(0);
          }
          else
-            return false;
+         {
+            nop = true;
+            return true;
+         }
          break;
       case Purpose.REDRAW:
          instanceSeed++;
@@ -232,6 +270,10 @@ class Mesh : ACBase
          pca[cp.type-OP_MC0] = cp.partColor;
          lastOp = OP_UNDEF;
          break;
+      case OP_PARAMS:
+         Coord[] t = cp.path;
+         p0 = t[0], p1 = t[1], p2= t[2], p3 = t[3];
+         break;
       default:
          return false;
       }
@@ -251,6 +293,43 @@ class Mesh : ACBase
       focusLayout();
       modifyTransform(xform, more, coarse);
       aw.dirty = true;
+      reDraw();
+   }
+
+   static pure void moveCoord(ref Coord p, double distance, double angle)
+   {
+      p.x += cos(angle)*distance;
+      p.y -= sin(angle)*distance;
+   }
+
+   override void onCSCompass(int instance, double angle, bool coarse)
+   {
+      double d = coarse? 200: 40;
+      Coord[] t = [p0, p1, p2, p3];
+      lastOp = push!(Coord[])(this, t, OP_PARAMS);
+      Coord dummy = Coord(0,0);
+      moveCoord(dummy, d, angle);
+      switch (activeCP)
+      {
+         case 0:
+            p0.x += dummy.x;
+            p0.y += dummy.y;
+            break;
+         case 1:
+            p1.x += dummy.x;
+            p1.y += dummy.y;
+            break;
+         case 2:
+            p2.x += dummy.x;
+            p2.y += dummy.y;
+            break;
+         case 3:
+            p3.x += dummy.x;
+            p3.y += dummy.y;
+            break;
+         default:
+            break;
+      }
       reDraw();
    }
 
@@ -274,7 +353,7 @@ class Mesh : ACBase
       }
    }
 
-   MeshPattern testbed()
+   void testbed()
    {
       double x = 80, y = 80, r = 50;
       double m = 0.55191502449;
@@ -297,16 +376,15 @@ class Mesh : ACBase
 */
       setCC(mesh);
       mesh.endPatch();
-      return mesh;
    }
 
-   MeshPattern spheres(double r)
+   void spheres(double r)
    {
       double x = center.x-diagonal/2+r+2, y = center.y-diagonal/2+r+2;
       double m = 0.55191502449;
       int lim = to!int(diagonal/(2*r+4));
 
-      MeshPattern mesh = new MeshPattern();
+      mesh = new MeshPattern();
       for (int j = 0; j < lim; j++)
       {
          for (int i = 0; i < lim; i++)
@@ -325,16 +403,15 @@ class Mesh : ACBase
          y += 2*r+4;
 
       }
-      return mesh;
    }
 
-   MeshPattern diamonds(double w, double h)
+   void diamonds(double w, double h)
    {
       double x = center.x-diagonal/2, y = center.y-diagonal/2;
       int hlim = to!int(diagonal/w)+1;
       int vlim = to!int(diagonal/h)+1;
 
-      MeshPattern mesh = new MeshPattern();
+      mesh = new MeshPattern();
       for (int j = 0; j < vlim; j++)
       {
          for (int i = 0; i < hlim; i++)
@@ -352,16 +429,15 @@ class Mesh : ACBase
          x = center.x-diagonal/2;
          y += h;
       }
-      return mesh;
    }
 
-   MeshPattern chequers(double w, double h)
+   void chequers(double w, double h)
    {
       double x = center.x-diagonal/2, y = center.y-diagonal/2;
       int hlim = to!int(diagonal/w)/2;
       int vlim = to!int(diagonal/h);
 
-      MeshPattern mesh = new MeshPattern();
+      mesh = new MeshPattern();
       for (int j = 0; j < vlim; j++)
       {
          for (int i = 0; i < hlim; i++)
@@ -379,34 +455,26 @@ class Mesh : ACBase
          x = center.x-diagonal/2+((j & 1)? 0: 10);
          y += h;
       }
-      return mesh;
    }
 
-   MeshPattern tester()
+   void dunes()
    {
-      double x = 30, y = 50, r = 100;
-      MeshPattern mesh = new MeshPattern();
+      mesh = new MeshPattern();
       mesh.beginPatch();
-      mesh.moveTo(x,y);
-      //mesh.lineTo(x+r, y);
-      //mesh.curveTo(x+25, y-25, x+100-25, y+25, x+r,y);
-      //mesh.curveTo(x-25, y-25, x+100-25, y+25, x+r,y);
-      mesh.curveTo(x, y-50, x+r, y-50, x+r,y);
-      mesh.curveTo(x+r+50, y, x+r+50, y+r, x+r, y+r);
-      //mesh.lineTo(x+r, y+r);
-      mesh.lineTo(x, y+r);
-      mesh.lineTo(x, y);
-      mesh.setControlPoint(0,x,y-1000);
-      mesh.setControlPoint(1,x+1000,y);
-      mesh.setCornerColorRgba(0,0,0,0,1);
-      mesh.setCornerColorRgba(1,1,1,0,1);
-      for (int i = 2; i < 4; i++)
-         mesh.setCornerColorRgba(i,0,0,0,1);
+      mesh.moveTo(0,0);
+      mesh.lineTo(width, 0);
+      mesh.lineTo(width, height);
+      mesh.lineTo(0, height);
+      mesh.lineTo(0, 0);
+      mesh.setControlPoint(0,p0.x, p0.y);
+      mesh.setControlPoint(1, p1.x, p1.y);
+      mesh.setControlPoint(2, p2.x, p2.y);
+      mesh.setControlPoint(3, p3.x, p3.y);
+      setCC(mesh);
       mesh.endPatch();
-      return mesh;
    }
 
-   MeshPattern corrugated()
+   void corrugated()
    {
       double sz = (width > height)? width*2: height*2;
       Coord tl = Coord(-0.5*sz, -0.5*sz);
@@ -426,7 +494,7 @@ class Mesh : ACBase
       c1 = Coord(tl.x, tl.y);
       c2 = Coord(tl.x+pitch, tl.y);
       c3 = Coord(tl.x+pitch, br.y);
-      MeshPattern mesh = new MeshPattern();
+      mesh = new MeshPattern();
       for (int i = 0; xPos < br.x; i++)
       {
          mesh.beginPatch();
@@ -454,17 +522,16 @@ class Mesh : ACBase
          mesh.endPatch();
          movePoints(pitch);
       }
-      return mesh;
    }
 
 
-   MeshPattern rectangles(double w, double h, bool random = false)
+   void rectangles(double w, double h, bool random = false)
    {
       double x = center.x-diagonal/2, y = center.y-diagonal/2;
       int hlim = to!int(diagonal/w)+1;
       int vlim = to!int(diagonal/h)+1;
 
-      MeshPattern mesh = new MeshPattern();
+      mesh = new MeshPattern();
       for (int j = 0; j < vlim; j++)
       {
          for (int i = 0; i < hlim; i++)
@@ -482,35 +549,36 @@ class Mesh : ACBase
          x = center.x-diagonal/2;
          y += h;
       }
-      return mesh;
    }
 
    override void render(Context c)
    {
       uint sv = instanceSeed;
-      MeshPattern mesh;
       switch (pattern)
       {
          case 0:
-            mesh = rectangles(20, 20);
+            rectangles(20, 20);
             break;
          case 1:
-            mesh = chequers(10,10);
+            chequers(10,10);
             break;
          case 2:
-            mesh = diamonds(10,20);
+            diamonds(10,20);
             break;
          case 3:
-            mesh = spheres(20);
+            spheres(20);
             break;
          case 4:
             if (printRandom && printFlag)
                sv = tempSeed++;
             gen.seed(sv);
-            mesh = rectangles(20, 20, true);
+            rectangles(20, 20, true);
             break;
          case 5:
-            mesh = corrugated();
+            corrugated();
+            break;
+         case 6:
+            dunes();
             break;
          default:
             return;

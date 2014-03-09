@@ -640,25 +640,6 @@ class ACBase : CSTarget     // Area Composition base class
    void onCSPalette(PartColor[]) {}
    void deserializeComplete() {}
 
-   final ACBase prevSibling()
-   {
-      if (parent.type != AC_CONTAINER)
-         return null;
-      Container ctr = cast(Container) parent;
-      if (ctr.children.length == 1)
-         return null;
-      if (ctr.children[0] is this)
-         return null;
-      ACBase prev;
-      foreach (ACBase child; ctr.children)
-      {
-         if (child is this)
-            return prev;
-         prev = child;
-      }
-      return null;
-   }
-
    final void updateFillUI()
    {
       auto writer = appender!string();
@@ -943,6 +924,8 @@ class ACBase : CSTarget     // Area Composition base class
 
    static void insertChildAt(ACBase parent, ACBase child, int pos)
    {
+      parent.children.insertInPlace(pos, child);
+      /*
       if (pos >= parent.children.length)
       {
          //append
@@ -956,67 +939,58 @@ class ACBase : CSTarget     // Area Composition base class
             parent.children[j] = parent.children[j-1];
          parent.children[pos] = child;
       }
+      */
    }
 
    static int insertChild(ACBase refChild, ACBase newChild, bool rel)
    {
       ACBase p = refChild.parent;
-      size_t i;
+      foreach (size_t i, ACBase acb; p.children)
+         if (acb is refChild)
       for (i = 0; i < p.children.length; i++)
       {
-         if (p.children[i] is refChild)
-            break;
+         if (acb is refChild)
+         {
+            if (rel)
+               i++;
+            p.children.insertInPlace(i, newChild);
+            return cast(int) (rel? i-1: i);
+         }
       }
-      if (i >= p.children.length)
-         return -1;  // Or throw an exception!
-      size_t len = p.children.length+1;
-      p.children.length = len;
-      if (rel)       // insert after
-      {
-         for (size_t j = len-1; j > i+1; j--)
-            p.children[j] = p.children[j-1];
-         p.children[i+1] = newChild;
-      }
-      else          // insert before
-      {
-         for (size_t j = len-1; j > i; j--)
-            p.children[j] = p.children[j-1];
-         p.children[i] = newChild;
-      }
-      return cast(int) i;
+      assert(0, "insertChild - refChild not found");
    }
 
    static void moveChild(ACBase child, bool up)
    {
       ACBase p = child.parent;
-      size_t i;
-      for (i = 0; i < p.children.length; i++)
+
+      void swap(size_t i, int d)
       {
-         if (p.children[i] is child)
-            break;
+         ACBase t = p.children[i+d];
+         p.children[i+d] = child;
+         p.children[i] = t;
       }
-      if (i >= p.children.length)
-         return;  // Or throw an exception!
-      if (up)
+
+      foreach (size_t i, ACBase acb; p.children)
       {
-         if (i > 0)
+         if (acb is child)
          {
-            ACBase t = p.children[i-1];
-            p.children[i-1] = child;
-            p.children[i] = t;
+            if (up)
+            {
+               if (i > 0)
+                  swap(i, -1);
+            }
+            else
+            {
+               if (1 < p.children.length-1)
+                  swap(i, 1);
+            }
+            if (p.type == AC_CONTAINER)
+               p.reDraw();
+            return;
          }
       }
-      else
-      {
-         if (i < p.children.length-1)
-         {
-            ACBase t = p.children[i+1];
-            p.children[i+1] = child;
-            p.children[i] = t;
-         }
-      }
-      if (p.type == AC_CONTAINER)
-         p.reDraw();
+      assert(0, "moveChild - child not found.");
    }
 
    static void removeChild(AppWindow w, ACBase child)
