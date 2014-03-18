@@ -203,12 +203,15 @@ renderer.setPadding(2, 0);
       {
          ACBase acb = aw.createItem(initType, aw.RelTo.ROOT);
          tm.root.children ~= acb;
+         if (acb.type == AC_CONTAINER)
+            aw.cmCtr = acb;
          notifyInsertion(acb, "0");
       }
 
 
       tv.addOnCursorChanged(&aw.onCursorChanged);
       tv.addOnButtonPress(&aw.onTreeClick);
+      tv.addOnKeyPress(&aw.onTVKey);
 
 
       return tv;

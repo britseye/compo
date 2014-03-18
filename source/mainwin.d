@@ -17,6 +17,7 @@ import interfaces;
 import acomp;
 import tvitem;
 import container;
+import minimal;
 import richtext;
 import text;
 import uspsib;
@@ -75,6 +76,7 @@ import std.datetime;
 import std.array;
 import std.format;
 import std.uuid;
+import core.runtime;
 
 import gobject.ObjectG;
 import gobject.Value;
@@ -117,6 +119,8 @@ import cairo.Surface;
 import cairo.Context;
 import gdk.Screen;
 
+extern(C) void* dlsym(void*, const char*);
+
 class AppWindow : MainWindow
 {
    COMPOConfig config;
@@ -150,7 +154,7 @@ class AppWindow : MainWindow
    Container[] refs;
    double cWidth, cHeight, cWidthMM, cHeightMM;
    int rpView;
-   string drawingName;
+   string drawingName, pluginName;
 
    ControlsPos controlsPos;
 
@@ -348,7 +352,16 @@ class AppWindow : MainWindow
       case "YinYang":
          nt = AC_YINYANG;
          break;
-      default:
+
+      case "Minimal":      // For development purposes - not in menus use Ctrl/F12
+         nt = AC_MINIMAL;
+         break;
+      default:             // Loading a plugin - need to extract the so name
+         if (s[0..6] == "Plugin")
+         {
+            pluginName = s[7..$];
+            nt = AC_PLUGIN;
+         }
          break;
       }
       return nt;
@@ -368,7 +381,11 @@ class AppWindow : MainWindow
          ni = newItem;
       else
       {
-         if (cmItem.type == AC_ROOT)  // Standalone item
+         if (cmItem is null)
+         {
+            ni = createItem(nt, RelTo.CONTAINER);
+         }
+         else if (cmItem.type == AC_ROOT)  // Standalone item
          {
             ni = createItem(nt, RelTo.ROOT);
          }
@@ -705,7 +722,32 @@ class AppWindow : MainWindow
       CONTAINER,
       EXISTING
    }
-
+/*
+   ACBase loadPlugin(string name, ACBase parent)
+   {
+      alias ACBase function(AppWindow, ACBase) pfi;
+      void* lib = Runtime.loadLibrary(name~".so");
+      if (lib is null)
+      {
+         writeln("failed to load plugin shared object");
+         return null;
+      }
+      void* vp = dlsym(lib, "_D9piminimal11getInstanceFC7mainwin9AppWindowC5acomp6ACBaseZC5acomp6ACBase\0".ptr);
+      if (vp is null)
+      {
+         writeln("plugin creator function not found");
+         return null;
+      }
+      pfi f = cast(pfi) vp;
+      ACBase x = f(this, parent);
+      if (x is null)
+      {
+         writeln("creation of plugin failed");
+         return null;
+      }
+      return x;
+   }
+*/
    ACBase createItem(uint it, RelTo relTo)
    {
       ACBase p;
@@ -850,6 +892,13 @@ class AppWindow : MainWindow
       case AC_SHIELD:
          ni = new Shield(this, p);
          break;
+
+      case AC_MINIMAL:
+         ni = new Minimal(this, p);
+         break;
+//      case AC_PLUGIN:
+//         ni = loadPlugin(pluginName, p);
+//         break;
       default:
          return null;
       }
@@ -949,6 +998,9 @@ class AppWindow : MainWindow
          return new YinYang(cast(YinYang) x);
       case AC_SHIELD:
          return new Shield(cast(Shield) x);
+
+      case AC_MINIMAL:
+         return new Minimal(cast(Minimal) x);
       default:
          break;
       }
@@ -1364,6 +1416,37 @@ class AppWindow : MainWindow
       }
       Main.quit();
       return true;
+   }
+
+   bool onTVKey(Event e, Widget w)
+   {
+      uint kv = e.key.keyval;
+      if (kv == 0xffc9)
+      {
+         GdkModifierType state;
+         e.getState(state);
+         if (state & GdkModifierType.CONTROL_MASK)
+         {
+            if (cmCtr is null)
+               return false;
+            MenuItem mi =new MenuItem("Minimal");
+            cmItem = null;
+            doItemInsert(mi, 0);
+            return true;
+         }
+         else if (state & GdkModifierType.SHIFT_MASK)
+         {
+            if (cmCtr is null)
+               return false;
+            MenuItem mi =new MenuItem("Plugin:piminimal");
+            cmItem = null;
+            doItemInsert(mi, 0);
+            return true;
+         }
+         else
+            return false;
+      }
+      return false;
    }
 
    this()

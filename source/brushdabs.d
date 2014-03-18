@@ -296,10 +296,10 @@ class BrushDabs : ACBase
       switch (instance)
       {
          case 0:
-            int iresult = nDabs;
+            int iresult = cast(int) nDabs;
             if (!molG!int(more, quickly, iresult, 2, 1, 0x2000))
                return;
-            lastOp = pushC!int(this, nDabs, OP_IV1);
+            lastOp = pushC!int(this, cast(int) nDabs, OP_IV1);
             nDabs = iresult;
             break;
          case 1:

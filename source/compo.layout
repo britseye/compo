@@ -2,13 +2,13 @@
 <CodeBlocks_layout_file>
 	<ActiveTarget name="Debug" />
 	<File name="about.d" open="0" top="0" tabpos="0">
-		<Cursor position="961" topLine="0" />
+		<Cursor position="421" topLine="0" />
 	</File>
-	<File name="acomp.d" open="0" top="0" tabpos="4">
-		<Cursor position="8553" topLine="421" />
+	<File name="acomp.d" open="0" top="0" tabpos="2">
+		<Cursor position="12651" topLine="566" />
 	</File>
-	<File name="arrow.d" open="0" top="0" tabpos="1">
-		<Cursor position="2318" topLine="90" />
+	<File name="arrow.d" open="0" top="0" tabpos="3">
+		<Cursor position="1426" topLine="40" />
 	</File>
 	<File name="bevel.d" open="0" top="0" tabpos="1">
 		<Cursor position="1471" topLine="45" />
@@ -20,7 +20,7 @@
 		<Cursor position="1842" topLine="54" />
 	</File>
 	<File name="common.d" open="0" top="0" tabpos="3">
-		<Cursor position="3194" topLine="124" />
+		<Cursor position="456" topLine="0" />
 	</File>
 	<File name="constants.d" open="0" top="0" tabpos="5">
 		<Cursor position="0" topLine="0" />
@@ -29,10 +29,10 @@
 		<Cursor position="3926" topLine="133" />
 	</File>
 	<File name="controlsdlg.d" open="0" top="0" tabpos="1">
-		<Cursor position="0" topLine="0" />
+		<Cursor position="2011" topLine="58" />
 	</File>
-	<File name="controlset.d" open="0" top="0" tabpos="2">
-		<Cursor position="523" topLine="58" />
+	<File name="controlset.d" open="0" top="0" tabpos="1">
+		<Cursor position="38188" topLine="1647" />
 	</File>
 	<File name="corners.d" open="0" top="0" tabpos="0">
 		<Cursor position="1883" topLine="65" />
@@ -52,8 +52,8 @@
 	<File name="deserialize.d" open="0" top="0" tabpos="1">
 		<Cursor position="956" topLine="15" />
 	</File>
-	<File name="drawing.d" open="0" top="0" tabpos="1">
-		<Cursor position="1860" topLine="48" />
+	<File name="drawing.d" open="0" top="0" tabpos="4">
+		<Cursor position="3061" topLine="95" />
 	</File>
 	<File name="fader.d" open="0" top="0" tabpos="0">
 		<Cursor position="1464" topLine="56" />
@@ -71,7 +71,7 @@
 		<Cursor position="1929" topLine="47" />
 	</File>
 	<File name="interfaces.d" open="0" top="0" tabpos="3">
-		<Cursor position="132" topLine="0" />
+		<Cursor position="277" topLine="0" />
 	</File>
 	<File name="lgradient.d" open="0" top="0" tabpos="1">
 		<Cursor position="1443" topLine="42" />
@@ -101,7 +101,7 @@
 		<Cursor position="2413" topLine="105" />
 	</File>
 	<File name="morphdlgs.d" open="0" top="0" tabpos="2">
-		<Cursor position="0" topLine="0" />
+		<Cursor position="772" topLine="22" />
 	</File>
 	<File name="morphs.d" open="0" top="0" tabpos="4">
 		<Cursor position="0" topLine="0" />
@@ -125,7 +125,7 @@
 		<Cursor position="2084" topLine="43" />
 	</File>
 	<File name="pointset.d" open="0" top="0" tabpos="0">
-		<Cursor position="2632" topLine="97" />
+		<Cursor position="960" topLine="32" />
 	</File>
 	<File name="polycurve.d" open="0" top="0" tabpos="1">
 		<Cursor position="10916" topLine="436" />

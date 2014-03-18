@@ -27,6 +27,7 @@ import std.uuid;
 
 import core.memory;
 import gtkc.gtktypes;
+import gtk.MenuItem;
 import gtk.Widget;
 import gtk.Entry;
 import gtk.TextView;
@@ -395,6 +396,8 @@ enum
 
    AC_CONTAINER = 1000,
    AC_DUMMY,
+   AC_MINIMAL,
+   AC_PLUGIN,
    AC_ROOT
 }
 
@@ -411,6 +414,10 @@ string ACTypeNames(int t)
       return "Composition";
    else if (t == AC_DUMMY)
       return "Dummy";
+   else if (t == AC_MINIMAL)
+      return "Minimal";
+   else if (t == AC_PLUGIN)
+      return "Plugin";
    return "AC Root Element";
 }
 
@@ -564,7 +571,7 @@ class ACBase : CSTarget     // Area Composition base class
          if (aw.controlsFloating)
             controlsDlg = new ControlsDlg(this);
          controlsPos = ControlsPos.BELOW;
-         cSet = new ControlSet(this);
+         cSet = new ControlSet(this, true);
       }
    }
 
@@ -752,6 +759,29 @@ class ACBase : CSTarget     // Area Composition base class
          break;
       case ArrowKeys.KEY_DOWN:
          move(kv-ArrowKeys.KEY_LEFT, false);
+         break;
+      case 0xffc9: // F12
+         GdkModifierType state;
+         e.getState(state);
+         if (state & GdkModifierType.CONTROL_MASK)
+         {
+            if (aw.cmCtr is null)
+               break;
+            MenuItem mi =new MenuItem("Minimal");
+            aw.cmItem = null;
+            aw.doItemInsert(mi, 0);
+         }
+         /*
+         else if (state & GdkModifierType.SHIFT_MASK)
+         {
+            if (aw.cmCtr is null)
+               break;
+            MenuItem mi =new MenuItem("Plugin:piminimal");
+            aw.cmItem = null;
+            aw.doItemInsert(mi, 0);
+         }
+         else {}
+         */
          break;
       default:
          return false;
@@ -1089,10 +1119,12 @@ class ACBase : CSTarget     // Area Composition base class
 
    final void onCSNotify(Widget w, Purpose p)
    {
+writefln("onCSN %s", p);
       bool handled = false;
       nop = false;
       foreach (bdnh nh; notifyHandlers)
       {
+writeln("A foreach");
          if (nh(w, p))
          {
             handled = true;
@@ -1104,12 +1136,14 @@ class ACBase : CSTarget     // Area Composition base class
          aw.popupMsg("No handler for "~name~" Purpose."~to!string(p), MessageType.ERROR);
          return;
       }
+writeln("B");
       //assert(handled, "No handler for "~to!string(p));
       if (!nop)   // nop to be set for operations that don't require save or a repaint
       {
          aw.dirty = true;
          reDraw();
       }
+writeln("out");
    }
 
    void onCSTextParam(Purpose p, string sv, int iv) {}
@@ -1516,7 +1550,8 @@ class ACBase : CSTarget     // Area Composition base class
       cSet.cy = 0;
       extendControls();
       RenameGadget rg = new RenameGadget(cSet, ICoord(0, cSet.cy), name, true);
-      rg.setName(name);
+
+      //rg.setName(name);
       if (type != AC_CONTAINER)
       {
          CheckButton cb = new CheckButton("Hide Item");

@@ -19,7 +19,7 @@
 				<Linker>
 					<Add library="/usr/local/lib/libgtkd-2.a" />
 					<Add library="/home/steve/COMPO/lib/libusps4cb.a" />
-					<Add library="rsvg" />
+					<Add library="/usr/lib/i386-linux-gnu/librsvg-2.so.2" />
 					<Add directory="/usr/lib/i386-linux-gnu" />
 					<Add directory="/usr/local/lib" />
 				</Linker>
@@ -36,7 +36,7 @@
 				<Linker>
 					<Add library="/usr/local/lib/libgtkd-2.a" />
 					<Add library="/home/steve/COMPO/libusps4cb.a" />
-					<Add library="rsvg" />
+					<Add library="/usr/lib/i386-linux-gnu/librsvg-2.so.2" />
 				</Linker>
 			</Target>
 		</Build>
@@ -49,7 +49,7 @@
 		<Linker>
 			<Add library="/usr/local/lib/libgtkd-2.a" />
 			<Add library="/home/steve/COMPO/lib/libusps4cb.a" />
-			<Add library="rsvg" />
+			<Add library="/usr/lib/i386-linux-gnu/librsvg-2.so.2" />
 		</Linker>
 		<Unit filename="about.d">
 			<Option target="Debug" />
@@ -152,6 +152,7 @@
 		<Unit filename="mesh.d">
 			<Option target="Debug" />
 		</Unit>
+		<Unit filename="minimal.d" />
 		<Unit filename="mol.d" />
 		<Unit filename="moon.d">
 			<Option target="Debug" />

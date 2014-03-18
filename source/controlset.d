@@ -176,6 +176,7 @@ struct WidgetInfo
 class ControlSet
 {
    CSTarget host;
+   bool forACBase;
    Purpose purpose;
    PseudoWidget[PseudoKey] pseudos;
    WidgetInfo[] wia;
@@ -186,12 +187,13 @@ class ControlSet
    bool noToggle, shift, control;
    Label infoLabel;
 
-   this(CSTarget t)
+   this(CSTarget t, bool b = false)
    {
       windex.length = Purpose.MAXWID;
       purpose = Purpose.VOID;
       windex[] = -1;
       host = t;
+      forACBase = b;
    }
 
    void updateCX(int n)
@@ -447,6 +449,12 @@ class ControlSet
   Individual widgets send raw data - the widget and the event
   to the host
 **************************************************************/
+/*
+      if (forACBase)
+         (cast(ACBase) host).;
+      else
+         host.;
+*/
    bool bClick(Event e, Widget w)
    {
       GdkModifierType state;
@@ -454,7 +462,11 @@ class ControlSet
       control = (state & GdkModifierType.CONTROL_MASK)? true: false;
       shift = (state & GdkModifierType.SHIFT_MASK)? true: false;
       Purpose id = cast(Purpose) w.getData("wid");
-      host.onCSNotify(w, id);
+      if (forACBase)
+         (cast(ACBase) host).onCSNotify(w, id);
+      else
+         host.onCSNotify(w, id);
+      //host.onCSNotify(w, id);
       return true;
    }
 
@@ -463,7 +475,11 @@ class ControlSet
       if (noToggle)
          return;
       Purpose id = cast(Purpose) b.getData("wid");
-      host.onCSNotify(b, id);
+      if (forACBase)
+         (cast(ACBase) host).onCSNotify(b, id);
+      else
+         host.onCSNotify(b, id);
+      //host.onCSNotify(b, id);
    }
 
    void tbClick(ToggleButton b)
@@ -471,7 +487,11 @@ class ControlSet
       if (noToggle)
          return;
       Purpose id = cast(Purpose) b.getData("wid");
-      host.onCSNotify(b, id);
+      if (forACBase)
+         (cast(ACBase) host).onCSNotify(b, id);
+      else
+         host.onCSNotify(b, id);
+      //host.onCSNotify(b, id);
    }
 
    void cbClick(ToggleButton b)
@@ -479,19 +499,31 @@ class ControlSet
       if (noToggle)
          return;
       Purpose id = cast(Purpose) b.getData("wid");
-      host.onCSNotify(b, id);
+      if (forACBase)
+         (cast(ACBase) host).onCSNotify(b, id);
+      else
+         host.onCSNotify(b, id);
+      //host.onCSNotify(b, id);
    }
 
    void sbChange(SpinButton b)
    {
       Purpose id = cast(Purpose) b.getData("wid");
-      host.onCSNotify(b, id);
+      if (forACBase)
+         (cast(ACBase) host).onCSNotify(b, id);
+      else
+         host.onCSNotify(b, id);
+      //host.onCSNotify(b, id);
    }
 
    void comboChange(ComboBox cb)
    {
       Purpose id = cast(Purpose) cb.getData("wid");
-      host.onCSNotify(cb, id);
+      if (forACBase)
+         (cast(ACBase) host).onCSNotify(cb, id);
+      else
+         host.onCSNotify(cb, id);
+      //host.onCSNotify(cb, id);
    }
 
    void getModifiers(out bool controlState, out bool shiftState)
@@ -948,10 +980,11 @@ class InchTool: PseudoWidget
          t = new Timeout(interval, &doMove, false);
          tstate = 2;
       }
+      ACBase t = cast(ACBase) target;
       if (moveFill)
-         target.onCSInchFill(thisId, direction, coarse);
+         t.onCSInchFill(thisId, direction, coarse);
       else
-         setDisplay(target.onCSInch(thisId, direction, coarse));
+         setDisplay(t.onCSInch(thisId, direction, coarse));
       return true;
    }
 }
@@ -1085,7 +1118,8 @@ class Compass: PseudoWidget
          t = new Timeout(interval, &doMove, false);
          tstate = 2;
       }
-      target.onCSCompass(thisId, angle, coarse);
+      auto t = cs.forACBase? cast(ACBase) target: target;
+      t.onCSCompass(thisId, angle, coarse);
       return true;
    }
 }
@@ -1206,7 +1240,10 @@ class MoreLess: PseudoWidget
          t = new Timeout(interval, &doMove, false);
          tstate = 2;
       }
-      target.onCSMoreLess(thisId, more, coarse);
+      if (cs.forACBase)
+         (cast(ACBase) target).onCSMoreLess(thisId, more, coarse);
+      else
+         target.onCSMoreLess(thisId, more, coarse);
       return true;
    }
 }
@@ -1360,7 +1397,7 @@ class MOLLineThick: PseudoWidget
       scope auto w = appender!string();
       formattedWrite(w, "%1.1f", lt);
       txt.setText(w.data);
-      target.onCSLineWidth(lt);
+      (cast(ACBase) target).onCSLineWidth(lt);
       return true;
    }
 }
@@ -1453,7 +1490,10 @@ class TextOrient: PseudoWidget
       if (orient == which)
          return true;
       orient = which;
-      target.onCSTextParam(Purpose.TORIENT, "", orient);
+      if (cs.forACBase)
+         (cast(ACBase) target).onCSTextParam(Purpose.TORIENT, "", orient);
+      else
+         target.onCSTextParam(Purpose.TORIENT, "", orient);
       return true;
    }
 }
@@ -1587,7 +1627,10 @@ class Palette: PseudoWidget
       else
          pca[7] = getPColor(pca[7]);
       da.queueDraw();
-      target.onCSPalette(pca);
+      if (cs.forACBase)
+         (cast(ACBase) target).onCSPalette(pca);
+      else
+         target.onCSPalette(pca);
       return true;
    }
 }
@@ -1603,7 +1646,6 @@ class RenameGadget: PseudoWidget
       super(cs, 0, position);
       cs.addPseudo(this, Purpose.RENAME, 0);
       initState = initialState? 1: 0;
-
       Label nnl = new Label("Name");
       cs.add(nnl, ICoord(cx, cy+3), Purpose.LABEL, initState);
       entry = new Entry();
@@ -1611,7 +1653,11 @@ class RenameGadget: PseudoWidget
       entry.setText(origName);
       entry.setTooltipText("Choose a name for this item/layer.\nPress enter to set it.");
       entry.addOnActivate(&onSetName);
-      cs.host.setNameEntry(entry);
+      if (cs.forACBase)
+         (cast(ACBase) target).setNameEntry(entry);
+      else
+         target.setNameEntry(entry);
+      //target.setNameEntry(entry);
       cs.add(entry, ICoord(cx+45, cy), Purpose.NAMEENTRY, initState);
    }
 
@@ -1644,6 +1690,9 @@ class RenameGadget: PseudoWidget
    void onSetName(Entry e)
    {
       string s = e.getText();
-      target.onCSNameChange(s);
+      if (cs.forACBase)
+         (cast(ACBase) target).onCSNameChange(s);
+      else
+         target.onCSNameChange(s);
    }
 }

@@ -43,6 +43,7 @@ import gtk.Entry;
 import cairo.Context;
 import gtkc.cairotypes;
 import cairo.Matrix;
+import cairox;
 
 enum
 {
@@ -1006,17 +1007,17 @@ class Polycurve : LineSet
    void rSegTo(Context c, PathItem pi)
    {
       if (pi.type == 1)
-         c.curveTo(pi.cp1.x, pi.cp1.y, pi.cp2.x, pi.cp2.y, pi.end.x, pi.end.y);
+         c.curveToPI(pi);
       else
-         c.lineTo(pi.end.x, pi.end.y);
+         c.lineToP(pi.end);
    }
 
    void eSegTo(Context c, PathItem pi)
    {
       if (pi.type == 1)
-         c.curveTo(pi.cp1.x, pi.cp1.y, pi.cp2.x, pi.cp2.y, pi.end.x, pi.end.y);
+         c.curveToPI(pi);
       else
-         c.lineTo(pi.end.x, pi.end.y);
+         c.lineToP(pi.end);
    }
 
    void colorEdge(Context c, double r, double g, double b, PathItem pi)
@@ -1025,11 +1026,11 @@ class Polycurve : LineSet
       double lw = 1;
       if (zoomed) lw /= esf;
       c.setLineWidth(lw);
-      c.moveTo(pi.start.x, pi.start.y);
+      c.moveToP(pi.start);
       if (pi.type == 1)
-         c.curveTo(pi.cp1.x, pi.cp1.y, pi.cp2.x, pi.cp2.y, pi.end.x, pi.end.y);
+         c.curveToPI(pi);
       else
-         c.lineTo(pi.end.x, pi.end.y);
+         c.lineToP(pi.end);
       c.stroke();
    }
 
@@ -1042,9 +1043,9 @@ class Polycurve : LineSet
          if (pcPath.length < 1)
             return;
          c.setSourceRgb(0.8, 0.8, 0.8);
-         c.moveTo(root.end.x, root.end.y);
+         c.moveToP(root.end);
          for (int i = 0; i < pcPath.length; i++)
-            c.curveTo(pcPath[i].cp1.x, pcPath[i].cp1.y, pcPath[i].cp2.x, pcPath[i].cp2.y, pcPath[i].end.x, pcPath[i].end.y);
+            c.curveToPI(pcPath[i]);
          c.setLineWidth(1.0);
          c.stroke();
          return;
@@ -1059,7 +1060,7 @@ class Polycurve : LineSet
 
       c.setLineWidth(lineWidth);
       c.setLineJoin(les? CairoLineJoin.MITER: CairoLineJoin.ROUND);
-      c.moveTo(pcPath[0].start.x, pcPath[0].start.y);
+      c.moveToP(pcPath[0].start);
       size_t lim = pcPath.length;
       if (open)
          lim--;
@@ -1083,7 +1084,6 @@ class Polycurve : LineSet
          lastCurrent = current;
          lastActive = activeCoords;
       }
-//writefln("curr %d prev %d next %d", current,prev,next);
       switch (activeCoords)
       {
          case 0:  // SP
@@ -1185,7 +1185,7 @@ class Polycurve : LineSet
       double lw = 1;
       if(zoomed) lw /= esf;
       c.setLineWidth(lw);
-      c.moveTo(pcPath[0].start.x, pcPath[0].start.y);
+      c.moveToP(pcPath[0].start);
       size_t lim = pcPath.length;
       if (open)
          lim--;

@@ -43,6 +43,7 @@ import gtk.Entry;
 import cairo.Context;
 import gtkc.cairotypes;
 import cairo.Matrix;
+import cairox;
 
 class PolyEditDlg: Dialog, CSTarget
 {
@@ -504,7 +505,7 @@ class Polygon : LineSet
       default:
          return false;
       }
-      return false;
+      return true;
    }
 
    void switchMode()
@@ -812,9 +813,9 @@ class Polygon : LineSet
             return;
          c.setLineWidth(1);
          c.setSourceRgb(0,0,0);
-         c.moveTo(oPath[0].x, oPath[0].y);
+         c.moveToP(oPath[0]);
          for (size_t i = 1; i < oPath.length; i++)
-            c.lineTo(oPath[i].x, oPath[i].y);
+            c.lineToP(oPath[i]);
          c.stroke();
          return;
       }
@@ -830,10 +831,10 @@ class Polygon : LineSet
       c.setLineWidth(0);
       c.setLineJoin(les? CairoLineJoin.MITER: CairoLineJoin.ROUND);
 
-      c.moveTo(oPath[0].x, oPath[0].y);
+      c.moveToP(oPath[0]);
       for (int i = 1; i < oPath.length; i++)
       {
-         c.lineTo(oPath[i].x, oPath[i].y);
+         c.lineToP(oPath[i]);
       }
       if (!open)
          c.closePath();
@@ -922,23 +923,23 @@ class Polygon : LineSet
       double lw = 0.5;
       if (zoomed) lw /= esf;
       c.setLineWidth(lw);
-      c.moveTo(oPath[0].x, oPath[0].y);
+      c.moveToP(oPath[0]);
       for (size_t i = 1; i < oPath.length; i++)
-         c.lineTo(oPath[i].x, oPath[i].y);
+         c.lineToP(oPath[i]);
       if (!open && oPath.length > 2)
          c.closePath();
       c.stroke();
       figureNextPrev();
       c.setSourceRgb(1,0,0);
       c.setLineWidth(lw*2);
-      c.moveTo(oPath[current].x, oPath[current].y);
-      c.lineTo(oPath[next].x, oPath[next].y);
+      c.moveToP(oPath[current]);
+      c.lineToP(oPath[next]);
       c.stroke();
       if (prev != -1)
       {
          c.setSourceRgb(0,1,0);
-         c.moveTo(oPath[prev].x, oPath[prev].y);
-         c.lineTo(oPath[current].x, oPath[current].y);
+         c.moveToP(oPath[prev]);
+         c.lineToP(oPath[current]);
          c.stroke();
       }
    }

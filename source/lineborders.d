@@ -546,19 +546,19 @@ class LineBorders: LineSet
       c.lineTo(width-inset-cunit, inset);
 
       t = corners[1];
-      for (int i = n-1; i > 0; i--)
+      for (size_t i = n-1; i > 0; i--)
          c.lineTo(t[i].x, t[i].y);
       c.lineTo(t[0].x, t[0].y);
       c.lineTo(width-inset, height-inset-cunit);
 
       t = corners[2];
-      for (int i = 0; i < n-1; i++)
+      for (size_t i = 0; i < n-1; i++)
          c.lineTo(t[i].x, t[i].y);
       c.lineTo(t[n-1].x, t[n-1].y);
       c.lineTo(inset+cunit, height-inset);
 
       t = corners[3];
-      for (int i = n-1; i > 0; i--)
+      for (size_t i = n-1; i > 0; i--)
          c.lineTo(t[i].x, t[i].y);
       c.lineTo(t[0].x, t[0].y);
       c.closePath();

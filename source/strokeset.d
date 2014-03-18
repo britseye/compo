@@ -44,6 +44,7 @@ import gtk.Entry;
 import cairo.Context;
 import gtkc.cairotypes;
 import cairo.Matrix;
+import cairox;
 
 enum
 {
@@ -835,9 +836,9 @@ class StrokeSet : LineSet
    void rSegTo(Context c, PathItem pi)
    {
       if (pi.type == 1)
-         c.curveTo(pi.cp1.x, pi.cp1.y, pi.cp2.x, pi.cp2.y, pi.end.x, pi.end.y);
+         c.curveToPI(pi);
       else
-         c.lineTo(pi.end.x, pi.end.y);
+         c.lineToP(pi.end);
    }
 
    void renderActual(Context c)
@@ -849,8 +850,8 @@ class StrokeSet : LineSet
          c.setSourceRgb(0.8, 0.8, 0.8);
          for (size_t i = 0; i < pcPath.length; i++)
          {
-            c.moveTo(pcPath[i].start.x, pcPath[i].start.y);
-            c.curveTo(pcPath[i].cp1.x, pcPath[i].cp1.y, pcPath[i].cp2.x, pcPath[i].cp2.y, pcPath[i].end.x, pcPath[i].end.y);
+            c.moveToP(pcPath[i].start);
+            c.curveToPI(pcPath[i]);
          }
          c.setLineWidth(1.0);
          c.stroke();
@@ -868,7 +869,7 @@ class StrokeSet : LineSet
 
       for (size_t i = 0; i < pcPath.length; i++)
       {
-         c.moveTo(pcPath[i].start.x, pcPath[i].start.y);
+         c.moveToP(pcPath[i].start);
          rSegTo(c, pcPath[i]);
          c.stroke();
       }
@@ -963,9 +964,9 @@ class StrokeSet : LineSet
    void eSegTo(Context c, PathItem pi)
    {
       if (pi.type == 1)
-         c.curveTo(pi.cp1.x, pi.cp1.y, pi.cp2.x, pi.cp2.y, pi.end.x, pi.end.y);
+         c.curveToPI(pi);
       else
-         c.lineTo(pi.end.x, pi.end.y);
+         c.lineToP(pi.end);
    }
 
    void colorEdge(Context c, double r, double g, double b, PathItem pi)
@@ -974,11 +975,11 @@ class StrokeSet : LineSet
       double lw = 1;
       if (zoomed) lw /= esf;
       c.setLineWidth(lw);
-      c.moveTo(pi.start.x, pi.start.y);
+      c.moveToP(pi.start);
       if (pi.type == 1)
-         c.curveTo(pi.cp1.x, pi.cp1.y, pi.cp2.x, pi.cp2.y, pi.end.x, pi.end.y);
+         c.curveToPI(pi);
       else
-         c.lineTo(pi.end.x, pi.end.y);
+         c.lineToP(pi.end);
       c.stroke();
    }
 
@@ -994,7 +995,7 @@ class StrokeSet : LineSet
       c.setLineCap(les? CairoLineCap.BUTT: CairoLineCap.ROUND);
       for (size_t i = 0; i < pcPath.length; i++)
       {
-         c.moveTo(pcPath[i].start.x, pcPath[i].start.y);
+         c.moveToP(pcPath[i].start);
          eSegTo(c, pcPath[i]);
          c.stroke();
       }
